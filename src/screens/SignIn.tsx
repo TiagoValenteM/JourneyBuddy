@@ -1,5 +1,5 @@
 import React from "react";
-import logo from "../../assets/icon.png";
+import logo from "../../assets/logo.png";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import {
   Image,
@@ -9,8 +9,6 @@ import {
   Text,
   View,
 } from "react-native";
-//import Icon from 'react-native-vector-icons/FontAwesome';
-import { StackScreenProps } from "@react-navigation/stack";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
 const auth = getAuth();
@@ -44,10 +42,21 @@ function SignInScreen<StackScreenProps>({ navigation }) {
   return (
     <View className="w-full h-full">
       <View className="mx-4 h-5/6 flex justify-center align-center space-y-6">
-        <Image
-          source={logo}
-          style={{ width: 100, height: 100, alignSelf: "center" }}
-        />
+        <View className={"flex flex-row w-full justify-around items-center"}>
+          <Image
+            source={logo}
+            style={{ width: 100, height: 100, alignSelf: "center" }}
+            className="rounded-2xl"
+          />
+          <Text
+            className={
+              "block  font-title text-2xl font-bold text-center text-white"
+            }
+          >
+            JourneyBuddy
+          </Text>
+        </View>
+
         <Text className="block  font-title text-2xl font-bold text-center text-white">
           Sign In
         </Text>
@@ -111,5 +120,20 @@ const styles = StyleSheet.create({
     paddingLeft: 0,
     backgroundColor: "#fff",
     color: "#424242",
+  },
+  error: {
+    color: "red",
+    marginBottom: 10,
+  },
+  googleButton: {
+    backgroundColor: "#4285F4",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    marginTop: 10,
+  },
+  googleButtonText: {
+    color: "white",
+    fontWeight: "bold",
   },
 });

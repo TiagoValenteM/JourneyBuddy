@@ -17,6 +17,7 @@
     "expo-status-bar": "~1.4.4",
     "firebase": "^9.22.0",
     "nativewind": "^2.0.10",
+    "prettier": "^2.8.8",
     "react": "18.2.0",
     "react-native": "0.71.8",
     "react-native-vector-icons": "^9.2.0"
