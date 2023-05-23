@@ -16,7 +16,7 @@ import { getFirestore, collection, doc, setDoc } from "firebase/firestore";
 const auth = getAuth();
 const db = getFirestore();
 
-function SignUpScreen<StackScreenProps>({ navigation }) {
+function SignUpScreen<StackScreenProps>({ navigation }: { navigation: any }) {
   const [value, setValue] = React.useState({
     email: "",
     password: "",

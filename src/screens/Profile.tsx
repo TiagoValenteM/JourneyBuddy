@@ -1,18 +1,43 @@
 import React from "react";
-import { Text, View } from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import Feather from "react-native-vector-icons/Feather";
+import { Image, Text, View } from "react-native";
+import MenuModal from "../components/MenuModal";
 
-function ProfileScreen<StackScreenProps>({ navigation }) {
+function ProfileScreen({
+  navigation,
+  screenProps,
+}: {
+  navigation: any;
+  screenProps: { modalVisible: boolean; setModalVisible: any };
+}) {
+  const { modalVisible, setModalVisible } = screenProps;
+
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text>Profile Screen</Text>
-      <Feather
-        name="settings"
-        size={24}
-        color="black"
-        onPress={() => navigation.navigate("Settings")}
-      />
+    <View>
+      <View className={"flex h-full w-full"}>
+        <View
+          className={
+            " h-1/4 w-full flex-row justify-around items-center font-semibold"
+          }
+        >
+          <Image
+            source={{ uri: "https://i.imgur.com/9eURkZxl.jpg" }}
+            className={"h-28 w-28 rounded-full border-4 border-white"}
+          ></Image>
+          <View className={"flex justify-center items-center space-y-1"}>
+            <Text className={"font-bold"}>9</Text>
+            <Text>Guides</Text>
+          </View>
+          <View className={"flex justify-center items-center space-y-1"}>
+            <Text className={"font-bold"}>2</Text>
+            <Text>Followers</Text>
+          </View>
+          <View className={"flex justify-center items-center space-y-1"}>
+            <Text className={"font-bold"}>4</Text>
+            <Text>Following</Text>
+          </View>
+        </View>
+      </View>
+      <MenuModal screenProps={screenProps} />
     </View>
   );
 }

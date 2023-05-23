@@ -2,7 +2,7 @@ import React from "react";
 import { Pressable, Text, View } from "react-native";
 import { useAuth } from "../hooks/useAuth";
 
-function SearchScreen<StackScreenProps>({ navigation }) {
+function SearchScreen<StackScreenProps>({ navigation }: { navigation: any }) {
   const { user } = useAuth();
 
   return (
@@ -13,10 +13,7 @@ function SearchScreen<StackScreenProps>({ navigation }) {
         </Text>
       </View>
       <View className="h-5/6 flex justify-center align-center space-y-6 bg-red-400">
-        <Text
-          className={"text-center text-white font-bold text-base"}
-          onPress={() => navigation.navigate("Profile")}
-        >
+        <Text className={"text-center text-white font-bold text-base"}>
           PROFILE
         </Text>
       </View>

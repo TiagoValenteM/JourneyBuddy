@@ -3,7 +3,7 @@ import { Text, Pressable, Image, View } from "react-native";
 import { StackScreenProps } from "@react-navigation/stack";
 import { LinearGradient } from "expo-linear-gradient";
 
-function WelcomeScreen<StackScreenProps>({ navigation }) {
+function WelcomeScreen<StackScreenProps>({ navigation }: { navigation: any }) {
   return (
     <View className="w-full h-full">
       <LinearGradient
