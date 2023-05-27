@@ -9,7 +9,8 @@ import {
   Text,
   View,
 } from "react-native";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../config/firebase";
 
 function SignInScreen<StackScreenProps>({ navigation }: { navigation: any }) {
   const [value, setValue] = React.useState({
@@ -29,7 +30,7 @@ function SignInScreen<StackScreenProps>({ navigation }: { navigation: any }) {
 
     try {
       await signInWithEmailAndPassword(auth, value.email, value.password);
-    } catch (error) {
+    } catch (error: any) {
       setValue({
         ...value,
         error: error.message,
@@ -46,22 +47,18 @@ function SignInScreen<StackScreenProps>({ navigation }: { navigation: any }) {
             style={{ width: 100, height: 100, alignSelf: "center" }}
             className="rounded-2xl"
           />
-          <Text
-            className={
-              "block  font-title text-2xl font-bold text-center text-white"
-            }
-          >
+          <Text className={"block text-2xl font-bold text-center text-white"}>
             JourneyBuddy
           </Text>
         </View>
 
-        <Text className="block  font-title text-2xl font-bold text-center text-white">
+        <Text className="block text-2xl font-bold text-center text-white">
           Sign In
         </Text>
 
         <View className="space-y-10">
           <View className="mt-1 space-y-8">
-            <View className="flex font-main flex-row justify-center align-center rounded-xl px-1 py-1 bg-gray-100">
+            <View className="flex flex-row justify-center align-center rounded-xl px-1 py-1 bg-gray-100">
               <Icon style={styles.icon} name="email" size={18} color="gray" />
               <TextInput
                 placeholder="Email"
@@ -90,7 +87,7 @@ function SignInScreen<StackScreenProps>({ navigation }: { navigation: any }) {
             </Text>
           </Pressable>
         </View>
-        <Text className="text-center text-white font-main text-base">
+        <Text className="text-center text-white text-base">
           Don't Have an account?{" "}
           <Text
             className="text-blue"
@@ -122,16 +119,5 @@ const styles = StyleSheet.create({
   error: {
     color: "red",
     marginBottom: 10,
-  },
-  googleButton: {
-    backgroundColor: "#4285F4",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    marginTop: 10,
-  },
-  googleButtonText: {
-    color: "white",
-    fontWeight: "bold",
   },
 });

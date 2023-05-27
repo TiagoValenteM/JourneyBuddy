@@ -8,21 +8,18 @@ import Feather from "react-native-vector-icons/Feather";
 import SearchScreen from "../screens/Search";
 import AddGuideScreen from "../screens/AddGuide";
 import ProfileScreen from "../screens/Profile";
-import { Text } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
 import { getCurrentUserProfile } from "../database/userRepository";
+import EditProfileScreen from "../screens/EditProfile";
+import FollowingScreen from "../screens/Following";
+import FollowersScreen from "../screens/Followers";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-function ProfileStack() {
+function ProfileStack({ route }: { route: any }) {
   const [modalVisible, setModalVisible] = React.useState(false);
-  const [currentUser, setCurrentUser] = React.useState<
-    UserProfile | undefined
-  >();
-
-  React.useEffect(() => {
-    getCurrentUserProfile().then((user) => setCurrentUser(user));
-  }, []);
+  const currentUser = route.params?.userParam?.currentUser;
 
   return (
     <Stack.Navigator>
@@ -38,7 +35,7 @@ function ProfileStack() {
           ),
           headerTitle: "",
           headerLeft: () => (
-            <Text style={{ fontSize: 20 }}>
+            <Text style={{ fontSize: 20, fontWeight: "600" }}>
               {currentUser?.username || currentUser?.email}
             </Text>
           ),
@@ -54,14 +51,92 @@ function ProfileStack() {
           <ProfileScreen
             {...props}
             screenProps={{ modalVisible, setModalVisible }}
+            currentUser={currentUser}
           />
         )}
+      </Stack.Screen>
+      <Stack.Screen
+        name={"Edit Profile"}
+        options={{
+          gestureEnabled: false,
+          cardStyleInterpolator: ({ current }) => ({
+            cardStyle: {
+              opacity: current.progress.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, 1],
+                extrapolate: "clamp",
+              }),
+              transform: [
+                {
+                  translateY: current.progress.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [1000, 0],
+                    extrapolate: "clamp",
+                  }),
+                },
+              ],
+            },
+          }),
+          transitionSpec: {
+            open: {
+              animation: "timing",
+              config: {
+                duration: 300, // Adjust the duration as desired
+              },
+            },
+            close: {
+              animation: "timing",
+              config: {
+                duration: 300, // Adjust the duration as desired
+              },
+            },
+          },
+        }}
+      >
+        {(props) => <EditProfileScreen {...props} currentUser={currentUser} />}
+      </Stack.Screen>
+      <Stack.Screen name={"Followers"} component={FollowersScreen} />
+      <Stack.Screen name={"Following"} component={FollowingScreen} />
+    </Stack.Navigator>
+  );
+}
+
+function AddGuideStack({ route }: { route: any }) {
+  const currentUser = route.params?.userParam?.currentUser;
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="Add Guide Page"
+        options={{
+          headerTitle: "New Guide",
+        }}
+      >
+        {(props) => <AddGuideScreen {...props} currentUser={currentUser} />}
       </Stack.Screen>
     </Stack.Navigator>
   );
 }
 
 export default function UserStack() {
+  const [currentUser, setCurrentUser] = React.useState<
+    UserProfile | undefined
+  >();
+  const [isLoading, setIsLoading] = React.useState(true); // Track loading state
+
+  React.useEffect(() => {
+    getCurrentUserProfile()
+      .then((user) => setCurrentUser(user))
+      .finally(() => setIsLoading(false)); // Update loading state when finished
+  }, []);
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
   return (
     <NavigationContainer>
       <Tab.Navigator
@@ -71,24 +146,39 @@ export default function UserStack() {
           tabBarIcon: ({ color, size }) => {
             let iconName;
 
-            if (route.name === "Profile") {
-              iconName = "user";
-            } else if (route.name === "Search") {
-              iconName = "search";
-            } else if (route.name === "Home") {
-              iconName = "home";
-            } else if (route.name === "New Guide") {
-              iconName = "plus-square";
+            switch (route.name) {
+              case "Profile":
+                iconName = "user";
+                break;
+              case "Search":
+                iconName = "search";
+                break;
+              case "Home":
+                iconName = "home";
+                break;
+              case "New Guide":
+                iconName = "plus-square";
+                break;
+              default:
+                iconName = ""; // Default icon, nothing to show
+                break;
             }
-
             return <Feather name={iconName} size={size} color={color} />;
           },
         })}
       >
         <Tab.Screen name="Home" component={HomeScreen} />
         <Tab.Screen name="Search" component={SearchScreen} />
-        <Tab.Screen name="New Guide" component={AddGuideScreen} />
-        <Tab.Screen name="Profile" component={ProfileStack} />
+        <Tab.Screen
+          name="New Guide"
+          component={AddGuideStack}
+          initialParams={{ userParam: { currentUser } }} // Update the initialParams structure
+        />
+        <Tab.Screen
+          name="Profile"
+          component={ProfileStack}
+          initialParams={{ userParam: { currentUser } }} // Update the initialParams structure
+        />
       </Tab.Navigator>
     </NavigationContainer>
   );

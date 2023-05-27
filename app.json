@@ -15,7 +15,7 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
@@ -25,6 +25,18 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow JourneyBuddy to access your photos",
+            "cameraPermission": "Allow JourneyBuddy to access your camera",
+            "allowsEditing": true,
+            "aspect": [4, 3],
+            "quality": 1
+        }
+      ]
+    ]
   }
 }

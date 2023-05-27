@@ -1,9 +1,10 @@
 interface UserProfile {
   email: string;
-  followers: string[];
-  following: string[];
+  followers: string[]; // array of user IDs
+  following: string[]; // array of user IDs
   fullName: string;
   profilePicturePath: string;
-  UID: string;
+  uid: string;
   username: string;
+  guides: string[]; // array of guide IDs
 }

@@ -19,7 +19,7 @@ const MenuModal = ({
       >
         <View
           style={{
-            height: "30%",
+            height: "70%",
             marginTop: "auto",
             borderTopLeftRadius: 30,
             borderTopRightRadius: 30,

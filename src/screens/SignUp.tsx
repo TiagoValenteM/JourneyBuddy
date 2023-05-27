@@ -9,12 +9,9 @@ import {
   Text,
   View,
 } from "react-native";
-//import Icon from 'react-native-vector-icons/FontAwesome';
-import { StackScreenProps } from "@react-navigation/stack";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-import { getFirestore, collection, doc, setDoc } from "firebase/firestore";
-const auth = getAuth();
-const db = getFirestore();
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import { auth, db } from "../config/firebase";
 
 function SignUpScreen<StackScreenProps>({ navigation }: { navigation: any }) {
   const [value, setValue] = React.useState({
@@ -63,13 +60,13 @@ function SignUpScreen<StackScreenProps>({ navigation }: { navigation: any }) {
           source={logo}
           style={{ width: 100, height: 100, alignSelf: "center" }}
         />
-        <Text className="block  font-title text-2xl font-bold text-center text-white">
+        <Text className="block text-2xl font-bold text-center text-white">
           Sign Up
         </Text>
 
         <View className="space-y-6">
           <View className="mt-1 space-y-4">
-            <View className="flex- font-main flex-row justify-center align-center rounded-xl px-1 py-1 bg-gray-100">
+            <View className="flex flex-row justify-center align-center rounded-xl px-1 py-1 bg-gray-100">
               <Icon style={styles.icon} name="email" size={18} color="gray" />
               <TextInput
                 placeholder="Email"
@@ -98,7 +95,7 @@ function SignUpScreen<StackScreenProps>({ navigation }: { navigation: any }) {
             </Text>
           </Pressable>
         </View>
-        <Text className="text-center text-white font-main text-base">
+        <Text className="text-center text-white text-base">
           Have an account?{" "}
           <Text
             className="text-blue"
