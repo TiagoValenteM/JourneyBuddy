@@ -61,6 +61,7 @@ function AddGuideScreen<StackScreenProps>({
 
   return (
     <ScrollView
+      showsVerticalScrollIndicator={false}
       className="w-screen"
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -128,36 +129,33 @@ function AddGuideScreen<StackScreenProps>({
                 <Feather name="plus-circle" size={30} color="black" />
               </TouchableOpacity>
             </View>
-            <ScrollView
-              horizontal={true}
-              style={{
-                flex: 1,
-                flexDirection: "row",
-              }}
-            >
-              {currentGuide!!.pictures?.length > 0 ? (
-                currentGuide?.pictures.map((picture, index) => (
+            {currentGuide!!.pictures?.length > 0 ? (
+              <ScrollView
+                horizontal={true}
+                showsHorizontalScrollIndicator={false}
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                }}
+              >
+                {currentGuide?.pictures.map((picture, index) => (
                   <View
                     key={index}
                     style={{
                       flex: 1,
                       flexDirection: "row",
-                      backgroundColor: "#dfe0e3",
                       marginVertical: 10,
                       marginRight: 25,
+                      width: 200,
+                      height: 200,
+                      borderRadius: 20,
+                      overflow: "hidden",
                     }}
                   >
-                    <View
-                      style={{
-                        width: 200,
-                        height: 200,
-                      }}
-                    >
-                      <Image
-                        source={{ uri: picture }}
-                        style={{ width: "100%", height: "100%" }}
-                      />
-                    </View>
+                    <Image
+                      source={{ uri: picture }}
+                      style={{ width: "100%", height: "100%" }}
+                    />
                     <View
                       style={{
                         justifyContent: "center",
@@ -185,26 +183,26 @@ function AddGuideScreen<StackScreenProps>({
                       </TouchableOpacity>
                     </View>
                   </View>
-                ))
-              ) : (
-                <View
-                  style={{
-                    flex: 1,
-                    flexDirection: "column",
-                    backgroundColor: "#dfe0e3",
-                    borderRadius: 10,
-                    padding: 15,
-                    marginVertical: 10,
-                  }}
+                ))}
+              </ScrollView>
+            ) : (
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "column",
+                  backgroundColor: "#dfe0e3",
+                  borderRadius: 10,
+                  padding: 15,
+                  marginVertical: 10,
+                }}
+              >
+                <Text
+                  style={{ textAlignVertical: "center", textAlign: "center" }}
                 >
-                  <Text
-                    style={{ textAlignVertical: "center", textAlign: "center" }}
-                  >
-                    Try adding some places
-                  </Text>
-                </View>
-              )}
-            </ScrollView>
+                  Try adding some pictures
+                </Text>
+              </View>
+            )}
           </View>
           <View style={{ marginVertical: 20 }}>
             <View
