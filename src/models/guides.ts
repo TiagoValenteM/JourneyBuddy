@@ -1,8 +1,9 @@
 interface Guide {
+  uid: string;
   title: string;
   description: string;
-  coverPhotoPath: string;
-  uid: string;
+  pictures: string[];
+  user_id: string;
   author: string;
   rating: number[];
   status: string;
@@ -12,6 +13,11 @@ interface Guide {
 
 interface Place {
   name: string;
-  lat: number;
-  lng: number;
+  coordinates: Coordinate;
 }
+interface Coordinate {
+  latitude: number;
+  longitude: number;
+}
+
+export { Guide, Place, Coordinate };

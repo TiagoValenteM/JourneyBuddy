@@ -10,6 +10,7 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
+import { Alert } from "react-native";
 
 const defaultProfilePicture =
   "https://firebasestorage.googleapis.com/v0/b/journeybuddy2023.appspot.com/o/profile_pictures%2Fdefault_profile_picture.jpg?alt=media&token=2ecdbd0a-d2a7-4f5d-8ba7-a0457904a264";
@@ -26,9 +27,37 @@ const selectImage = async (currentUser: UserProfile) => {
     quality: 0.5,
   });
 
-  if (!result.canceled) {
+  if (!result?.canceled) {
     await uploadProfilePicture(result.assets[0].uri, currentUser); // Upload the selected image to Firebase
   }
+};
+
+const selectMultipleImages = async (): Promise<string[]> => {
+  const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  if (status === "granted") {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.5,
+      allowsMultipleSelection: true,
+    });
+
+    if (!result?.canceled) {
+      return result?.assets?.map((asset) => asset.uri);
+    }
+  }
+
+  return [];
+};
+
+const uploadMultiplePictures = async (guide_uid: string, uri: string) => {
+  const response = await fetch(uri);
+  const blob = await response.blob();
+
+  const filename = uri.split("/").pop();
+  const storageRef = ref(storage, `guide_pictures/${guide_uid}/${filename}`);
+
+  const snapshot = await uploadBytes(storageRef, blob);
+  return await getDownloadURL(snapshot.ref);
 };
 
 const uploadProfilePicture = async (uri: string, currentUser: UserProfile) => {
@@ -73,4 +102,10 @@ const handleUploadProfilePic = async (
   }
 };
 
-export { selectImage, uploadProfilePicture, defaultProfilePicture };
+export {
+  selectImage,
+  selectMultipleImages,
+  uploadProfilePicture,
+  uploadMultiplePictures,
+  defaultProfilePicture,
+};
