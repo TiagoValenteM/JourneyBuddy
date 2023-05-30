@@ -6,5 +6,4 @@ interface UserProfile {
   profilePicturePath: string;
   uid: string;
   username: string;
-  guides: string[]; // array of guide IDs
 }

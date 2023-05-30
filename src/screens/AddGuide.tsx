@@ -9,9 +9,18 @@ import {
   Image,
 } from "react-native";
 import Feather from "react-native-vector-icons/Feather";
-import { Guide, Place } from "../models/guides";
+import { Guide } from "../models/guides";
 import { selectMultipleImages } from "../services/ImageUpload";
 import uuid from "react-native-uuid";
+
+interface AddGuideScreenProps {
+  navigation: any;
+  currentUser?: UserProfile;
+  setRefreshing: any;
+  refreshing: boolean;
+  currentGuide?: Guide;
+  updateGuideCallback: any;
+}
 
 function AddGuideScreen<StackScreenProps>({
   navigation,
@@ -20,14 +29,7 @@ function AddGuideScreen<StackScreenProps>({
   refreshing,
   currentGuide,
   updateGuideCallback,
-}: {
-  navigation: any;
-  currentUser?: UserProfile;
-  setRefreshing: any;
-  refreshing: boolean;
-  currentGuide?: Guide;
-  updateGuideCallback: any;
-}) {
+}: AddGuideScreenProps) {
   const onRefresh = () => {
     setRefreshing(true);
     updateGuideCallback({

@@ -6,6 +6,8 @@ import EditProfileScreen from "../screens/EditProfile";
 import FollowersScreen from "../screens/Followers";
 import FollowingScreen from "../screens/Following";
 import { createStackNavigator } from "@react-navigation/stack";
+import GuideInDetailScreen from "../screens/GuideInDetail";
+import { Guide } from "../models/guides";
 
 const Stack = createStackNavigator();
 
@@ -15,13 +17,16 @@ interface ProfileStackProps {
 
 function ProfileStack({ route }: ProfileStackProps) {
   const [modalVisible, setModalVisible] = React.useState(false);
+  const [refreshing, setRefreshing] = React.useState(false);
+  const [guides, setGuides] = React.useState<Guide[]>([]);
+  const [selectedGuide, setSelectedGuide] = React.useState<Guide | null>(null);
   const currentUser = route.params?.userParam?.currentUser;
 
   return (
     <Stack.Navigator>
       <Stack.Screen
         name="Profile Page"
-        options={({ navigation }) => ({
+        options={() => ({
           headerRight: (props) => (
             <Feather
               name={"menu"}
@@ -48,6 +53,11 @@ function ProfileStack({ route }: ProfileStackProps) {
             {...props}
             screenProps={{ modalVisible, setModalVisible }}
             currentUser={currentUser}
+            refreshing={refreshing}
+            setRefreshing={setRefreshing}
+            guides={guides}
+            setGuides={setGuides}
+            setSelectedGuide={setSelectedGuide}
           />
         )}
       </Stack.Screen>
@@ -90,6 +100,17 @@ function ProfileStack({ route }: ProfileStackProps) {
         }}
       >
         {(props) => <EditProfileScreen {...props} currentUser={currentUser} />}
+      </Stack.Screen>
+      <Stack.Screen
+        name={"Guide In Detail"}
+        options={{
+          headerTitle: "Guide",
+          gestureEnabled: false,
+        }}
+      >
+        {(props) => (
+          <GuideInDetailScreen {...props} selectedGuide={selectedGuide} />
+        )}
       </Stack.Screen>
       <Stack.Screen name={"Followers"} component={FollowersScreen} />
       <Stack.Screen name={"Following"} component={FollowingScreen} />

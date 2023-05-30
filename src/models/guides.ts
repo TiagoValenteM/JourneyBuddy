@@ -9,6 +9,7 @@ interface Guide {
   status: string;
   dateCreated: string;
   places: Place[];
+  comments: Comment[];
 }
 
 interface Place {
@@ -19,5 +20,9 @@ interface Coordinate {
   latitude: number;
   longitude: number;
 }
+interface Comment {
+  user_id: string;
+  comment: string;
+}
 
-export { Guide, Place, Coordinate };
+export { Guide, Place, Coordinate, Comment };

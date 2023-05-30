@@ -22,10 +22,6 @@ function AddGuideStack({ route, navigation }: AddGuideStackProps) {
   const [locationName, setLocationName] = React.useState(
     "Search for a location or tap on the map"
   );
-  const [guideLocationsList, setGuideLocationsList] = React.useState<Place[]>(
-    []
-  );
-  const [selectedPictures, setSelectedPictures] = React.useState<string[]>([]);
   const [refreshing, setRefreshing] = React.useState(false);
   const [guide, setGuide] = React.useState<Guide>({
     uid: uuid.v4() as string,
@@ -38,6 +34,7 @@ function AddGuideStack({ route, navigation }: AddGuideStackProps) {
     user_id: currentUser?.uid,
     dateCreated: new Date().toISOString(),
     pictures: [],
+    comments: [],
   });
 
   const handleSave = () => {
