@@ -105,7 +105,6 @@ function ProfileStack({ route }: ProfileStackProps) {
         name={"Guide In Detail"}
         options={{
           headerTitle: "Guide",
-          gestureEnabled: false,
         }}
       >
         {(props) => (

@@ -12,6 +12,11 @@ import average from "../utils/average";
 import MapView, { Marker } from "react-native-maps";
 import React from "react";
 import Feather from "react-native-vector-icons/Feather";
+import {
+  updateGuideComments,
+  UpdateGuideRating,
+} from "../services/ManageGuides";
+import { findUsers } from "../services/FindUser";
 
 interface GuideInDetailScreenProps {
   selectedGuide?: Guide | null;
@@ -19,18 +24,35 @@ interface GuideInDetailScreenProps {
 
 function GuideInDetailScreen({ selectedGuide }: GuideInDetailScreenProps) {
   const [rating, setRating] = React.useState(0);
-  const [comments, setComments] = React.useState([]);
   const [newComment, setNewComment] = React.useState("");
+  const [usernames, setUsernames] = React.useState<{
+    [userId: string]: string;
+  }>({});
+
+  React.useEffect(() => {
+    const fetchUsernames = async () => {
+      const userIds =
+        selectedGuide?.comments?.map((comment) => comment.user_id) || [];
+
+      if (userIds.length > 0) {
+        const fetchedUsernames = await findUsers(userIds);
+        setUsernames(fetchedUsernames);
+      }
+    };
+
+    fetchUsernames();
+  }, [selectedGuide?.comments]);
+
   const averageRating = selectedGuide?.rating
     ? average(selectedGuide.rating)
     : 0;
 
-  const handleRating = (value) => {
-    setRating(value);
+  const handleRating = (rate: number) => {
+    UpdateGuideRating(selectedGuide!!.uid, rate);
   };
 
-  const handleAddComment = (comment) => {
-    setComments([...comments, comment]);
+  const handleAddComment = (newComment: string) => {
+    updateGuideComments(selectedGuide!!.uid, newComment);
   };
 
   return (
@@ -39,6 +61,11 @@ function GuideInDetailScreen({ selectedGuide }: GuideInDetailScreenProps) {
       <Text style={styles.title}>{selectedGuide?.title}</Text>
       <Text style={styles.description}>{selectedGuide?.description}</Text>
       <Text style={styles.averageRating}>{averageRating}</Text>
+      <Text style={styles.averageRating}>
+        {selectedGuide?.rating.length === 1
+          ? selectedGuide?.rating.length + " Rating"
+          : selectedGuide?.rating.length + " Ratings"}
+      </Text>
       <Text style={styles.date}>{selectedGuide?.dateCreated.slice(0, 10)}</Text>
 
       <View style={styles.imageContainer}>
@@ -86,7 +113,10 @@ function GuideInDetailScreen({ selectedGuide }: GuideInDetailScreenProps) {
             <TouchableOpacity
               key={value}
               style={styles.starButton}
-              onPress={() => handleRating(value)}
+              onPress={() => {
+                handleRating(value);
+                setRating(value);
+              }}
             >
               <Feather
                 name="star"
@@ -101,11 +131,18 @@ function GuideInDetailScreen({ selectedGuide }: GuideInDetailScreenProps) {
 
       <View style={styles.commentsContainer}>
         <Text style={styles.commentsHeading}>Comments</Text>
-        {selectedGuide?.comments?.map((comment, index) => (
-          <View style={styles.commentItem} key={index}>
-            <Text style={styles.commentText}>{comment}</Text>
-          </View>
-        ))}
+        {selectedGuide?.comments && selectedGuide.comments.length > 0 ? (
+          selectedGuide.comments.map((comment, index) => (
+            <View style={styles.commentItem} key={index}>
+              <Text style={styles.commentText}>{comment.comment}</Text>
+              <Text style={styles.commentAuthor}>
+                {"@" + usernames[comment.user_id]}
+              </Text>
+            </View>
+          ))
+        ) : (
+          <Text>No comments</Text>
+        )}
       </View>
 
       <View style={styles.addCommentContainer}>
@@ -228,6 +265,10 @@ const styles = StyleSheet.create({
   },
   commentText: {
     fontSize: 16,
+  },
+  commentAuthor: {
+    fontSize: 14,
+    color: "grey",
   },
   addCommentContainer: {
     flexDirection: "row",

@@ -10,7 +10,7 @@ import {
 import MenuModal from "../components/MenuModal";
 import { auth } from "../config/firebase";
 import { defaultProfilePicture } from "../services/ImageUpload";
-import { getGuidesCurrentUser } from "../services/GetGuides";
+import { getGuidesCurrentUser } from "../services/ManageGuides";
 import { Guide } from "../models/guides";
 import GridImage from "../components/GridImage";
 interface ProfileScreenProps {

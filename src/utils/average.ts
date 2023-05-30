@@ -1,4 +1,11 @@
-const average = (array: number[]) =>
-  array.length > 0 ? array.reduce((a, b) => a + b) / array.length : 0;
+const average = (array: number[]): number => {
+  if (array.length > 0) {
+    const sum = array.reduce((a, b) => a + b, 0);
+    const averageValue = sum / array.length;
+    return Number(averageValue.toFixed(2));
+  } else {
+    return 0;
+  }
+};
 
 export default average;
