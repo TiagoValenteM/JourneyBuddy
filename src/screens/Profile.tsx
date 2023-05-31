@@ -21,7 +21,6 @@ interface ProfileScreenProps {
   refreshing: boolean;
   guides: Guide[];
   setGuides: any;
-  setSelectedGuide: any;
 }
 function ProfileScreen({
   navigation,
@@ -31,7 +30,6 @@ function ProfileScreen({
   refreshing,
   guides,
   setGuides,
-  setSelectedGuide,
 }: ProfileScreenProps) {
   const onRefresh = () => {
     setRefreshing(true);
@@ -87,7 +85,11 @@ function ProfileScreen({
             style={{ height: 100, width: 100, borderRadius: 100 }}
           ></Image>
           <View
-            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
           >
             <Text style={{ fontWeight: "bold", fontSize: 16 }}>
               {guides?.length || "0"}
@@ -95,7 +97,11 @@ function ProfileScreen({
             <Text>Guides</Text>
           </View>
           <Pressable
-            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
             onPress={() => {
               navigation.navigate("Followers");
             }}
@@ -106,7 +112,11 @@ function ProfileScreen({
             <Text>Followers</Text>
           </Pressable>
           <Pressable
-            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
             onPress={() => {
               navigation.navigate("Following");
             }}
@@ -193,11 +203,7 @@ function ProfileScreen({
       </View>
 
       <View>
-        <GridImage
-          guides={guides}
-          navigation={navigation}
-          setSelectedGuide={setSelectedGuide}
-        />
+        <GridImage guides={guides} navigation={navigation} />
       </View>
 
       <MenuModal screenProps={screenProps} />

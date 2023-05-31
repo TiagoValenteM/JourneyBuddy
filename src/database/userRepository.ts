@@ -1,7 +1,7 @@
 import { collection, getDocs, query, where } from "firebase/firestore";
-import { db, auth } from "../config/firebase";
+import { auth, db } from "../config/firebase";
 
-async function getCurrentUserProfile(): Promise<UserProfile | undefined> {
+async function getAuthUserProfile(): Promise<UserProfile | undefined> {
   if (auth?.currentUser?.uid) {
     return await getUserByUID(auth?.currentUser?.uid);
   }
@@ -21,4 +21,4 @@ async function getUserByUID(uid: string): Promise<UserProfile | undefined> {
   return undefined; // did not find a single user profile
 }
 
-export { getCurrentUserProfile, getUserByUID };
+export { getAuthUserProfile, getUserByUID };

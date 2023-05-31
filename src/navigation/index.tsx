@@ -5,7 +5,6 @@ import AuthStack from "./authStack";
 
 const RootNavigation = () => {
   const { user } = useAuth();
-
   return user ? <UserStack /> : <AuthStack />;
 };
 

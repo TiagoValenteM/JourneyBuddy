@@ -3,8 +3,8 @@ import { Text, TouchableOpacity, Alert } from "react-native";
 import AddPlacesScreen from "../screens/AddPlaces";
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
-import { Coordinate, Guide, Place } from "../models/guides";
-import { collection, doc, setDoc, updateDoc } from "firebase/firestore";
+import { Coordinate, Guide } from "../models/guides";
+import { doc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "../config/firebase";
 import uuid from "react-native-uuid";
 import { uploadMultiplePictures } from "../services/ImageUpload";
@@ -17,29 +17,16 @@ interface AddGuideStackProps {
 }
 
 function AddGuideStack({ route, navigation }: AddGuideStackProps) {
-  const currentUser = route.params?.userParam?.currentUser;
+  const authenticatedUser = route.params?.userParam?.authenticatedUser;
   const [markerCoordinate, setMarkerCoordinate] = React.useState<Coordinate>();
   const [locationName, setLocationName] = React.useState(
     "Search for a location or tap on the map"
   );
   const [refreshing, setRefreshing] = React.useState(false);
-  const [guide, setGuide] = React.useState<Guide>({
-    uid: uuid.v4() as string,
-    author: currentUser?.username,
-    rating: [],
-    title: "",
-    description: "",
-    places: [],
-    status: "pending",
-    user_id: currentUser?.uid,
-    dateCreated: new Date().toISOString(),
-    pictures: [],
-    comments: [],
-  });
+  const [guide, setGuide] = React.useState<Guide>(new Guide(authenticatedUser));
 
   const handleSave = () => {
     // 1 - Upload guide
-    const guidesCollection = collection(db, "guides");
     setDoc(doc(db, "guides", guide?.uid), guide)
       .then(async () => {
         // 2 - Upload pictures
@@ -93,7 +80,7 @@ function AddGuideStack({ route, navigation }: AddGuideStackProps) {
         {(props) => (
           <AddGuideScreen
             {...props}
-            currentUser={currentUser}
+            authenticatedUser={authenticatedUser}
             navigation={navigation}
             refreshing={refreshing}
             setRefreshing={setRefreshing}

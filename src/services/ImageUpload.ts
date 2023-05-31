@@ -50,14 +50,17 @@ const selectMultipleImages = async (): Promise<string[]> => {
 };
 
 const uploadMultiplePictures = async (guide_uid: string, uri: string) => {
-  const response = await fetch(uri);
-  const blob = await response.blob();
+  if (uri.includes("file://")) {
+    const response = await fetch(uri);
+    const blob = await response.blob();
 
-  const filename = uri.split("/").pop();
-  const storageRef = ref(storage, `guide_pictures/${guide_uid}/${filename}`);
+    const filename = uri.split("/").pop();
+    const storageRef = ref(storage, `guide_pictures/${guide_uid}/${filename}`);
 
-  const snapshot = await uploadBytes(storageRef, blob);
-  return await getDownloadURL(snapshot.ref);
+    const snapshot = await uploadBytes(storageRef, blob);
+    return await getDownloadURL(snapshot.ref);
+  }
+  return uri;
 };
 
 const uploadProfilePicture = async (uri: string, currentUser: UserProfile) => {

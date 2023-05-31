@@ -2,35 +2,41 @@ import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import HomeScreen from "../screens/Home";
-import { createStackNavigator } from "@react-navigation/stack";
 
 import Feather from "react-native-vector-icons/Feather";
 import SearchScreen from "../screens/Search";
-import { ActivityIndicator, Text, View } from "react-native";
-import { getCurrentUserProfile } from "../database/userRepository";
 import AddGuideStack from "./addGuideStack";
 import ProfileStack from "./profileStack";
+import { getAuthUserProfile } from "../database/userRepository";
+import LoadingIndicator from "../components/LoadingIndicator";
 
 const Tab = createBottomTabNavigator();
 
 export default function UserStack() {
-  const [currentUser, setCurrentUser] = React.useState<
+  const [currentUser, setCurrentUser] = React.useState<UserProfile | undefined>(
+    undefined
+  );
+  const [authenticatedUser, setAuthenticatedUser] = React.useState<
     UserProfile | undefined
-  >();
+  >(undefined);
   const [isLoading, setIsLoading] = React.useState(true); // Track loading state
 
   React.useEffect(() => {
-    getCurrentUserProfile()
-      .then((user) => setCurrentUser(user))
-      .finally(() => setIsLoading(false)); // Update loading state when finished
+    getAuthUserProfile()
+      .then((user) => {
+        setCurrentUser(user);
+        setAuthenticatedUser(user);
+      })
+      .catch((error) => {
+        console.error("Error fetching user profile:", error);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   }, []);
 
   if (isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
+    return <LoadingIndicator />;
   }
 
   return (
@@ -52,7 +58,7 @@ export default function UserStack() {
               case "Home":
                 iconName = "home";
                 break;
-              case "New Guide":
+              case "Guides":
                 iconName = "plus-square";
                 break;
               default:
@@ -63,17 +69,23 @@ export default function UserStack() {
           },
         })}
       >
-        <Tab.Screen name="Home" component={HomeScreen} />
+        <Tab.Screen
+          name="Home"
+          component={HomeScreen}
+          options={{ headerShown: true }}
+        />
         <Tab.Screen name="Search" component={SearchScreen} />
         <Tab.Screen
-          name="New Guide"
+          name="Guides"
           component={AddGuideStack}
-          initialParams={{ userParam: { currentUser } }} // Update the initialParams structure
+          initialParams={{ userParam: { authenticatedUser } }} // Update the initialParams structure
         />
         <Tab.Screen
           name="Profile"
           component={ProfileStack}
-          initialParams={{ userParam: { currentUser } }} // Update the initialParams structure
+          initialParams={{
+            userParam: { authenticatedUser, currentUser },
+          }}
         />
       </Tab.Navigator>
     </NavigationContainer>

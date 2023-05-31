@@ -1,39 +1,58 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Text,
-  View,
-  ScrollView,
-  TextInput,
-  TouchableOpacity,
-  RefreshControl,
+  Alert,
   Image,
+  RefreshControl,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableHighlight,
+  View,
 } from "react-native";
-import Feather from "react-native-vector-icons/Feather";
-import { Guide } from "../models/guides";
+import { Guide, Place } from "../models/guides";
 import { selectMultipleImages } from "../services/ImageUpload";
-import uuid from "react-native-uuid";
+import Feather from "react-native-vector-icons/Feather";
+import { usePressedGuide } from "../context/pressedGuideContext";
 
-interface AddGuideScreenProps {
+interface EditGuideScreenProps {
   navigation: any;
-  authenticatedUser?: UserProfile;
+  authenticatedUser: UserProfile;
   setRefreshing: any;
   refreshing: boolean;
-  currentGuide?: Guide;
+  currentGuide: Guide;
   updateGuideCallback: any;
 }
 
-function AddGuideScreen<StackScreenProps>({
+const EditGuideScreen = ({
   navigation,
-  authenticatedUser,
   setRefreshing,
   refreshing,
   currentGuide,
   updateGuideCallback,
-}: AddGuideScreenProps) {
-  const onRefresh = () => {
-    setRefreshing(true);
-    updateGuideCallback(new Guide(authenticatedUser));
-    setRefreshing(false);
+}: EditGuideScreenProps) => {
+  const [title, setTitle] = useState(currentGuide.title);
+  const [description, setDescription] = useState(currentGuide.description);
+  const [selectedImages, setSelectedImages] = useState<string[]>(
+    currentGuide.pictures
+  );
+  const [selectedPlaces, setSelectedPlaces] = useState<Place[]>(
+    currentGuide.places
+  );
+
+  useEffect(() => {
+    if (currentGuide) {
+      setSelectedImages(currentGuide?.pictures);
+      setSelectedPlaces(currentGuide?.places);
+    }
+  }, [currentGuide]);
+
+  const updateGuide = () => {
+    updateGuideCallback({
+      ...currentGuide,
+      title,
+      description,
+      places: selectedPlaces,
+    });
   };
 
   const handleSelectImages = () => {
@@ -42,6 +61,7 @@ function AddGuideScreen<StackScreenProps>({
         const newImages = currentGuide?.pictures
           ? [...currentGuide.pictures, ...images]
           : images;
+
         updateGuideCallback({ ...currentGuide, pictures: newImages });
       })
       .catch((error) => {
@@ -49,58 +69,109 @@ function AddGuideScreen<StackScreenProps>({
       });
   };
 
+  const handleDeleteImage = (index: number) => {
+    const newImages = [...currentGuide?.pictures];
+    newImages.splice(index, 1);
+    updateGuideCallback({
+      ...currentGuide,
+      pictures: newImages,
+    });
+  };
+
+  const handleDeletePlace = (index: number) => {
+    const newPlaces = [...currentGuide?.places];
+    newPlaces.splice(index, 1);
+    updateGuideCallback({
+      ...currentGuide,
+      places: newPlaces,
+    });
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    if (currentGuide) {
+      setTitle(currentGuide.title);
+      setDescription(currentGuide.description);
+      setSelectedImages(currentGuide.pictures);
+      setSelectedPlaces(currentGuide.places);
+    }
+    setRefreshing(false);
+  };
+
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
-      className="w-screen"
+      style={{ flex: 1, width: "100%" }}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
-      <View className="h-3/4 flex flex-col justify-start mt-5 items-center space-y-6">
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "flex-start",
+          marginTop: 5,
+          alignItems: "center",
+        }}
+      >
         <View
-          className={
-            "flex flex-row justify-between px-4 items-center space-x-1 w-full"
-          }
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            paddingHorizontal: 4,
+            alignItems: "center",
+            width: "100%",
+          }}
         >
-          <Text className={"text-black font-light text-sm"}>Title</Text>
+          <Text style={{ color: "black", fontWeight: "300", fontSize: 14 }}>
+            Title
+          </Text>
           <TextInput
             placeholder="Title"
             style={{
               width: "75%",
               padding: 10,
+              borderBottomColor: "gray",
+              borderBottomWidth: 1,
             }}
-            className={"border-b border-b-gray-300"}
-            value={currentGuide?.title}
-            onChangeText={(text) =>
-              updateGuideCallback({ ...currentGuide, title: text })
-            }
+            value={title}
+            onChangeText={(text) => {
+              setTitle(text);
+              updateGuide();
+            }}
           />
         </View>
         <View
-          className={
-            "flex flex-row justify-between px-4 items-center space-x-1 w-full"
-          }
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            paddingHorizontal: 4,
+            alignItems: "center",
+            width: "100%",
+          }}
         >
-          <Text className={"text-black font-light text-sm"}>Description</Text>
+          <Text style={{ color: "black", fontWeight: "300", fontSize: 14 }}>
+            Description
+          </Text>
           <TextInput
             placeholder="Description"
             style={{
               width: "75%",
               padding: 10,
+              borderBottomColor: "gray",
+              borderBottomWidth: 1,
             }}
-            className={"border-b border-b-gray-300"}
-            value={currentGuide?.description}
-            onChangeText={(text) =>
-              updateGuideCallback({ ...currentGuide, description: text })
-            }
+            value={description}
+            onChangeText={(text) => {
+              setDescription(text);
+              updateGuide();
+            }}
           />
         </View>
-        <View style={{ width: "85%" }}>
+        <View style={{ width: "85%", marginTop: 20 }}>
           <View style={{ marginVertical: 20 }}>
             <View
               style={{
-                flex: 1,
                 flexDirection: "row",
                 justifyContent: "space-between",
                 alignItems: "center",
@@ -115,24 +186,20 @@ function AddGuideScreen<StackScreenProps>({
               >
                 Pictures
               </Text>
-              <TouchableOpacity onPress={handleSelectImages}>
+              <TouchableHighlight onPress={handleSelectImages}>
                 <Feather name="plus-circle" size={30} color="black" />
-              </TouchableOpacity>
+              </TouchableHighlight>
             </View>
-            {currentGuide!!.pictures?.length > 0 ? (
+            {selectedImages?.length > 0 ? (
               <ScrollView
-                horizontal={true}
+                horizontal
                 showsHorizontalScrollIndicator={false}
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                }}
+                style={{ flexDirection: "row" }}
               >
-                {currentGuide?.pictures.map((picture, index) => (
+                {selectedImages?.map((picture, index) => (
                   <View
                     key={index}
                     style={{
-                      flex: 1,
                       flexDirection: "row",
                       marginVertical: 10,
                       marginRight: 25,
@@ -159,18 +226,11 @@ function AddGuideScreen<StackScreenProps>({
                         height: 35,
                       }}
                     >
-                      <TouchableOpacity
-                        onPress={() => {
-                          const newImages = [...currentGuide?.pictures];
-                          newImages.splice(index, 1);
-                          updateGuideCallback({
-                            ...currentGuide,
-                            pictures: newImages,
-                          });
-                        }}
+                      <TouchableHighlight
+                        onPress={() => handleDeleteImage(index)}
                       >
                         <Feather name="trash" size={24} color="black" />
-                      </TouchableOpacity>
+                      </TouchableHighlight>
                     </View>
                   </View>
                 ))}
@@ -178,7 +238,6 @@ function AddGuideScreen<StackScreenProps>({
             ) : (
               <View
                 style={{
-                  flex: 1,
                   flexDirection: "column",
                   backgroundColor: "#dfe0e3",
                   borderRadius: 10,
@@ -197,7 +256,6 @@ function AddGuideScreen<StackScreenProps>({
           <View style={{ marginVertical: 20 }}>
             <View
               style={{
-                flex: 1,
                 flexDirection: "row",
                 justifyContent: "space-between",
                 alignItems: "center",
@@ -210,28 +268,20 @@ function AddGuideScreen<StackScreenProps>({
                   textAlignVertical: "center",
                 }}
               >
-                Locations
+                Places
               </Text>
-              <TouchableOpacity
-                onPress={() => {
-                  navigation.navigate("Add places");
-                }}
+              <TouchableHighlight
+                onPress={() => navigation.navigate("EditPlaces")}
               >
                 <Feather name="plus-circle" size={30} color="black" />
-              </TouchableOpacity>
+              </TouchableHighlight>
             </View>
-            <View
-              style={{
-                flex: 1,
-                flexDirection: "column",
-              }}
-            >
-              {currentGuide!!.places?.length > 0 ? (
-                currentGuide?.places?.map((place, index) => (
+            <View style={{ flexDirection: "column" }}>
+              {selectedPlaces?.length > 0 ? (
+                selectedPlaces?.map((place, index) => (
                   <View
                     key={index}
                     style={{
-                      flex: 1,
                       flexDirection: "row",
                       backgroundColor: "#dfe0e3",
                       borderRadius: 10,
@@ -241,18 +291,14 @@ function AddGuideScreen<StackScreenProps>({
                       justifyContent: "space-between",
                     }}
                   >
-                    <View
-                      style={{
-                        width: "85%",
-                      }}
-                    >
+                    <View style={{ width: "85%" }}>
                       <Text>
-                        {place.name.length > 50
-                          ? `${place.name.substring(0, 50)}...`
-                          : place.name}
+                        {place?.name?.length > 50
+                          ? `${place?.name?.substring(0, 50)}...`
+                          : place?.name}
                       </Text>
-                      <Text>{place.coordinates.latitude}</Text>
-                      <Text>{place.coordinates.longitude}</Text>
+                      <Text>{place?.coordinates?.latitude}</Text>
+                      <Text>{place?.coordinates?.longitude}</Text>
                     </View>
                     <View
                       style={{
@@ -261,25 +307,17 @@ function AddGuideScreen<StackScreenProps>({
                         alignItems: "center",
                       }}
                     >
-                      <TouchableOpacity
-                        onPress={() => {
-                          const newPlaces = [...currentGuide?.places];
-                          newPlaces.splice(index, 1);
-                          updateGuideCallback({
-                            ...currentGuide,
-                            places: newPlaces,
-                          });
-                        }}
+                      <TouchableHighlight
+                        onPress={() => handleDeletePlace(index)}
                       >
                         <Feather name="trash" size={24} color="black" />
-                      </TouchableOpacity>
+                      </TouchableHighlight>
                     </View>
                   </View>
                 ))
               ) : (
                 <View
                   style={{
-                    flex: 1,
                     flexDirection: "column",
                     backgroundColor: "#dfe0e3",
                     borderRadius: 10,
@@ -290,7 +328,7 @@ function AddGuideScreen<StackScreenProps>({
                   <Text
                     style={{ textAlignVertical: "center", textAlign: "center" }}
                   >
-                    Try adding some locations
+                    Try adding some places
                   </Text>
                 </View>
               )}
@@ -300,6 +338,6 @@ function AddGuideScreen<StackScreenProps>({
       </View>
     </ScrollView>
   );
-}
+};
 
-export default AddGuideScreen;
+export default EditGuideScreen;

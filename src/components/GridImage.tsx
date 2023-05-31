@@ -1,5 +1,4 @@
 import {
-  FlatList,
   StyleSheet,
   View,
   Image,
@@ -8,6 +7,7 @@ import {
   Pressable,
 } from "react-native";
 import { Guide } from "../models/guides";
+import { usePressedGuide } from "../context/pressedGuideContext";
 
 const screenWidth = Dimensions.get("window").width;
 const columnWidth = screenWidth / 2;
@@ -16,29 +16,21 @@ const columnHeight = screenWidth / 2;
 interface GridImageProps {
   guides: Guide[];
   navigation: any;
-  setSelectedGuide: any;
 }
 interface GridItemProps {
   item: Guide;
   navigation: any;
-  setSelectedGuide: any;
 }
 
-const GridImage = ({
-  guides,
-  navigation,
-  setSelectedGuide,
-}: GridImageProps) => {
-  const renderItem = ({
-    item,
-    navigation,
-    setSelectedGuide,
-  }: GridItemProps) => (
+const GridImage = ({ guides, navigation }: GridImageProps) => {
+  const { setPressedGuide } = usePressedGuide();
+
+  const renderItem = ({ item, navigation }: GridItemProps) => (
     <Pressable
       style={styles.gridItem}
       onPress={() => {
-        setSelectedGuide(item);
-        navigation.navigate("Guide In Detail");
+        setPressedGuide(item);
+        navigation.navigate("GuideInDetail");
       }}
     >
       <Image style={styles.image} source={{ uri: item.pictures[0] }} />
@@ -47,22 +39,20 @@ const GridImage = ({
   );
 
   return (
-    <View style={{ flex: 1 }}>
-      <FlatList
-        data={guides}
-        keyExtractor={(item) => item.uid}
-        renderItem={({ item }) =>
-          renderItem({ item, navigation, setSelectedGuide })
-        }
-        numColumns={3}
-        contentContainerStyle={styles.gridContainer}
-      />
+    <View style={styles.gridContainer}>
+      {guides?.map((item) => (
+        <View style={styles.gridItem} key={item.uid}>
+          {renderItem({ item, navigation })}
+        </View>
+      ))}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   gridContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
     justifyContent: "space-between",
   },
   gridItem: {

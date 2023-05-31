@@ -6,138 +6,238 @@ import {
   TouchableOpacity,
   StyleSheet,
   TextInput,
+  Alert,
+  RefreshControl,
 } from "react-native";
 import { Guide } from "../models/guides";
 import average from "../utils/average";
-import MapView, { Marker } from "react-native-maps";
 import React from "react";
 import Feather from "react-native-vector-icons/Feather";
 import {
+  deleteGuide,
+  getGuideDetailed,
+  hasRatedByUser,
   updateGuideComments,
   UpdateGuideRating,
 } from "../services/ManageGuides";
-import { findUsers } from "../services/FindUser";
+import LoadingIndicator from "../components/LoadingIndicator";
+import { usePressedGuide } from "../context/pressedGuideContext";
+import PlacesCarousel from "../components/PlacesCarousel";
+import ImagesCarousel from "../components/ImagesCarousel";
 
 interface GuideInDetailScreenProps {
-  selectedGuide?: Guide | null;
+  navigation: any;
+  authenticatedUser: UserProfile;
+  setRefreshing: any;
+  refreshing: boolean;
 }
 
-function GuideInDetailScreen({ selectedGuide }: GuideInDetailScreenProps) {
+function GuideInDetailScreen({
+  navigation,
+  authenticatedUser,
+  setRefreshing,
+  refreshing,
+}: GuideInDetailScreenProps) {
+  const { pressedGuide } = usePressedGuide();
   const [rating, setRating] = React.useState(0);
   const [newComment, setNewComment] = React.useState("");
-  const [usernames, setUsernames] = React.useState<{
-    [userId: string]: string;
-  }>({});
+  const [fetchTrigger, setFetchTrigger] = React.useState(false);
+  const [selectedGuide, setSelectedGuide] = React.useState<Guide | undefined>(
+    undefined
+  );
+
+  const fetchData = async () => {
+    try {
+      if (pressedGuide?.uid) {
+        const guide = await getGuideDetailed(pressedGuide.uid);
+        setSelectedGuide(guide);
+      }
+    } catch (error) {}
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchData().finally(() => setRefreshing(false));
+  };
 
   React.useEffect(() => {
-    const fetchUsernames = async () => {
-      const userIds =
-        selectedGuide?.comments?.map((comment) => comment.user_id) || [];
+    onRefresh();
+  }, [fetchTrigger]);
 
-      if (userIds.length > 0) {
-        const fetchedUsernames = await findUsers(userIds);
-        setUsernames(fetchedUsernames);
-      }
-    };
+  if (selectedGuide === undefined) {
+    return <LoadingIndicator />;
+  }
 
-    fetchUsernames();
-  }, [selectedGuide?.comments]);
+  const handleFetchAgain = () => {
+    setFetchTrigger(!fetchTrigger);
+  };
 
   const averageRating = selectedGuide?.rating
-    ? average(selectedGuide.rating)
+    ? average(selectedGuide?.rating?.map((rating) => rating.rate))
     : 0;
 
   const handleRating = (rate: number) => {
-    UpdateGuideRating(selectedGuide!!.uid, rate);
+    if (hasRatedByUser(authenticatedUser.uid, selectedGuide?.rating)) {
+      return Alert.alert("You have already rated this guide");
+    }
+    UpdateGuideRating(selectedGuide!!.uid, rate, authenticatedUser.uid).then(
+      () => {
+        handleFetchAgain();
+      }
+    );
   };
 
   const handleAddComment = (newComment: string) => {
-    updateGuideComments(selectedGuide!!.uid, newComment);
+    updateGuideComments(
+      selectedGuide!!.uid,
+      newComment,
+      authenticatedUser.username
+    ).then(() => {
+      handleFetchAgain();
+    });
+  };
+
+  const confirmDeleteGuide = (guideId: string) => {
+    Alert.alert("Delete Guide", "Are you sure you want to delete this guide?", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: () => {
+          deleteGuide(guideId).then(() => {
+            navigation.navigate("ProfilePage");
+          });
+        },
+      },
+    ]);
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={ratingStyles.container}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
       <Text style={styles.author}>{"@" + selectedGuide?.author}</Text>
       <Text style={styles.title}>{selectedGuide?.title}</Text>
       <Text style={styles.description}>{selectedGuide?.description}</Text>
-      <Text style={styles.averageRating}>{averageRating}</Text>
-      <Text style={styles.averageRating}>
-        {selectedGuide?.rating.length === 1
-          ? selectedGuide?.rating.length + " Rating"
-          : selectedGuide?.rating.length + " Ratings"}
-      </Text>
+
       <Text style={styles.date}>{selectedGuide?.dateCreated.slice(0, 10)}</Text>
 
-      <View style={styles.imageContainer}>
-        {selectedGuide?.pictures?.map((picture, index) => (
-          <Image style={styles.image} source={{ uri: picture }} key={index} />
-        ))}
+      <TouchableOpacity
+        onPress={() => {
+          navigation.navigate("EditGuideScreen");
+        }}
+      >
+        <Feather name={"edit"} size={25} color={"#000"} />
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => confirmDeleteGuide(selectedGuide?.uid)}>
+        <Feather name={"trash"} size={25} color={"#000"} />
+      </TouchableOpacity>
+
+      <View style={{ marginBottom: 40 }}>
+        <Text style={ratingStyles.sectionTitle}>Pictures</Text>
+        <ImagesCarousel images={selectedGuide?.pictures} />
       </View>
 
-      <View style={styles.placesContainer}>
-        {selectedGuide?.places.map((place, index) => (
-          <View key={index} style={styles.place}>
-            <Text style={styles.placeName}>{place?.name}</Text>
-            <Text style={styles.placeCoordinates}>
-              {place?.coordinates?.latitude}
-            </Text>
-            <Text style={styles.placeCoordinates}>
-              {place?.coordinates?.longitude}
-            </Text>
-          </View>
-        ))}
+      <View style={{ marginBottom: 40 }}>
+        <View style={ratingStyles.containerRowBetweenWithoutBorder}>
+          <Text style={ratingStyles.sectionTitle}>Locations</Text>
+          <TouchableOpacity
+            onPress={() => {
+              navigation.navigate("FullScreenMap");
+            }}
+          >
+            <Feather name={"map"} size={25} color={"#000"} />
+          </TouchableOpacity>
+        </View>
+        <PlacesCarousel places={selectedGuide?.places} />
       </View>
 
-      <View style={styles.mapContainer}>
-        <MapView
-          style={styles.map}
-          initialRegion={{
-            latitude:
-              selectedGuide?.places[0]?.coordinates?.latitude || 38.7223,
-            longitude:
-              selectedGuide?.places[0]?.coordinates?.longitude || -9.1393,
-            latitudeDelta: 0.05,
-            longitudeDelta: 0.05,
-          }}
-        >
-          {selectedGuide?.places.map((place, index) => (
-            <Marker coordinate={place?.coordinates} key={index} />
-          ))}
-        </MapView>
-      </View>
-
-      <View style={styles.ratingContainer}>
-        <Text style={styles.tapToRateText}>Tap to Rate:</Text>
-        <View style={styles.ratingStars}>
-          {[1, 2, 3, 4, 5].map((value) => (
-            <TouchableOpacity
-              key={value}
-              style={styles.starButton}
-              onPress={() => {
-                handleRating(value);
-                setRating(value);
+      <View style={ratingStyles.containerBottomMargin}>
+        <Text style={ratingStyles.sectionTitle}>Ratings</Text>
+        <View style={ratingStyles.containerRowBetween}>
+          <View
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+              maxWidth: 150,
+              marginBottom: 10,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 45,
+                fontWeight: "800",
               }}
             >
-              <Feather
-                name="star"
-                style={rating >= value ? styles.starFilled : styles.starOutline}
-                size={30}
-                color="#FFD700"
-              />
-            </TouchableOpacity>
-          ))}
+              {averageRating}
+            </Text>
+            <Text style={{ fontSize: 14, fontWeight: "500", color: "gray" }}>
+              out of 5
+            </Text>
+          </View>
+
+          <Text
+            style={{
+              fontSize: 16,
+              fontWeight: "400",
+              color: "gray",
+              textAlign: "right",
+              alignSelf: "flex-start",
+              marginTop: 10,
+              marginRight: 10,
+            }}
+          >
+            {selectedGuide?.rating?.length === 1
+              ? selectedGuide?.rating?.length + " Rating"
+              : selectedGuide?.rating?.length + " Ratings"}
+          </Text>
+        </View>
+
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Text style={{ fontSize: 16, fontWeight: "500" }}>Tap to Rate:</Text>
+          <View style={{ flexDirection: "row" }}>
+            {[1, 2, 3, 4, 5].map((value) => (
+              <TouchableOpacity
+                key={value}
+                style={{ marginHorizontal: 5 }}
+                onPress={() => {
+                  handleRating(value);
+                  setRating(value);
+                }}
+              >
+                <Feather
+                  name="star"
+                  style={
+                    rating >= value ? { color: "#007AFF" } : { color: "gray" }
+                  }
+                  size={30}
+                />
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
       </View>
 
-      <View style={styles.commentsContainer}>
-        <Text style={styles.commentsHeading}>Comments</Text>
+      <View style={ratingStyles.containerBottomMargin}>
+        <Text style={ratingStyles.sectionTitle}>Comments</Text>
         {selectedGuide?.comments && selectedGuide.comments.length > 0 ? (
           selectedGuide.comments.map((comment, index) => (
             <View style={styles.commentItem} key={index}>
               <Text style={styles.commentText}>{comment.comment}</Text>
-              <Text style={styles.commentAuthor}>
-                {"@" + usernames[comment.user_id]}
-              </Text>
+              <Text style={styles.commentAuthor}>{"@" + comment.username}</Text>
             </View>
           ))
         ) : (
@@ -163,11 +263,35 @@ function GuideInDetailScreen({ selectedGuide }: GuideInDetailScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const ratingStyles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    paddingHorizontal: 20,
   },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 20,
+  },
+  containerBottomMargin: {
+    marginBottom: 40,
+  },
+  containerRowBetween: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    borderBottomWidth: 1,
+    borderBottomColor: "#dfe0e3",
+    marginBottom: 10,
+  },
+  containerRowBetweenWithoutBorder: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+});
+
+const styles = StyleSheet.create({
   author: {
     fontSize: 16,
     fontWeight: "600",
@@ -244,10 +368,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   starFilled: {
-    color: "#FFD700",
+    color: "#007AFF",
   },
   starOutline: {
-    color: "grey",
+    color: "gray",
   },
   commentsContainer: {
     marginBottom: 20,

@@ -1,16 +1,15 @@
 import {
   collection,
   doc,
+  getDoc,
   getDocs,
   query,
   updateDoc,
   where,
-  getDoc,
+  deleteDoc,
 } from "firebase/firestore";
-import { auth, db } from "../config/firebase";
-import { Guide, Comment } from "../models/guides";
-
-const authenticatedUser = auth?.currentUser?.uid;
+import { db } from "../config/firebase";
+import { Guide, Rating } from "../models/guides";
 
 const getGuidesCurrentUser = async (
   currentUser: UserProfile
@@ -36,10 +35,54 @@ const getGuidesCurrentUser = async (
   }
 };
 
-const updateGuideComments = async (guideId: string, comment: string) => {
+const getAllGuides = async (): Promise<Guide[]> => {
+  try {
+    const userGuidesCollectionRef = collection(db, "guides");
+    const querySnapshotUser = await getDocs(userGuidesCollectionRef);
+
+    if (!querySnapshotUser.empty) {
+      return querySnapshotUser.docs.map((doc) => doc.data() as Guide);
+    } else {
+      console.log("No matching user profile found");
+      return [];
+    }
+  } catch (error) {
+    console.log("Error retrieving user guides:", error);
+    return [];
+  }
+};
+
+const getGuideDetailed = async (uid: string): Promise<Guide | undefined> => {
+  try {
+    const userGuidesCollectionRef = collection(db, "guides");
+    const queryFindUserGuides = query(
+      userGuidesCollectionRef,
+      where("uid", "==", uid)
+    );
+
+    const querySnapshotUser = await getDocs(queryFindUserGuides);
+
+    if (!querySnapshotUser.empty) {
+      const guideDoc = querySnapshotUser.docs[0];
+      return guideDoc.data() as Guide;
+    } else {
+      console.log("No matching user profile found");
+      return {} as Guide;
+    }
+  } catch (error) {
+    console.log("Error retrieving user guides:", error);
+    return {} as Guide;
+  }
+};
+
+const updateGuideComments = async (
+  guideId: string,
+  comment: string,
+  authUserUsername: string
+) => {
   const newComment = [
     {
-      user_id: authenticatedUser,
+      username: authUserUsername,
       comment: comment,
     },
   ];
@@ -73,7 +116,17 @@ const updateGuideComments = async (guideId: string, comment: string) => {
   }
 };
 
-const UpdateGuideRating = async (guideId: string, rate: number) => {
+const UpdateGuideRating = async (
+  guideId: string,
+  rate: number,
+  authUserID: string
+) => {
+  const newRating = [
+    {
+      user_id: authUserID,
+      rate: rate,
+    },
+  ];
   const guidesCollectionRef = collection(db, "guides");
   const queryFindCurrentGuide = query(
     guidesCollectionRef,
@@ -89,7 +142,7 @@ const UpdateGuideRating = async (guideId: string, rate: number) => {
       const guideDoc = await getDoc(guideRef);
       const existingRating = guideDoc.data()?.rating || [];
 
-      const updatedRating = [...existingRating, rate];
+      const updatedRating = [...existingRating, ...newRating];
 
       await updateDoc(guideRef, {
         rating: updatedRating,
@@ -104,4 +157,30 @@ const UpdateGuideRating = async (guideId: string, rate: number) => {
   }
 };
 
-export { getGuidesCurrentUser, updateGuideComments, UpdateGuideRating };
+const hasRatedByUser = (userId: string, ratings?: Rating[]): boolean => {
+  if (!ratings || ratings.length === 0) {
+    return false;
+  }
+  return ratings.some((rating) => rating.user_id === userId);
+};
+
+const deleteGuide = async (guideId: string) => {
+  try {
+    const guideRef = doc(db, "guides", guideId);
+    await deleteDoc(guideRef);
+
+    console.log("Guide deleted successfully");
+  } catch (error) {
+    console.error("Error deleting guide:", error);
+  }
+};
+
+export {
+  getAllGuides,
+  getGuideDetailed,
+  getGuidesCurrentUser,
+  updateGuideComments,
+  UpdateGuideRating,
+  hasRatedByUser,
+  deleteGuide,
+};

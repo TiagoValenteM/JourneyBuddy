@@ -1,22 +1,29 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Text, View } from "react-native";
-import { useAuth } from "../hooks/useAuth";
+import { getAllGuides } from "../services/ManageGuides";
+import { Guide } from "../models/guides";
 
-function HomeScreen<StackScreenProps>({}: {}) {
-  const { user } = useAuth();
+function HomeScreen() {
+  const [guides, setGuides] = useState<Guide[]>([]);
+
+  useEffect(() => {
+    const fetchGuides = async () => {
+      try {
+        const guides = await getAllGuides();
+        setGuides(guides);
+      } catch (error) {
+        console.log("Error fetching guides:", error);
+      }
+    };
+
+    fetchGuides();
+  }, []);
 
   return (
-    <View className="w-full h-full">
-      <View className="mx-4 h-1/2  flex justify-center align-center space-y-6">
-        <Text className="text-white text-center text-2xl">
-          Welcome {user?.email}!
-        </Text>
-      </View>
-      <View className="h-1/2 flex justify-center align-center space-y-6 bg-red-400">
-        <Text className={"text-center text-white font-bold text-base"}>
-          PROFILE
-        </Text>
-      </View>
+    <View style={{ flex: 1 }}>
+      {guides.map((guide) => (
+        <Text key={guide.uid}>{guide.title}</Text>
+      ))}
     </View>
   );
 }
