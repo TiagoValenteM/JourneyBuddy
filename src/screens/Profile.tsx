@@ -1,215 +1,71 @@
-import React from "react";
-import {
-  Image,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  Text,
-  View,
-} from "react-native";
+import React, { useEffect } from "react";
+import { RefreshControl, ScrollView } from "react-native";
 import MenuModal from "../components/modals/MenuModal";
-import { auth } from "../config/firebase";
-import { defaultProfilePicture } from "../services/ImageUpload";
 import { getGuidesCurrentUser } from "../services/ManageGuides";
 import { Guide } from "../models/guides";
 import GridImage from "../components/grids/GridImage";
+import ProfileIdentifier from "../components/identifiers/ProfileIdentifier";
+import { useCurrentUser } from "../context/currentUserContext";
+import { useAuthenticatedUser } from "../context/authenticatedUserContext";
 interface ProfileScreenProps {
   navigation: any;
-  screenProps: { modalVisible: boolean; setModalVisible: any };
-  currentUser?: UserProfile;
-  setRefreshing: any;
-  refreshing: boolean;
-  guides: Guide[];
-  setGuides: any;
+  modalVisible: boolean;
+  setModalVisible: any;
+  isAuthUser: boolean;
 }
 function ProfileScreen({
   navigation,
-  screenProps,
-  currentUser,
-  setRefreshing,
-  refreshing,
-  guides,
-  setGuides,
+  modalVisible,
+  setModalVisible,
+  isAuthUser,
 }: ProfileScreenProps) {
-  const onRefresh = () => {
+  const { currentUser } = useCurrentUser();
+  const { authenticatedUser } = useAuthenticatedUser();
+  const [refreshing, setRefreshing] = React.useState(false);
+  const [guides, setGuides] = React.useState<Guide[]>([]);
+
+  const onRefresh = async () => {
     setRefreshing(true);
 
     const fetchUserGuides = async () => {
-      if (currentUser) {
-        try {
-          const fetchedGuides: Guide[] = await getGuidesCurrentUser(
-            currentUser
-          );
-          setGuides(fetchedGuides);
-        } catch (error) {
-          console.log("Error fetching user guides:", error);
+      try {
+        let fetchedGuides: Guide[] = [];
+
+        if (isAuthUser) {
+          fetchedGuides = await getGuidesCurrentUser(authenticatedUser!);
+        } else {
+          fetchedGuides = await getGuidesCurrentUser(currentUser!);
         }
+
+        setGuides(fetchedGuides);
+      } catch (error) {
+        console.log("Error fetching user guides:", error);
       }
-      setRefreshing(false); // Move this line inside the fetchUserGuides function
+
+      setRefreshing(false);
     };
 
-    fetchUserGuides(); // Call the fetchUserGuides function
+    await fetchUserGuides();
   };
 
   React.useEffect(() => {
-    onRefresh(); // Call onRefresh directly to fetch user guides on initial load
+    onRefresh();
   }, [currentUser]);
 
-  return currentUser ? (
+  return (
     <ScrollView
-      style={{ flex: 1 }}
+      style={{ flex: 1, paddingHorizontal: 20 }}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
-      <View
-        style={{
-          flex: 1,
-          borderBottomWidth: 2,
-          borderBottomColor: "#dfe0e3",
-          paddingVertical: 20,
-        }}
-      >
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-around",
-            alignItems: "center",
-            height: 180,
-          }}
-        >
-          <Image
-            source={{
-              uri: currentUser?.profilePicturePath || defaultProfilePicture,
-            }}
-            style={{ height: 100, width: 100, borderRadius: 100 }}
-          ></Image>
-          <View
-            style={{
-              flex: 1,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Text style={{ fontWeight: "bold", fontSize: 16 }}>
-              {guides?.length || "0"}
-            </Text>
-            <Text>Guides</Text>
-          </View>
-          <Pressable
-            style={{
-              flex: 1,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-            onPress={() => {
-              navigation.navigate("Followers");
-            }}
-          >
-            <Text style={{ fontWeight: "bold", fontSize: 16 }}>
-              {currentUser?.followers?.length || "0"}
-            </Text>
-            <Text>Followers</Text>
-          </Pressable>
-          <Pressable
-            style={{
-              flex: 1,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-            onPress={() => {
-              navigation.navigate("Following");
-            }}
-          >
-            <Text style={{ fontWeight: "bold", fontSize: 16 }}>
-              {currentUser?.following?.length || "0"}{" "}
-            </Text>
-            <Text>Following</Text>
-          </Pressable>
-        </View>
-        <Text className={"font-semibold ml-5"}>
-          {currentUser.fullName || currentUser.email}
-        </Text>
-        <View className={"flex flex-row justify-center items-center w-full"}>
-          {currentUser.uid === auth.currentUser?.uid ? (
-            <Pressable
-              style={{
-                backgroundColor: "#dfe0e3",
-                width: "85%",
-                borderRadius: 10,
-                height: 28,
-                justifyContent: "center",
-              }}
-              onPress={() => {
-                navigation.navigate("Edit Profile");
-              }}
-            >
-              <Text
-                style={{
-                  textAlign: "center",
-                  textAlignVertical: "center",
-                  fontWeight: "600",
-                  fontSize: 14,
-                }}
-              >
-                Edit Profile
-              </Text>
-            </Pressable>
-          ) : (
-            <>
-              <Pressable
-                style={{
-                  backgroundColor: "#dfe0e3",
-                  width: "85%",
-                  borderRadius: 10,
-                  height: 28,
-                  justifyContent: "center",
-                }}
-              >
-                <Text
-                  style={{
-                    textAlign: "center",
-                    textAlignVertical: "center",
-                    fontWeight: "600",
-                    fontSize: 14,
-                  }}
-                >
-                  Follow
-                </Text>
-              </Pressable>
-              <Pressable
-                style={{
-                  backgroundColor: "#dfe0e3",
-                  width: "85%",
-                  borderRadius: 10,
-                  height: 28,
-                  justifyContent: "center",
-                }}
-              >
-                <Text
-                  style={{
-                    textAlign: "center",
-                    textAlignVertical: "center",
-                    fontWeight: "600",
-                    fontSize: 14,
-                  }}
-                >
-                  Unfollow
-                </Text>
-              </Pressable>
-            </>
-          )}
-        </View>
-      </View>
-
-      <View>
-        <GridImage guides={guides} navigation={navigation} />
-      </View>
-
-      <MenuModal screenProps={screenProps} />
+      <ProfileIdentifier navigation={navigation} isAuthUser={isAuthUser} />
+      <GridImage guides={guides} navigation={navigation} />
+      <MenuModal
+        modalVisible={modalVisible}
+        setModalVisible={setModalVisible}
+      />
     </ScrollView>
-  ) : (
-    <View />
   );
 }
 

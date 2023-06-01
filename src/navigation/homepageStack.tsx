@@ -1,13 +1,13 @@
 import { createStackNavigator } from "@react-navigation/stack";
-import Homepage from "../screens/Home";
+import Homepage from "../screens/Homepage";
+import React from "react";
+import ProfileScreen from "../screens/Profile";
 
 const Stack = createStackNavigator();
 
-interface HomepageStackProps {
-  navigation: any;
-}
+function HomepageStack() {
+  const [modalVisible, setModalVisible] = React.useState(false);
 
-function HomepageStack({ navigation }: HomepageStackProps) {
   return (
     <Stack.Navigator>
       <Stack.Screen
@@ -17,6 +17,16 @@ function HomepageStack({ navigation }: HomepageStackProps) {
           headerTitle: "Homepage",
         }}
       />
+      <Stack.Screen name="ProfileHomepage">
+        {(props) => (
+          <ProfileScreen
+            {...props}
+            modalVisible={modalVisible}
+            setModalVisible={setModalVisible}
+            isAuthUser={false}
+          />
+        )}
+      </Stack.Screen>
     </Stack.Navigator>
   );
 }

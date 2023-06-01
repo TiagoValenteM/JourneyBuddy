@@ -1,14 +1,17 @@
 import React, { useState } from "react";
-import { RefreshControl, ScrollView, Text, View } from "react-native";
+import { RefreshControl, ScrollView, View } from "react-native";
 import { getAllGuides } from "../services/ManageGuides";
 import { Guide } from "../models/guides";
 import CarouselLocations from "../components/carousels/CarouselLocations";
 import CarouselPictures from "../components/carousels/CarouselPictures";
 import UserIdentifier from "../components/identifiers/UserIdentifier";
 import GuideIdentifier from "../components/identifiers/GuideIdentifier";
-import navigation from "../navigation";
 
-function Homepage() {
+interface HomepageProps {
+  navigation: any;
+}
+
+function Homepage({ navigation }: HomepageProps) {
   const [guides, setGuides] = useState<Guide[]>([]);
   const [refreshing, setRefreshing] = React.useState(false);
 

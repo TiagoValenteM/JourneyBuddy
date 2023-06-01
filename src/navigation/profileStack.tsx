@@ -15,21 +15,21 @@ import { usePressedGuide } from "../context/pressedGuideContext";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { uploadMultiplePictures } from "../services/ImageUpload";
+import { useAuthenticatedUser } from "../context/authenticatedUserContext";
+import { useCurrentUser } from "../context/currentUserContext";
 
 const Stack = createStackNavigator();
 
 interface ProfileStackProps {
-  route: any;
   navigation: any;
 }
 
-function ProfileStack({ route, navigation }: ProfileStackProps) {
+function ProfileStack({ navigation }: ProfileStackProps) {
   const { setPressedGuide, pressedGuide } = usePressedGuide();
   const [modalVisible, setModalVisible] = React.useState(false);
   const [refreshing, setRefreshing] = React.useState(false);
-  const [guides, setGuides] = React.useState<Guide[]>([]);
-  const authenticatedUser = route.params?.userParam?.authenticatedUser;
-  const currentUser = route.params?.userParam?.currentUser;
+  const { authenticatedUser } = useAuthenticatedUser();
+  const { currentUser } = useCurrentUser();
   const [markerCoordinate, setMarkerCoordinate] = React.useState<Coordinate>();
   const [locationName, setLocationName] = React.useState(
     "Search for a location or tap on the map"
@@ -83,14 +83,12 @@ function ProfileStack({ route, navigation }: ProfileStackProps) {
   return (
     <Stack.Navigator>
       <Stack.Screen
-        name="ProfilePage"
+        name="Profile"
         options={() => ({
-          headerRight: (props) => (
-            <Feather
-              name={"menu"}
-              onPress={() => setModalVisible(true)}
-              size={25}
-            />
+          headerRight: () => (
+            <TouchableOpacity onPress={() => setModalVisible(true)}>
+              <Feather name={"menu"} size={25} />
+            </TouchableOpacity>
           ),
           headerTitle: "",
           headerLeft: () => (
@@ -109,12 +107,9 @@ function ProfileStack({ route, navigation }: ProfileStackProps) {
         {(props) => (
           <ProfileScreen
             {...props}
-            screenProps={{ modalVisible, setModalVisible }}
-            currentUser={currentUser}
-            refreshing={refreshing}
-            setRefreshing={setRefreshing}
-            guides={guides}
-            setGuides={setGuides}
+            modalVisible={modalVisible}
+            setModalVisible={setModalVisible}
+            isAuthUser={true}
           />
         )}
       </Stack.Screen>
@@ -122,38 +117,21 @@ function ProfileStack({ route, navigation }: ProfileStackProps) {
         name={"Edit Profile"}
         options={{
           gestureEnabled: false,
-          cardStyleInterpolator: ({ current }) => ({
-            cardStyle: {
-              opacity: current.progress.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0, 1],
-                extrapolate: "clamp",
-              }),
-              transform: [
-                {
-                  translateY: current.progress.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [1000, 0],
-                    extrapolate: "clamp",
-                  }),
-                },
-              ],
-            },
-          }),
-          transitionSpec: {
-            open: {
-              animation: "timing",
-              config: {
-                duration: 300, // Adjust the duration as desired
-              },
-            },
-            close: {
-              animation: "timing",
-              config: {
-                duration: 300, // Adjust the duration as desired
-              },
-            },
-          },
+          headerBackTitle: "Cancel",
+          headerRight: () => (
+            <TouchableOpacity onPress={() => {}}>
+              <Text
+                style={{
+                  color: "#007AFF",
+                  fontSize: 18,
+                  fontWeight: "400",
+                  paddingRight: 15,
+                }}
+              >
+                Done
+              </Text>
+            </TouchableOpacity>
+          ),
         }}
       >
         {(props) => <EditProfileScreen {...props} currentUser={currentUser} />}
@@ -167,7 +145,7 @@ function ProfileStack({ route, navigation }: ProfileStackProps) {
         {(props) => (
           <GuideInDetailScreen
             {...props}
-            authenticatedUser={authenticatedUser}
+            authenticatedUser={authenticatedUser!!}
             setRefreshing={setRefreshing}
             refreshing={refreshing}
           />
@@ -211,7 +189,7 @@ function ProfileStack({ route, navigation }: ProfileStackProps) {
           <EditGuideScreen
             {...props}
             navigation={navigation}
-            authenticatedUser={authenticatedUser}
+            authenticatedUser={authenticatedUser!!}
             setRefreshing={setRefreshing}
             refreshing={refreshing}
             currentGuide={pressedGuide!!}

@@ -1,8 +1,8 @@
 import { useAuthenticatedUser } from "../../context/authenticatedUserContext";
 import React, { useEffect } from "react";
 import { Image, View, Text, StyleSheet, Pressable } from "react-native";
-import { findUserProfilePicture } from "../../services/FindUser";
-import { followUser } from "../../database/userRepository";
+import { followUser, getUserByUID } from "../../database/userRepository";
+import { useCurrentUser } from "../../context/currentUserContext";
 
 interface UserIdentifierProps {
   selectedUsername: string;
@@ -17,6 +17,7 @@ const UserIdentifier: React.FC<UserIdentifierProps> = ({
   homepage,
   navigation,
 }) => {
+  const { currentUser, setCurrentUser } = useCurrentUser();
   const [username, setUsername] = React.useState("");
   const [profilePicture, setProfilePicture] = React.useState("");
   const { authenticatedUser, setAuthenticatedUser } = useAuthenticatedUser();
@@ -26,16 +27,13 @@ const UserIdentifier: React.FC<UserIdentifierProps> = ({
       authenticatedUser?.following.includes(selectedUserUid)) ||
     authenticatedUser?.uid === selectedUserUid;
 
-  console.log(selectedUsername, isFollowing);
-
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const userProfilePicture = await findUserProfilePicture(
-          selectedUsername
-        );
-        setUsername(selectedUsername);
-        setProfilePicture(userProfilePicture);
+        const selectedUser = await getUserByUID(selectedUserUid);
+
+        setUsername(selectedUser!!.username);
+        setProfilePicture(selectedUser!!.profilePicturePath);
       } catch (error) {
         console.error("Error fetching user profile picture:", error);
       }
@@ -44,8 +42,8 @@ const UserIdentifier: React.FC<UserIdentifierProps> = ({
     if (authenticatedUser?.username !== selectedUsername) {
       fetchData();
     } else {
-      setUsername(authenticatedUser?.username);
-      setProfilePicture(authenticatedUser?.profilePicturePath);
+      setUsername(authenticatedUser.username);
+      setProfilePicture(authenticatedUser.profilePicturePath);
     }
   }, [authenticatedUser, selectedUsername, fetchingTrigger]);
 
@@ -54,7 +52,9 @@ const UserIdentifier: React.FC<UserIdentifierProps> = ({
       await followUser(
         selectedUserUid,
         authenticatedUser!!,
-        setAuthenticatedUser
+        currentUser!,
+        setAuthenticatedUser,
+        setCurrentUser
       );
       setFetchingTrigger(true);
     } catch (error) {
@@ -71,8 +71,14 @@ const UserIdentifier: React.FC<UserIdentifierProps> = ({
         />
         {homepage ? (
           <Pressable
-            onPress={() => {
-              navigation.navigate("Profile");
+            onPress={async () => {
+              try {
+                const selectedUser = await getUserByUID(selectedUserUid);
+                setCurrentUser(selectedUser);
+                navigation.navigate("ProfileHomepage");
+              } catch (error) {
+                console.error("Error fetching user data:", error);
+              }
             }}
           >
             <Text style={identifierStyles.username}>{username}</Text>

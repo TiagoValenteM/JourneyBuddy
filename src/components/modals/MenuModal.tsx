@@ -6,11 +6,12 @@ import React from "react";
 
 const auth = getAuth();
 const MenuModal = ({
-  screenProps,
+  modalVisible,
+  setModalVisible,
 }: {
-  screenProps: { modalVisible: boolean; setModalVisible: any };
+  modalVisible: boolean;
+  setModalVisible: any;
 }) => {
-  const { modalVisible, setModalVisible } = screenProps;
   return (
     <Modal animationType="slide" transparent={true} visible={modalVisible}>
       <TouchableOpacity

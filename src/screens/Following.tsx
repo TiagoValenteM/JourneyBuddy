@@ -1,59 +1,63 @@
-import { useAuth } from "../hooks/useAuth";
-import { ScrollView, Text, View } from "react-native";
+import { RefreshControl, ScrollView, View } from "react-native";
 import React, { useEffect, useState } from "react";
 import UserIdentifier from "../components/identifiers/UserIdentifier";
-import { useAuthenticatedUser } from "../context/authenticatedUserContext";
-import { getUsername } from "../database/userRepository";
-import { Guide } from "../models/guides";
-import { getAllGuides } from "../services/ManageGuides";
+import { getUsername, getUserByUID } from "../database/userRepository";
 import { useCurrentUser } from "../context/currentUserContext";
 
-function FollowingScreen<StackScreenProps>() {
+function FollowingScreen() {
   const { currentUser } = useCurrentUser();
+  const [refreshing, setRefreshing] = useState(false);
+  const [followingUsers, setFollowingUsers] = useState([]);
+
   useEffect(() => {
-    currentUser?.following?.map((user) => {
-      getUsername(user);
-    });
-  }, [currentUser?.following]);
-
-  const [refreshing, setRefreshing] = React.useState(false);
-
-  const fetchGuides = async () => {
-    try {
-      const guides = await getAllGuides();
-      setGuides(guides);
-    } catch (error) {
-      console.log("Error fetching guides:", error);
-    } finally {
+    const fetchData = async () => {
+      setRefreshing(true);
+      await fetchFollowingUsers();
       setRefreshing(false);
+    };
+
+    fetchData();
+  }, []);
+
+  const fetchFollowingUsers = async () => {
+    if (currentUser?.following) {
+      const users = await Promise.all(
+        currentUser.following.map((user) => getUserByUID(user))
+      );
+      setFollowingUsers(users);
     }
   };
 
-  React.useEffect(() => {
-    const fetchData = async () => {
-      setRefreshing(true);
-      await fetchGuides();
-    };
-
-    fetchData().then();
-  }, []);
-
   const onRefresh = () => {
     setRefreshing(true);
-    fetchGuides().then();
+    fetchFollowingUsers().then(() => setRefreshing(false));
   };
 
+  useEffect(() => {
+    if (currentUser?.following) {
+      currentUser.following.forEach((user) => {
+        getUsername(user);
+      });
+    }
+  }, [currentUser?.following]);
+
   return (
-    <ScrollView className="w-full h-full">
-      {currentUser?.following?.map((user) => {
-        return (
+    <ScrollView
+      style={{ flex: 1 }}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
+      <View style={{ padding: 20 }}>
+        {followingUsers.map((user) => (
           <UserIdentifier
-            selectedUsername={user}
-            selectedUserUid={user}
+            key={user.uid}
+            selectedUsername={user.username}
+            selectedUserUid={user.uid}
             homepage={false}
           />
-        );
-      })}
+        ))}
+      </View>
     </ScrollView>
   );
 }

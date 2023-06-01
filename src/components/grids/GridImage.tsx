@@ -9,7 +9,7 @@ import {
 import { Guide } from "../../models/guides";
 import { usePressedGuide } from "../../context/pressedGuideContext";
 
-const screenWidth = Dimensions.get("window").width;
+const screenWidth = Dimensions.get("window").width - 20;
 const columnWidth = screenWidth / 2;
 const columnHeight = screenWidth / 2;
 
@@ -58,6 +58,7 @@ const styles = StyleSheet.create({
   gridItem: {
     width: columnWidth,
     height: columnHeight,
+    backgroundColor: "#dfe0e3",
   },
   image: {
     width: "100%",
