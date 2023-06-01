@@ -7,12 +7,12 @@ import {
   Text,
   View,
 } from "react-native";
-import MenuModal from "../components/MenuModal";
+import MenuModal from "../components/modals/MenuModal";
 import { auth } from "../config/firebase";
 import { defaultProfilePicture } from "../services/ImageUpload";
 import { getGuidesCurrentUser } from "../services/ManageGuides";
 import { Guide } from "../models/guides";
-import GridImage from "../components/GridImage";
+import GridImage from "../components/grids/GridImage";
 interface ProfileScreenProps {
   navigation: any;
   screenProps: { modalVisible: boolean; setModalVisible: any };

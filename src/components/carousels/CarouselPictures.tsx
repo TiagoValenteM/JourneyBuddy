@@ -1,29 +1,19 @@
 import React, { useRef, useState } from "react";
-import {
-  View,
-  FlatList,
-  Dimensions,
-  StyleSheet,
-  Image,
-  Text,
-} from "react-native";
+import { View, FlatList, Dimensions, StyleSheet, Image } from "react-native";
 
-interface ImageObject {
-  uri: string;
-}
-
-interface ImagesCarouselProps {
+interface CarouselPicturesProps {
   images: string[];
 }
-
 interface CarouselIndicatorProps {
   isActive: boolean;
 }
 
-const ImagesCarousel: React.FC<ImagesCarouselProps> = ({ images }) => {
+const CarouselPictures: React.FC<CarouselPicturesProps> = ({ images }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const windowWidth = Dimensions.get("window").width - 40;
+  const snapToInterval = windowWidth;
+  const pictureData = images.map((image) => ({ uri: image }));
 
   const handleScroll = (event: any) => {
     const { contentOffset } = event.nativeEvent;
@@ -31,16 +21,15 @@ const ImagesCarousel: React.FC<ImagesCarouselProps> = ({ images }) => {
     setCurrentIndex(index);
   };
 
-  const snapToInterval = windowWidth;
-  const image = images.map((image) => ({ uri: image }));
-
   const CarouselIndicator: React.FC<CarouselIndicatorProps> = ({
     isActive,
   }) => (
     <View
       style={[
-        styles.indicator,
-        isActive ? styles.activeIndicator : styles.inactiveIndicator,
+        carouselStyles.indicator,
+        isActive
+          ? carouselStyles.activeIndicator
+          : carouselStyles.inactiveIndicator,
       ]}
     />
   );
@@ -49,45 +38,42 @@ const ImagesCarousel: React.FC<ImagesCarouselProps> = ({ images }) => {
     <View>
       <FlatList
         ref={flatListRef}
-        data={image}
+        data={pictureData}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         keyExtractor={(_, index) => index.toString()}
+        snapToInterval={snapToInterval}
+        decelerationRate="fast"
         onScroll={handleScroll}
         renderItem={({ item }) => (
           <View
-            style={{
-              width: windowWidth,
-              flex: 1,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
+            style={[
+              carouselStyles.itemContainer,
+              {
+                width: windowWidth,
+              },
+            ]}
           >
             <View
-              style={{
-                width: windowWidth - 20,
-                backgroundColor: "#dfe0e3",
-                borderRadius: 15,
-                height: 1.25 * (windowWidth - 20),
-              }}
+              style={[
+                carouselStyles.itemSubContainer,
+                {
+                  width: windowWidth - 20,
+                  height: 1.25 * (windowWidth - 20),
+                },
+              ]}
             >
               <Image
                 source={{ uri: item.uri }}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  borderRadius: 15,
-                  position: "absolute",
-                }}
+                resizeMode="cover"
+                style={carouselStyles.image}
               />
             </View>
           </View>
         )}
-        snapToInterval={snapToInterval}
-        decelerationRate="fast"
       />
-      <View style={styles.indicatorContainer}>
+      <View style={carouselStyles.indicatorContainer}>
         {images?.map((_, index) => (
           <CarouselIndicator key={index} isActive={index === currentIndex} />
         ))}
@@ -96,7 +82,7 @@ const ImagesCarousel: React.FC<ImagesCarouselProps> = ({ images }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const carouselStyles = StyleSheet.create({
   indicatorContainer: {
     flexDirection: "row",
     justifyContent: "center",
@@ -115,6 +101,20 @@ const styles = StyleSheet.create({
   inactiveIndicator: {
     backgroundColor: "#C4C4C4",
   },
+  itemContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  itemSubContainer: {
+    backgroundColor: "#dfe0e3",
+    borderRadius: 15,
+  },
+  image: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 15,
+  },
 });
 
-export default ImagesCarousel;
+export default CarouselPictures;

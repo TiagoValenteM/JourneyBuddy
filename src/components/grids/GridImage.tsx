@@ -6,8 +6,8 @@ import {
   Text,
   Pressable,
 } from "react-native";
-import { Guide } from "../models/guides";
-import { usePressedGuide } from "../context/pressedGuideContext";
+import { Guide } from "../../models/guides";
+import { usePressedGuide } from "../../context/pressedGuideContext";
 
 const screenWidth = Dimensions.get("window").width;
 const columnWidth = screenWidth / 2;

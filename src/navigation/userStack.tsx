@@ -8,17 +8,17 @@ import SearchScreen from "../screens/Search";
 import AddGuideStack from "./addGuideStack";
 import ProfileStack from "./profileStack";
 import { getAuthUserProfile } from "../database/userRepository";
-import LoadingIndicator from "../components/LoadingIndicator";
+import LoadingIndicator from "../components/indicators/LoadingIndicator";
+import { useAuthenticatedUser } from "../context/authenticatedUserContext";
+import HomepageStack from "./homepageStack";
 
 const Tab = createBottomTabNavigator();
 
 export default function UserStack() {
+  const { setAuthenticatedUser, authenticatedUser } = useAuthenticatedUser();
   const [currentUser, setCurrentUser] = React.useState<UserProfile | undefined>(
     undefined
   );
-  const [authenticatedUser, setAuthenticatedUser] = React.useState<
-    UserProfile | undefined
-  >(undefined);
   const [isLoading, setIsLoading] = React.useState(true); // Track loading state
 
   React.useEffect(() => {
@@ -69,11 +69,7 @@ export default function UserStack() {
           },
         })}
       >
-        <Tab.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{ headerShown: true }}
-        />
+        <Tab.Screen name="Home" component={HomepageStack} />
         <Tab.Screen name="Search" component={SearchScreen} />
         <Tab.Screen
           name="Guides"

@@ -11,10 +11,7 @@ import { Coordinate, Guide } from "../models/guides";
 import FullScreenMap from "../screens/FullScreenMap";
 import EditGuideScreen from "../screens/EditGuideScreen";
 import AddPlacesScreen from "../screens/AddPlaces";
-import {
-  PressedGuideProvider,
-  usePressedGuide,
-} from "../context/pressedGuideContext";
+import { usePressedGuide } from "../context/pressedGuideContext";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { uploadMultiplePictures } from "../services/ImageUpload";

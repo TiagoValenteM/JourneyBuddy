@@ -10,7 +10,6 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { Alert } from "react-native";
 
 const defaultProfilePicture =
   "https://firebasestorage.googleapis.com/v0/b/journeybuddy2023.appspot.com/o/profile_pictures%2Fdefault_profile_picture.jpg?alt=media&token=2ecdbd0a-d2a7-4f5d-8ba7-a0457904a264";

@@ -6,7 +6,6 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { Coordinate, Guide } from "../models/guides";
 import { doc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "../config/firebase";
-import uuid from "react-native-uuid";
 import { uploadMultiplePictures } from "../services/ImageUpload";
 
 const Stack = createStackNavigator();

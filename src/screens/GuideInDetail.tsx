@@ -1,7 +1,6 @@
 import {
   Text,
   View,
-  Image,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
@@ -20,10 +19,12 @@ import {
   updateGuideComments,
   UpdateGuideRating,
 } from "../services/ManageGuides";
-import LoadingIndicator from "../components/LoadingIndicator";
+import LoadingIndicator from "../components/indicators/LoadingIndicator";
 import { usePressedGuide } from "../context/pressedGuideContext";
-import PlacesCarousel from "../components/PlacesCarousel";
-import ImagesCarousel from "../components/ImagesCarousel";
+import CarouselLocations from "../components/carousels/CarouselLocations";
+import CarouselPictures from "../components/carousels/CarouselPictures";
+import UserIdentifier from "../components/identifiers/UserIdentifier";
+import GuideIdentifier from "../components/identifiers/GuideIdentifier";
 
 interface GuideInDetailScreenProps {
   navigation: any;
@@ -107,9 +108,7 @@ function GuideInDetailScreen({
         text: "Delete",
         style: "destructive",
         onPress: () => {
-          deleteGuide(guideId).then(() => {
-            navigation.navigate("ProfilePage");
-          });
+          deleteGuide(guideId).then(navigation.navigate("ProfilePage"));
         },
       },
     ]);
@@ -122,12 +121,6 @@ function GuideInDetailScreen({
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
-      <Text style={styles.author}>{"@" + selectedGuide?.author}</Text>
-      <Text style={styles.title}>{selectedGuide?.title}</Text>
-      <Text style={styles.description}>{selectedGuide?.description}</Text>
-
-      <Text style={styles.date}>{selectedGuide?.dateCreated.slice(0, 10)}</Text>
-
       <TouchableOpacity
         onPress={() => {
           navigation.navigate("EditGuideScreen");
@@ -135,13 +128,29 @@ function GuideInDetailScreen({
       >
         <Feather name={"edit"} size={25} color={"#000"} />
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => confirmDeleteGuide(selectedGuide?.uid)}>
+      <TouchableOpacity
+        onPress={() => {
+          confirmDeleteGuide(selectedGuide?.uid);
+        }}
+      >
         <Feather name={"trash"} size={25} color={"#000"} />
       </TouchableOpacity>
 
       <View style={{ marginBottom: 40 }}>
+        <UserIdentifier
+          selectedUsername={selectedGuide?.author}
+          selectedUserUid={selectedGuide?.user_id}
+          homepage={false}
+        />
+      </View>
+
+      <View style={{ marginBottom: 40 }}>
+        <GuideIdentifier guide={selectedGuide} />
+      </View>
+
+      <View style={{ marginBottom: 40 }}>
         <Text style={ratingStyles.sectionTitle}>Pictures</Text>
-        <ImagesCarousel images={selectedGuide?.pictures} />
+        <CarouselPictures images={selectedGuide?.pictures} />
       </View>
 
       <View style={{ marginBottom: 40 }}>
@@ -155,7 +164,7 @@ function GuideInDetailScreen({
             <Feather name={"map"} size={25} color={"#000"} />
           </TouchableOpacity>
         </View>
-        <PlacesCarousel places={selectedGuide?.places} />
+        <CarouselLocations places={selectedGuide?.places} />
       </View>
 
       <View style={ratingStyles.containerBottomMargin}>
