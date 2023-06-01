@@ -12,11 +12,10 @@ import FullScreenMap from "../screens/FullScreenMap";
 import EditGuideScreen from "../screens/EditGuideScreen";
 import AddPlacesScreen from "../screens/AddPlaces";
 import { usePressedGuide } from "../context/pressedGuideContext";
-import { doc, updateDoc } from "firebase/firestore";
-import { db } from "../config/firebase";
-import { uploadMultiplePictures } from "../services/ImageUpload";
 import { useAuthenticatedUser } from "../context/authenticatedUserContext";
 import { useCurrentUser } from "../context/currentUserContext";
+import { handleUpdateGuide } from "../services/ManageGuides";
+import FollowingTabs from "../components/FollowingTabs";
 
 const Stack = createStackNavigator();
 
@@ -34,51 +33,6 @@ function ProfileStack({ navigation }: ProfileStackProps) {
   const [locationName, setLocationName] = React.useState(
     "Search for a location or tap on the map"
   );
-
-  const handleUpdateGuide = () => {
-    // 1 - Upload guide
-    if (pressedGuide?.uid) {
-      console.log(pressedGuide);
-      const guideRef = doc(db, "guides", pressedGuide.uid);
-      updateDoc(guideRef, { ...pressedGuide })
-        .then(async () => {
-          // 2 - Upload pictures
-          console.log("UPDATED GUIDE, NOW PICTURES...");
-          if (pressedGuide?.pictures?.length > 0) {
-            try {
-              const imagesUrl = await Promise.all(
-                pressedGuide?.pictures?.map(
-                  async (picture) =>
-                    await uploadMultiplePictures(pressedGuide?.uid, picture)
-                )
-              ).catch((error) => {
-                console.log(error);
-                Alert.alert("Error updating guide");
-              });
-
-              console.log("UPDATED PICTURES, NOW GUIDE AGAIN...");
-
-              // 3 - Update guide with pictures url
-              await updateDoc(guideRef, {
-                pictures: imagesUrl,
-              });
-
-              console.log("UPDATED GUIDE FINALLY...");
-
-              Alert.alert("Guide updated successfully");
-              navigation.navigate("ProfilePage");
-            } catch (error) {
-              console.log(error);
-              Alert.alert("Error updating guide");
-            }
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-          Alert.alert("Error updating guide");
-        });
-    }
-  };
 
   return (
     <Stack.Navigator>
@@ -141,16 +95,8 @@ function ProfileStack({ navigation }: ProfileStackProps) {
         options={{
           headerTitle: "Guide",
         }}
-      >
-        {(props) => (
-          <GuideInDetailScreen
-            {...props}
-            authenticatedUser={authenticatedUser!!}
-            setRefreshing={setRefreshing}
-            refreshing={refreshing}
-          />
-        )}
-      </Stack.Screen>
+        component={GuideInDetailScreen}
+      />
       <Stack.Screen
         name={"FullScreenMap"}
         options={{
@@ -177,7 +123,9 @@ function ProfileStack({ navigation }: ProfileStackProps) {
                   fontWeight: "400",
                   paddingRight: 15,
                 }}
-                onPress={handleUpdateGuide}
+                onPress={() =>
+                  handleUpdateGuide(setPressedGuide, pressedGuide!, navigation)
+                }
               >
                 Done
               </Text>
@@ -259,8 +207,17 @@ function ProfileStack({ navigation }: ProfileStackProps) {
           />
         )}
       </Stack.Screen>
-      <Stack.Screen name={"Followers"} component={FollowersScreen} />
-      <Stack.Screen name={"Following"} component={FollowingScreen} />
+      <Stack.Screen
+        name={"FollowInteraction"}
+        component={FollowingTabs}
+        options={{
+          headerTitle: currentUser?.username,
+          headerStyle: {
+            shadowColor: "transparent",
+            elevation: 0,
+          },
+        }}
+      />
     </Stack.Navigator>
   );
 }

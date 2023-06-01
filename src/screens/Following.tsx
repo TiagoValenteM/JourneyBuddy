@@ -1,4 +1,4 @@
-import { RefreshControl, ScrollView, View } from "react-native";
+import { RefreshControl, ScrollView, Text, View } from "react-native";
 import React, { useEffect, useState } from "react";
 import UserIdentifier from "../components/identifiers/UserIdentifier";
 import { getUsername, getUserByUID } from "../database/userRepository";
@@ -49,6 +49,9 @@ function FollowingScreen() {
       }
     >
       <View style={{ padding: 20 }}>
+        <Text style={{ fontSize: 16, fontWeight: "700", marginBottom: 20 }}>
+          All Following
+        </Text>
         {followingUsers.map((user) => (
           <UserIdentifier
             key={user.uid}

@@ -2,11 +2,13 @@ import { createStackNavigator } from "@react-navigation/stack";
 import Homepage from "../screens/Homepage";
 import React from "react";
 import ProfileScreen from "../screens/Profile";
+import { useCurrentUser } from "../context/currentUserContext";
 
 const Stack = createStackNavigator();
 
 function HomepageStack() {
   const [modalVisible, setModalVisible] = React.useState(false);
+  const { currentUser } = useCurrentUser();
 
   return (
     <Stack.Navigator>
@@ -17,7 +19,13 @@ function HomepageStack() {
           headerTitle: "Homepage",
         }}
       />
-      <Stack.Screen name="ProfileHomepage">
+      <Stack.Screen
+        name="ProfileHomepage"
+        options={{
+          headerTitle: currentUser?.username,
+          headerBackTitle: "Back",
+        }}
+      >
         {(props) => (
           <ProfileScreen
             {...props}

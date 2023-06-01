@@ -15,6 +15,7 @@ import Feather from "react-native-vector-icons/Feather";
 import {
   deleteGuide,
   getGuideDetailed,
+  getRatingByUser,
   hasRatedByUser,
   updateGuideComments,
   UpdateGuideRating,
@@ -25,24 +26,19 @@ import CarouselLocations from "../components/carousels/CarouselLocations";
 import CarouselPictures from "../components/carousels/CarouselPictures";
 import UserIdentifier from "../components/identifiers/UserIdentifier";
 import GuideIdentifier from "../components/identifiers/GuideIdentifier";
+import { useAuthenticatedUser } from "../context/authenticatedUserContext";
 
 interface GuideInDetailScreenProps {
   navigation: any;
-  authenticatedUser: UserProfile;
-  setRefreshing: any;
-  refreshing: boolean;
 }
 
-function GuideInDetailScreen({
-  navigation,
-  authenticatedUser,
-  setRefreshing,
-  refreshing,
-}: GuideInDetailScreenProps) {
+function GuideInDetailScreen({ navigation }: GuideInDetailScreenProps) {
   const { pressedGuide } = usePressedGuide();
+  const { authenticatedUser } = useAuthenticatedUser();
   const [rating, setRating] = React.useState(0);
   const [newComment, setNewComment] = React.useState("");
   const [fetchTrigger, setFetchTrigger] = React.useState(false);
+  const [refreshing, setRefreshing] = React.useState(false);
   const [selectedGuide, setSelectedGuide] = React.useState<Guide | undefined>(
     undefined
   );
@@ -78,10 +74,10 @@ function GuideInDetailScreen({
     : 0;
 
   const handleRating = (rate: number) => {
-    if (hasRatedByUser(authenticatedUser.uid, selectedGuide?.rating)) {
+    if (hasRatedByUser(authenticatedUser!.uid, selectedGuide?.rating)) {
       return Alert.alert("You have already rated this guide");
     }
-    UpdateGuideRating(selectedGuide!!.uid, rate, authenticatedUser.uid).then(
+    UpdateGuideRating(selectedGuide!!.uid, rate, authenticatedUser!.uid).then(
       () => {
         handleFetchAgain();
       }
@@ -92,9 +88,10 @@ function GuideInDetailScreen({
     updateGuideComments(
       selectedGuide!!.uid,
       newComment,
-      authenticatedUser.username
+      authenticatedUser!.username
     ).then(() => {
       handleFetchAgain();
+      setNewComment("");
     });
   };
 
@@ -108,11 +105,16 @@ function GuideInDetailScreen({
         text: "Delete",
         style: "destructive",
         onPress: () => {
-          deleteGuide(guideId).then(navigation.navigate("ProfilePage"));
+          deleteGuide(guideId).then(navigation.navigate("Profile"));
         },
       },
     ]);
   };
+
+  const votedRating = getRatingByUser(
+    authenticatedUser!.uid,
+    selectedGuide?.rating
+  );
 
   return (
     <ScrollView
@@ -121,20 +123,34 @@ function GuideInDetailScreen({
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
-      <TouchableOpacity
-        onPress={() => {
-          navigation.navigate("EditGuideScreen");
-        }}
-      >
-        <Feather name={"edit"} size={25} color={"#000"} />
-      </TouchableOpacity>
-      <TouchableOpacity
-        onPress={() => {
-          confirmDeleteGuide(selectedGuide?.uid);
-        }}
-      >
-        <Feather name={"trash"} size={25} color={"#000"} />
-      </TouchableOpacity>
+      {authenticatedUser?.uid === selectedGuide?.user_id ? (
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "flex-end",
+            marginTop: 20,
+            marginBottom: 10,
+          }}
+        >
+          <TouchableOpacity
+            onPress={() => {
+              navigation.navigate("EditGuideScreen");
+            }}
+            style={{ marginRight: 15 }}
+          >
+            <Feather name={"edit"} size={28} color={"#000"} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              confirmDeleteGuide(selectedGuide?.uid);
+            }}
+          >
+            <Feather name={"trash"} size={28} color={"#000"} />
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <View style={{ marginTop: 20 }}></View>
+      )}
 
       <View style={{ marginBottom: 40 }}>
         <UserIdentifier
@@ -223,14 +239,18 @@ function GuideInDetailScreen({
                 key={value}
                 style={{ marginHorizontal: 5 }}
                 onPress={() => {
-                  handleRating(value);
-                  setRating(value);
+                  if (authenticatedUser?.uid !== selectedGuide?.user_id) {
+                    handleRating(value);
+                    setRating(value);
+                  }
                 }}
               >
                 <Feather
                   name="star"
                   style={
-                    rating >= value ? { color: "#007AFF" } : { color: "gray" }
+                    rating >= value || (votedRating && votedRating >= value)
+                      ? { color: "#007AFF" }
+                      : { color: "gray" }
                   }
                   size={30}
                 />

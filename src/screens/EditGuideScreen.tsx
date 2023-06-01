@@ -127,6 +127,9 @@ const EditGuideScreen = ({
             Title
           </Text>
           <TextInput
+            maxLength={25}
+            multiline
+            numberOfLines={2}
             placeholder="Title"
             style={{
               width: "75%",
@@ -154,6 +157,9 @@ const EditGuideScreen = ({
             Description
           </Text>
           <TextInput
+            maxLength={250}
+            multiline
+            numberOfLines={6}
             placeholder="Description"
             style={{
               width: "75%",

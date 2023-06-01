@@ -1,23 +1,67 @@
-import { useAuth } from "../hooks/useAuth";
-import { Text, View } from "react-native";
-import React from "react";
+import { RefreshControl, ScrollView, Text, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import UserIdentifier from "../components/identifiers/UserIdentifier";
+import { getUsername, getUserByUID } from "../database/userRepository";
+import { useCurrentUser } from "../context/currentUserContext";
 
-function FollowersScreen<StackScreenProps>({}: {}) {
-  const { user } = useAuth();
+function FollowersScreen() {
+  const { currentUser } = useCurrentUser();
+  const [refreshing, setRefreshing] = useState(false);
+  const [followers, setFollowers] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setRefreshing(true);
+      await fetchFollowers();
+      setRefreshing(false);
+    };
+
+    fetchData();
+  }, []);
+
+  const fetchFollowers = async () => {
+    if (currentUser?.followers) {
+      const users = await Promise.all(
+        currentUser.followers.map((user) => getUserByUID(user))
+      );
+      setFollowers(users);
+    }
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchFollowers().then(() => setRefreshing(false));
+  };
+
+  useEffect(() => {
+    if (currentUser?.followers) {
+      currentUser.followers.forEach((user) => {
+        getUsername(user);
+      });
+    }
+  }, [currentUser?.followers]);
 
   return (
-    <View className="w-full h-full">
-      <View className="mx-4 h-1/2  flex justify-center align-center space-y-6">
-        <Text className="text-white text-center text-2xl">
-          Welcome {user?.email}!
+    <ScrollView
+      style={{ flex: 1 }}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
+      <View style={{ padding: 20 }}>
+        <Text style={{ fontSize: 16, fontWeight: "700", marginBottom: 20 }}>
+          All Followers
         </Text>
+        {followers.map((user) => (
+          <UserIdentifier
+            key={user.uid}
+            selectedUsername={user.username}
+            selectedUserUid={user.uid}
+            homepage={false}
+          />
+        ))}
       </View>
-      <View className="h-1/2 flex justify-center align-center space-y-6 bg-red-400">
-        <Text className={"text-center text-white font-bold text-base"}>
-          PROFILE
-        </Text>
-      </View>
-    </View>
+    </ScrollView>
   );
 }
 

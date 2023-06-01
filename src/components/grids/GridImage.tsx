@@ -9,9 +9,9 @@ import {
 import { Guide } from "../../models/guides";
 import { usePressedGuide } from "../../context/pressedGuideContext";
 
-const screenWidth = Dimensions.get("window").width - 20;
-const columnWidth = screenWidth / 2;
-const columnHeight = screenWidth / 2;
+const screenWidth = Dimensions.get("window").width;
+const columnWidth = screenWidth / 2 - 30;
+const columnHeight = screenWidth / 2 - 30;
 
 interface GridImageProps {
   guides: Guide[];
@@ -58,11 +58,21 @@ const styles = StyleSheet.create({
   gridItem: {
     width: columnWidth,
     height: columnHeight,
+    marginVertical: 20,
     backgroundColor: "#dfe0e3",
+    borderRadius: 20,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowOffset: {
+      width: 1,
+      height: 3,
+    },
+    elevation: 3,
   },
   image: {
     width: "100%",
     height: "100%",
+    borderRadius: 20,
   },
   bioText: {
     position: "absolute",

@@ -10,6 +10,9 @@ import {
 } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { Guide, Rating } from "../models/guides";
+import { uploadMultiplePictures } from "./ImageUpload";
+import { Alert } from "react-native";
+import React from "react";
 
 const getGuidesCurrentUser = async (
   currentUser: UserProfile
@@ -164,6 +167,14 @@ const hasRatedByUser = (userId: string, ratings?: Rating[]): boolean => {
   return ratings.some((rating) => rating.user_id === userId);
 };
 
+const getRatingByUser = (userId: string, ratings?: Rating[]): number => {
+  if (!ratings || ratings.length === 0) {
+    return 0;
+  }
+  const rating = ratings.find((rating) => rating.user_id === userId);
+  return rating?.rate || 0;
+};
+
 const deleteGuide = async (guideId: string) => {
   try {
     const guideRef = doc(db, "guides", guideId);
@@ -175,6 +186,50 @@ const deleteGuide = async (guideId: string) => {
   }
 };
 
+const handleUpdateGuide = (
+  setPressedGuide: React.Dispatch<React.SetStateAction<Guide | undefined>>,
+  pressedGuide: Guide,
+  navigation: any
+) => {
+  if (pressedGuide?.uid) {
+    const guideRef = doc(db, "guides", pressedGuide.uid);
+    updateDoc(guideRef, { ...pressedGuide })
+      .then(async () => {
+        console.log("UPDATED GUIDE, NOW PICTURES...");
+        if (pressedGuide?.pictures?.length > 0) {
+          try {
+            const imagesUrl = await Promise.all(
+              pressedGuide?.pictures?.map(
+                async (picture) =>
+                  await uploadMultiplePictures(pressedGuide?.uid, picture)
+              )
+            ).catch((error) => {
+              console.log("Error updating guide", error);
+            });
+
+            console.log("UPDATED PICTURES, NOW GUIDE AGAIN...");
+
+            await updateDoc(guideRef, {
+              pictures: imagesUrl,
+            });
+
+            console.log("UPDATED GUIDE FINALLY...");
+
+            Alert.alert("Guide updated successfully");
+            setPressedGuide({ ...pressedGuide });
+            navigation.navigate("GuideInDetail");
+          } catch (error) {
+            console.log(error);
+            Alert.alert("Error updating guide");
+          }
+        }
+      })
+      .catch((error) => {
+        console.log("Error updating guide", error);
+      });
+  }
+};
+
 export {
   getAllGuides,
   getGuideDetailed,
@@ -183,4 +238,6 @@ export {
   UpdateGuideRating,
   hasRatedByUser,
   deleteGuide,
+  handleUpdateGuide,
+  getRatingByUser,
 };

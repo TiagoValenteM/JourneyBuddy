@@ -65,6 +65,9 @@ function AddGuideScreen<StackScreenProps>({
         >
           <Text className={"text-black font-light text-sm"}>Title</Text>
           <TextInput
+            maxLength={25}
+            multiline
+            numberOfLines={2}
             placeholder="Title"
             style={{
               width: "75%",
@@ -84,6 +87,9 @@ function AddGuideScreen<StackScreenProps>({
         >
           <Text className={"text-black font-light text-sm"}>Description</Text>
           <TextInput
+            maxLength={250}
+            multiline
+            numberOfLines={6}
             placeholder="Description"
             style={{
               width: "75%",

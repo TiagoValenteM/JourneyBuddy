@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { RefreshControl, ScrollView } from "react-native";
 import MenuModal from "../components/modals/MenuModal";
 import { getGuidesCurrentUser } from "../services/ManageGuides";
@@ -7,12 +7,14 @@ import GridImage from "../components/grids/GridImage";
 import ProfileIdentifier from "../components/identifiers/ProfileIdentifier";
 import { useCurrentUser } from "../context/currentUserContext";
 import { useAuthenticatedUser } from "../context/authenticatedUserContext";
+
 interface ProfileScreenProps {
   navigation: any;
   modalVisible: boolean;
   setModalVisible: any;
   isAuthUser: boolean;
 }
+
 function ProfileScreen({
   navigation,
   modalVisible,
@@ -29,7 +31,7 @@ function ProfileScreen({
 
     const fetchUserGuides = async () => {
       try {
-        let fetchedGuides: Guide[] = [];
+        let fetchedGuides: Guide[];
 
         if (isAuthUser) {
           fetchedGuides = await getGuidesCurrentUser(authenticatedUser!);

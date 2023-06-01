@@ -68,7 +68,8 @@ const ProfileIdentifier: React.FC<ProfileIdentifierProps> = ({
             alignItems: "center",
           }}
           onPress={() => {
-            navigation.navigate("Followers");
+            setCurrentUser(authenticatedUser);
+            navigation.navigate("FollowInteraction", { screen: "Followers" });
           }}
         >
           <Text style={identifierStyles.indicatorNumber}>
@@ -83,7 +84,8 @@ const ProfileIdentifier: React.FC<ProfileIdentifierProps> = ({
             alignItems: "center",
           }}
           onPress={() => {
-            navigation.navigate("Following");
+            setCurrentUser(authenticatedUser);
+            navigation.navigate("FollowInteraction", { screen: "Following" });
           }}
         >
           <Text style={identifierStyles.indicatorNumber}>
@@ -128,7 +130,7 @@ const ProfileIdentifier: React.FC<ProfileIdentifierProps> = ({
             alignItems: "center",
           }}
           onPress={() => {
-            navigation.navigate("Followers");
+            navigation.navigate("FollowInteraction", { screen: "Followers" });
           }}
         >
           <Text style={identifierStyles.indicatorNumber}>
@@ -143,7 +145,7 @@ const ProfileIdentifier: React.FC<ProfileIdentifierProps> = ({
             alignItems: "center",
           }}
           onPress={() => {
-            navigation.navigate("Following");
+            navigation.navigate("FollowInteraction", { screen: "Following" });
           }}
         >
           <Text style={identifierStyles.indicatorNumber}>
