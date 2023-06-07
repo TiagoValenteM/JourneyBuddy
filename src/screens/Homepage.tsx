@@ -1,17 +1,26 @@
 import React, { useState } from "react";
-import { RefreshControl, ScrollView, View } from "react-native";
+import {
+  RefreshControl,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { getAllGuides } from "../services/ManageGuides";
 import { Guide } from "../models/guides";
 import CarouselLocations from "../components/carousels/CarouselLocations";
 import CarouselPictures from "../components/carousels/CarouselPictures";
 import UserIdentifier from "../components/identifiers/UserIdentifier";
 import GuideIdentifier from "../components/identifiers/GuideIdentifier";
+import Feather from "react-native-vector-icons/Feather";
+import { usePressedGuide } from "../context/pressedGuideContext";
 
 interface HomepageProps {
   navigation: any;
 }
 
 function Homepage({ navigation }: HomepageProps) {
+  const { setPressedGuide } = usePressedGuide();
   const [guides, setGuides] = useState<Guide[]>([]);
   const [refreshing, setRefreshing] = React.useState(false);
 
@@ -61,9 +70,33 @@ function Homepage({ navigation }: HomepageProps) {
             <GuideIdentifier guide={guide} />
           </View>
           <View style={{ marginVertical: 10 }}>
+            <Text style={{ fontSize: 20, fontWeight: "700", marginBottom: 20 }}>
+              Pictures
+            </Text>
             <CarouselPictures images={guide?.pictures} />
           </View>
           <View style={{ marginVertical: 10 }}>
+            <View
+              style={{
+                flex: 1,
+                flexDirection: "row",
+                justifyContent: "space-between",
+              }}
+            >
+              <Text
+                style={{ fontSize: 20, fontWeight: "700", marginBottom: 20 }}
+              >
+                Locations
+              </Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setPressedGuide(guide);
+                  navigation.navigate("MapOverview");
+                }}
+              >
+                <Feather name={"map"} size={25} color={"#000"} />
+              </TouchableOpacity>
+            </View>
             <CarouselLocations places={guide?.places} />
           </View>
         </View>

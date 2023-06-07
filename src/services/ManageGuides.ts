@@ -7,7 +7,6 @@ import {
   updateDoc,
   where,
   deleteDoc,
-  writeBatch,
 } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { Guide, Rating } from "../models/guides";

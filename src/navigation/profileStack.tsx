@@ -108,7 +108,6 @@ function ProfileStack({ navigation }: ProfileStackProps) {
         name={"FullScreenMap"}
         options={{
           headerShown: false,
-          gestureEnabled: false,
         }}
       >
         {(props) => (

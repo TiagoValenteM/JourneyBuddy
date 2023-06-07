@@ -1,9 +1,5 @@
 import React from "react";
-import {
-  NavigationContainer,
-  useFocusEffect,
-  useNavigation,
-} from "@react-navigation/native";
+import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Feather from "react-native-vector-icons/Feather";
 import SearchScreen from "../screens/Search";

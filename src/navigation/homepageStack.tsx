@@ -3,12 +3,15 @@ import Homepage from "../screens/Homepage";
 import React from "react";
 import ProfileScreen from "../screens/Profile";
 import { useCurrentUser } from "../context/currentUserContext";
+import FullScreenMap from "../screens/FullScreenMap";
+import { usePressedGuide } from "../context/pressedGuideContext";
 
 const Stack = createStackNavigator();
 
 function HomepageStack() {
   const [modalVisible, setModalVisible] = React.useState(false);
   const { currentUser } = useCurrentUser();
+  const { pressedGuide } = usePressedGuide();
 
   return (
     <Stack.Navigator>
@@ -33,6 +36,16 @@ function HomepageStack() {
             setModalVisible={setModalVisible}
             isAuthUser={false}
           />
+        )}
+      </Stack.Screen>
+      <Stack.Screen
+        name={"MapOverview"}
+        options={() => ({
+          headerShown: false,
+        })}
+      >
+        {(props) => (
+          <FullScreenMap {...props} guidePlaces={pressedGuide?.places} />
         )}
       </Stack.Screen>
     </Stack.Navigator>
