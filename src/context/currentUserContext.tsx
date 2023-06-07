@@ -3,11 +3,15 @@ import React, { createContext, useState, useContext, ReactNode } from "react";
 interface CurrentUserContextProps {
   currentUser: UserProfile | undefined;
   setCurrentUser: React.Dispatch<React.SetStateAction<UserProfile | undefined>>;
+  pressedUser: UserProfile | undefined;
+  setPressedUser: React.Dispatch<React.SetStateAction<UserProfile | undefined>>;
 }
 
 const currentUserContext = createContext<CurrentUserContextProps>({
   currentUser: undefined,
   setCurrentUser: () => {},
+  pressedUser: undefined,
+  setPressedUser: () => {},
 });
 
 interface CurrentUserProviderProps {
@@ -18,16 +22,22 @@ export function CurrentUserProvider({ children }: CurrentUserProviderProps) {
   const [currentUser, setCurrentUser] = useState<UserProfile | undefined>(
     undefined
   );
+  const [pressedUser, setPressedUser] = useState<UserProfile | undefined>(
+    undefined
+  );
 
   return (
-    <currentUserContext.Provider value={{ currentUser, setCurrentUser }}>
+    <currentUserContext.Provider
+      value={{ currentUser, setCurrentUser, pressedUser, setPressedUser }}
+    >
       {children}
     </currentUserContext.Provider>
   );
 }
 
 export function useCurrentUser() {
-  const { currentUser, setCurrentUser } = useContext(currentUserContext);
+  const { currentUser, setCurrentUser, pressedUser, setPressedUser } =
+    useContext(currentUserContext);
 
-  return { currentUser, setCurrentUser };
+  return { currentUser, setCurrentUser, pressedUser, setPressedUser };
 }

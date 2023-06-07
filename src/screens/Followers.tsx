@@ -7,7 +7,7 @@ import { useCurrentUser } from "../context/currentUserContext";
 function FollowersScreen() {
   const { currentUser } = useCurrentUser();
   const [refreshing, setRefreshing] = useState(false);
-  const [followers, setFollowers] = useState([]);
+  const [followers, setFollowers] = useState<UserProfile[] | []>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -21,10 +21,10 @@ function FollowersScreen() {
 
   const fetchFollowers = async () => {
     if (currentUser?.followers) {
-      const users = await Promise.all(
+      const users: (UserProfile | undefined)[] = await Promise.all(
         currentUser.followers.map((user) => getUserByUID(user))
       );
-      setFollowers(users);
+      setFollowers(users as UserProfile[]);
     }
   };
 

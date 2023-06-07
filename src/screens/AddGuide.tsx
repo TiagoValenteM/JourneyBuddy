@@ -11,7 +11,6 @@ import {
 import Feather from "react-native-vector-icons/Feather";
 import { Guide } from "../models/guides";
 import { selectMultipleImages } from "../services/ImageUpload";
-import uuid from "react-native-uuid";
 
 interface AddGuideScreenProps {
   navigation: any;

@@ -11,7 +11,6 @@ import { usePressedGuide } from "../../context/pressedGuideContext";
 
 const screenWidth = Dimensions.get("window").width;
 const columnWidth = screenWidth / 2 - 30;
-const columnHeight = screenWidth / 2 - 30;
 
 interface GridImageProps {
   guides: Guide[];
@@ -56,13 +55,13 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   gridItem: {
+    marginBottom: 20,
     width: columnWidth,
-    height: columnHeight,
-    marginVertical: 20,
+    height: columnWidth * 1.25,
     backgroundColor: "#dfe0e3",
     borderRadius: 20,
     shadowColor: "#000",
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.1,
     shadowOffset: {
       width: 1,
       height: 3,

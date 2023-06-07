@@ -3,8 +3,6 @@ import Feather from "react-native-vector-icons/Feather";
 import { Alert, Text, TouchableOpacity } from "react-native";
 import ProfileScreen from "../screens/Profile";
 import EditProfileScreen from "../screens/EditProfile";
-import FollowersScreen from "../screens/Followers";
-import FollowingScreen from "../screens/Following";
 import { createStackNavigator } from "@react-navigation/stack";
 import GuideInDetailScreen from "../screens/GuideInDetail";
 import { Coordinate, Guide } from "../models/guides";
@@ -15,7 +13,8 @@ import { usePressedGuide } from "../context/pressedGuideContext";
 import { useAuthenticatedUser } from "../context/authenticatedUserContext";
 import { useCurrentUser } from "../context/currentUserContext";
 import { handleUpdateGuide } from "../services/ManageGuides";
-import FollowingTabs from "../components/FollowingTabs";
+import FollowingTabs from "./FollowingTabs";
+import { handleUpdateProfile } from "../database/userRepository";
 
 const Stack = createStackNavigator();
 
@@ -27,8 +26,8 @@ function ProfileStack({ navigation }: ProfileStackProps) {
   const { setPressedGuide, pressedGuide } = usePressedGuide();
   const [modalVisible, setModalVisible] = React.useState(false);
   const [refreshing, setRefreshing] = React.useState(false);
-  const { authenticatedUser } = useAuthenticatedUser();
-  const { currentUser } = useCurrentUser();
+  const { authenticatedUser, setAuthenticatedUser } = useAuthenticatedUser();
+  const { currentUser, pressedUser, setPressedUser } = useCurrentUser();
   const [markerCoordinate, setMarkerCoordinate] = React.useState<Coordinate>();
   const [locationName, setLocationName] = React.useState(
     "Search for a location or tap on the map"
@@ -73,7 +72,16 @@ function ProfileStack({ navigation }: ProfileStackProps) {
           gestureEnabled: false,
           headerBackTitle: "Cancel",
           headerRight: () => (
-            <TouchableOpacity onPress={() => {}}>
+            <TouchableOpacity
+              onPress={() =>
+                handleUpdateProfile(
+                  authenticatedUser,
+                  pressedUser,
+                  setAuthenticatedUser,
+                  setPressedUser
+                ).then(() => navigation.navigate("Profile"))
+              }
+            >
               <Text
                 style={{
                   color: "#007AFF",
@@ -87,9 +95,8 @@ function ProfileStack({ navigation }: ProfileStackProps) {
             </TouchableOpacity>
           ),
         }}
-      >
-        {(props) => <EditProfileScreen {...props} currentUser={currentUser} />}
-      </Stack.Screen>
+        component={EditProfileScreen}
+      />
       <Stack.Screen
         name={"GuideInDetail"}
         options={{

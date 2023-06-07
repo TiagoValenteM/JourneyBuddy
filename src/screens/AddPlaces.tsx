@@ -1,7 +1,7 @@
 import React from "react";
 import { TextInput, View, Text, ScrollView } from "react-native";
 import MapView, { Marker } from "react-native-maps";
-import debounce from "../utils/debouce";
+import debounce from "../utils/debounce";
 import SelectLocationModal from "../components/modals/SelectLocationModal";
 import { Coordinate } from "../models/guides";
 

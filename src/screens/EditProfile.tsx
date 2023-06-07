@@ -7,131 +7,144 @@ import {
   View,
 } from "react-native";
 import React from "react";
-import {
-  collection,
-  doc,
-  getDocs,
-  query,
-  updateDoc,
-  where,
-} from "firebase/firestore";
-import { db } from "../config/firebase";
 import { defaultProfilePicture, selectImage } from "../services/ImageUpload";
+import { useCurrentUser } from "../context/currentUserContext";
+import { useAuthenticatedUser } from "../context/authenticatedUserContext";
 
-function EditProfileScreen<StackScreenProps>({
-  currentUser,
-}: {
-  currentUser?: UserProfile;
-}) {
-  const [fullName, setFullName] = React.useState(currentUser?.fullName || "");
-  const [username, setUsername] = React.useState(currentUser?.username || "");
-  const [email, setEmail] = React.useState(currentUser?.email || "");
+function EditProfileScreen<StackScreenProps>() {
+  const { pressedUser, setPressedUser } = useCurrentUser();
+  const { authenticatedUser } = useAuthenticatedUser();
 
-  const handleUpdateProfile = async () => {
-    const userProfilesCollectionRef = collection(db, "user_profiles");
-    const queryFindCurrentUser = query(
-      userProfilesCollectionRef,
-      where("uid", "==", currentUser?.uid)
-    );
+  React.useEffect(() => {
+    setPressedUser(authenticatedUser);
+  }, [authenticatedUser]);
 
-    const querySnapshotUser = await getDocs(queryFindCurrentUser);
+  const handleFullNameChange = (text: string): void => {
+    setPressedUser((prevPressedUser) => ({
+      ...prevPressedUser!,
+      fullName: text,
+    }));
+  };
 
-    if (!querySnapshotUser.empty) {
-      const userRef = doc(db, "user_profiles", querySnapshotUser.docs[0].id);
+  const handleUsernameChange = (text: string): void => {
+    setPressedUser((prevPressedUser) => ({
+      ...prevPressedUser!,
+      username: text,
+    }));
+  };
 
-      try {
-        await updateDoc(userRef, {
-          fullName: fullName || currentUser?.fullName || "",
-          username: username || currentUser?.username || "",
-          email: email || currentUser?.email || "",
-        });
-        console.log("Profile updated successfully!");
-      } catch (error) {
-        console.log("Error updating profile:", error);
-      }
-    } else {
-      console.log("No matching user profile found");
-    }
+  const handleEmailChange = (text: string): void => {
+    setPressedUser((prevPressedUser) => ({
+      ...prevPressedUser!,
+      email: text,
+    }));
   };
 
   return (
-    <ScrollView className="w-screen h-screen">
-      <View className="w-full h-[170px]  flex justify-center items-center space-y-6 border-b border-b-gray-300">
+    <ScrollView style={{ flex: 1, marginHorizontal: 20 }}>
+      <View
+        style={{
+          marginVertical: 20,
+          justifyContent: "space-around",
+          alignItems: "center",
+          flexDirection: "row",
+        }}
+      >
         <Image
           source={{
-            uri: currentUser?.profilePicturePath || defaultProfilePicture,
+            uri: pressedUser?.profilePicturePath || defaultProfilePicture,
           }}
-          className={"h-24 w-24 rounded-full"}
+          style={{
+            width: 100,
+            height: 100,
+            borderRadius: 50,
+            backgroundColor: "#dfe0e3",
+          }}
         ></Image>
         <TouchableOpacity
-          onPress={() => selectImage(currentUser!!)}
-          className={
-            "bg-gray-300 h-7 justify-center text-sm w-[40%] rounded-lg"
-          }
+          onPress={() => selectImage(pressedUser!!)}
+          style={{
+            backgroundColor: "#dfe0e3",
+            borderRadius: 10,
+            height: 35,
+            width: 120,
+            justifyContent: "center",
+          }}
         >
-          <Text className={"text-center font-semibold"}>Edit Picture</Text>
+          <Text
+            style={{ fontSize: 14, fontWeight: "600", textAlign: "center" }}
+          >
+            Edit Picture
+          </Text>
         </TouchableOpacity>
       </View>
-      <View className="h-3/4 flex flex-col justify-start mt-5 items-center space-y-6">
+      <View style={{ marginVertical: 10 }}>
         <View
-          className={
-            "flex flex-row justify-between px-4 items-center space-x-1 w-full"
-          }
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginVertical: 15,
+          }}
         >
-          <Text className={"text-black font-light text-sm"}>Name</Text>
+          <Text style={{ fontSize: 14, fontWeight: "300" }}>Name</Text>
           <TextInput
-            placeholder={currentUser?.fullName || "Name"}
+            placeholder={pressedUser?.fullName || "Name"}
+            maxLength={25}
             style={{
               width: "75%",
               padding: 10,
+              borderBottomWidth: 2,
+              borderBottomColor: "#dfe0e3",
             }}
-            className={"border-b border-b-gray-300"}
-            value={fullName}
-            onChangeText={(text) => setFullName(text)}
+            value={pressedUser?.fullName}
+            onChangeText={handleFullNameChange}
           />
         </View>
         <View
-          className={
-            "flex flex-row justify-between px-4 items-center space-x-1 w-full"
-          }
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginVertical: 15,
+          }}
         >
-          <Text className={"text-black font-light text-sm"}>Username</Text>
+          <Text style={{ fontSize: 14, fontWeight: "300" }}>Username</Text>
           <TextInput
-            placeholder={currentUser?.username || "Username"}
+            placeholder={pressedUser?.username || "Username"}
+            maxLength={25}
             style={{
               width: "75%",
               padding: 10,
+              borderBottomWidth: 2,
+              borderBottomColor: "#dfe0e3",
             }}
-            className={"border-b border-b-gray-300"}
-            value={username}
-            onChangeText={(text) => setUsername(text)}
+            value={pressedUser?.username}
+            onChangeText={handleUsernameChange}
           />
         </View>
         <View
-          className={
-            "flex flex-row justify-between px-4 items-center space-x-1 w-full"
-          }
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginVertical: 15,
+          }}
         >
-          <Text className={"text-black font-light text-sm"}>Email</Text>
+          <Text style={{ fontSize: 14, fontWeight: "300" }}>Email</Text>
           <TextInput
-            placeholder={currentUser?.email || "Email"}
+            placeholder={pressedUser?.email || "Email"}
+            maxLength={150}
             style={{
               width: "75%",
               padding: 10,
+              borderBottomWidth: 2,
+              borderBottomColor: "#dfe0e3",
             }}
-            className={"border-b border-b-gray-300"}
-            value={email}
-            onChangeText={(text) => setEmail(text)}
+            value={pressedUser?.email}
+            onChangeText={handleEmailChange}
           />
         </View>
-        <TouchableOpacity
-          onPress={handleUpdateProfile}
-          className={
-            "bg-gray-300 h-7 justify-center text-sm w-[40%] rounded-lg"
-          }
-        >
-          <Text className={"text-center font-semibold"}>Update Profile</Text>
-        </TouchableOpacity>
       </View>
     </ScrollView>
   );
