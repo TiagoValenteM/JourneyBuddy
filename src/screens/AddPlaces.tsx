@@ -4,6 +4,8 @@ import MapView, { Marker } from "react-native-maps";
 import debounce from "../utils/debounce";
 import SelectLocationModal from "../components/modals/SelectLocationModal";
 import { Coordinate } from "../models/guides";
+import ErrorIndicator from "../components/indicators/ErrorIndicator";
+import { useError } from "../hooks/useError";
 
 interface LocationPickerProps {
   setModalVisible: any;
@@ -29,6 +31,7 @@ const LocationPicker = ({
   locationName,
   setLocationName,
 }: LocationPickerProps) => {
+  const { showError } = useError();
   const handlePlaceSearch = async (text: string) => {
     try {
       const response = await fetch(
@@ -38,6 +41,8 @@ const LocationPicker = ({
       if (locationData?.length > 0) {
         setLocationList(locationData);
         setModalVisible(true);
+      } else {
+        showError("No results found. Please try again.");
       }
     } catch (error) {
       console.error(error);

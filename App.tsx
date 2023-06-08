@@ -4,15 +4,20 @@ import RootNavigation from "./src/navigation";
 import { PressedGuideProvider } from "./src/context/pressedGuideContext";
 import { AuthenticatedUserProvider } from "./src/context/authenticatedUserContext";
 import { CurrentUserProvider } from "./src/context/currentUserContext";
+import { ErrorContextProvider } from "./src/context/errorHandlerContext";
+import ErrorIndicator from "./src/components/indicators/ErrorIndicator";
 
 export default function App() {
   return (
-    <AuthenticatedUserProvider>
-      <CurrentUserProvider>
-        <PressedGuideProvider>
-          <RootNavigation />
-        </PressedGuideProvider>
-      </CurrentUserProvider>
-    </AuthenticatedUserProvider>
+    <ErrorContextProvider>
+      <AuthenticatedUserProvider>
+        <CurrentUserProvider>
+          <PressedGuideProvider>
+            <RootNavigation />
+            <ErrorIndicator />
+          </PressedGuideProvider>
+        </CurrentUserProvider>
+      </AuthenticatedUserProvider>
+    </ErrorContextProvider>
   );
 }

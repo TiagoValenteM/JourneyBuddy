@@ -68,11 +68,7 @@ export default function UserStack() {
       >
         <Tab.Screen name="HomepageStack" component={HomepageStack} />
         <Tab.Screen name="SearchStack" component={SearchScreen} />
-        <Tab.Screen
-          name="GuidesStack"
-          component={AddGuideStack}
-          initialParams={{ userParam: { authenticatedUser } }} // Update the initialParams structure
-        />
+        <Tab.Screen name="GuidesStack" component={AddGuideStack} />
         <Tab.Screen name="ProfileStack" component={ProfileStack} />
       </Tab.Navigator>
     </NavigationContainer>

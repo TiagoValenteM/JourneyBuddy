@@ -7,6 +7,8 @@ import {
   updateDoc,
   where,
   deleteDoc,
+  setDoc,
+  arrayRemove,
 } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { Guide, Rating } from "../models/guides";
@@ -175,11 +177,34 @@ const getRatingByUser = (userId: string, ratings?: Rating[]): number => {
   return rating?.rate || 0;
 };
 
-const deleteGuide = async (guideId: string) => {
+const deleteGuide = async (
+  guideId: string,
+  authenticatedUser: UserProfile | any,
+  setAuthenticatedUser: any,
+  guides: Guide[],
+  setGuides: any
+) => {
   try {
     const guideRef = doc(db, "guides", guideId);
     await deleteDoc(guideRef);
 
+    const userDocRef = doc(db, "user_profiles", authenticatedUser!.uid);
+
+    await updateDoc(userDocRef, {
+      guides: arrayRemove(guideId),
+    });
+
+    const updatedUser: UserProfile = {
+      ...(authenticatedUser || {}),
+      guides: authenticatedUser?.guides?.filter(
+        (guide: string) => guide !== guideId
+      ),
+    };
+
+    setAuthenticatedUser(updatedUser);
+
+    const updatedGuides = guides.filter((guide) => guide.uid !== guideId);
+    setGuides(updatedGuides);
     console.log("Guide deleted successfully");
   } catch (error) {
     console.error("Error deleting guide:", error);
@@ -230,6 +255,61 @@ const handleUpdateGuide = (
   }
 };
 
+const handleCreateGuide = async (
+  setAuthenticatedUser: any,
+  authenticatedUser: UserProfile | undefined,
+  guide: Guide,
+  guides: Guide[],
+  setGuides: any
+) => {
+  try {
+    // 1 - Upload guide
+    await setDoc(doc(db, "guides", guide?.uid), guide);
+
+    // 2 - Upload pictures
+    if (guide?.pictures?.length > 0) {
+      const imagesUrl = await Promise.all(
+        guide?.pictures?.map(async (picture: string) =>
+          uploadMultiplePictures(guide?.uid, picture)
+        )
+      ).catch((error) => {
+        console.log(error);
+      });
+
+      // 3 - Update guide with pictures url
+      await updateDoc(doc(db, "guides", guide?.uid), {
+        pictures: imagesUrl,
+      });
+    }
+
+    // 4 - Update user's guides
+    const userDocRef = doc(db, "user_profiles", authenticatedUser!.uid);
+    const userDocData = (await getDoc(userDocRef)).data();
+    const userGuides = userDocData?.guides || [];
+    const updatedGuides = [...userGuides, guide?.uid];
+
+    await updateDoc(userDocRef, {
+      guides: updatedGuides,
+    });
+
+    Alert.alert("Guide created successfully");
+
+    const updatedUser: UserProfile | any = {
+      ...(authenticatedUser || {}),
+      guides: updatedGuides,
+    };
+
+    setAuthenticatedUser(updatedUser);
+
+    const updatedGuidesOnDevice = [...guides, guide];
+    setGuides(updatedGuidesOnDevice);
+
+    console.log("Guides updated successfully!");
+  } catch (error) {
+    console.log("Error creating guide:", error);
+  }
+};
+
 export {
   getAllGuides,
   getGuideDetailed,
@@ -240,4 +320,5 @@ export {
   deleteGuide,
   handleUpdateGuide,
   getRatingByUser,
+  handleCreateGuide,
 };

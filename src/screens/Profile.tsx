@@ -7,6 +7,7 @@ import GridImage from "../components/grids/GridImage";
 import ProfileIdentifier from "../components/identifiers/ProfileIdentifier";
 import { useCurrentUser } from "../context/currentUserContext";
 import { useAuthenticatedUser } from "../context/authenticatedUserContext";
+import { usePressedGuide } from "../context/pressedGuideContext";
 
 interface ProfileScreenProps {
   navigation: any;
@@ -24,7 +25,7 @@ function ProfileScreen({
   const { currentUser } = useCurrentUser();
   const { authenticatedUser } = useAuthenticatedUser();
   const [refreshing, setRefreshing] = React.useState(false);
-  const [guides, setGuides] = React.useState<Guide[]>([]);
+  const { guides, setGuides } = usePressedGuide();
 
   const onRefresh = async () => {
     setRefreshing(true);

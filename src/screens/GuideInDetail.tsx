@@ -33,8 +33,8 @@ interface GuideInDetailScreenProps {
 }
 
 function GuideInDetailScreen({ navigation }: GuideInDetailScreenProps) {
-  const { pressedGuide } = usePressedGuide();
-  const { authenticatedUser } = useAuthenticatedUser();
+  const { pressedGuide, guides, setGuides } = usePressedGuide();
+  const { authenticatedUser, setAuthenticatedUser } = useAuthenticatedUser();
   const [rating, setRating] = React.useState(0);
   const [newComment, setNewComment] = React.useState("");
   const [fetchTrigger, setFetchTrigger] = React.useState(false);
@@ -105,7 +105,13 @@ function GuideInDetailScreen({ navigation }: GuideInDetailScreenProps) {
         text: "Delete",
         style: "destructive",
         onPress: () => {
-          deleteGuide(guideId).then(navigation.navigate("Profile"));
+          deleteGuide(
+            guideId,
+            authenticatedUser,
+            setAuthenticatedUser,
+            guides,
+            setGuides
+          ).then(navigation.navigate("Profile"));
         },
       },
     ]);

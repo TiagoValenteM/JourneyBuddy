@@ -4,55 +4,25 @@ import AddPlacesScreen from "../screens/AddPlaces";
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import { Coordinate, Guide } from "../models/guides";
-import { doc, setDoc, updateDoc } from "firebase/firestore";
-import { db } from "../config/firebase";
-import { uploadMultiplePictures } from "../services/ImageUpload";
+import { useAuthenticatedUser } from "../context/authenticatedUserContext";
+import { handleCreateGuide } from "../services/ManageGuides";
+import { usePressedGuide } from "../context/pressedGuideContext";
 
 const Stack = createStackNavigator();
 
 interface AddGuideStackProps {
-  route: any;
   navigation: any;
 }
 
-function AddGuideStack({ route, navigation }: AddGuideStackProps) {
-  const authenticatedUser = route.params?.userParam?.authenticatedUser;
+function AddGuideStack({ navigation }: AddGuideStackProps) {
+  const { authenticatedUser, setAuthenticatedUser } = useAuthenticatedUser();
+  const { guides, setGuides } = usePressedGuide();
   const [markerCoordinate, setMarkerCoordinate] = React.useState<Coordinate>();
   const [locationName, setLocationName] = React.useState(
     "Search for a location or tap on the map"
   );
   const [refreshing, setRefreshing] = React.useState(false);
   const [guide, setGuide] = React.useState<Guide>(new Guide(authenticatedUser));
-
-  const handleSave = () => {
-    // 1 - Upload guide
-    setDoc(doc(db, "guides", guide?.uid), guide)
-      .then(async () => {
-        // 2 - Upload pictures
-        if (guide?.pictures?.length > 0) {
-          try {
-            const imagesUrl = await Promise.all(
-              guide?.pictures?.map(
-                async (picture) =>
-                  await uploadMultiplePictures(guide?.uid, picture)
-              )
-            ).catch((error) => {
-              console.log(error);
-            });
-
-            // 3 - Update guide with pictures url
-            await updateDoc(doc(db, "guides", guide?.uid), {
-              pictures: imagesUrl,
-            });
-          } catch (error) {
-            console.log(error);
-          }
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
 
   return (
     <Stack.Navigator>
@@ -61,7 +31,17 @@ function AddGuideStack({ route, navigation }: AddGuideStackProps) {
         options={{
           headerTitle: "New Guide",
           headerRight: () => (
-            <TouchableOpacity onPress={handleSave}>
+            <TouchableOpacity
+              onPress={() => {
+                handleCreateGuide(
+                  setAuthenticatedUser,
+                  authenticatedUser,
+                  guide,
+                  guides,
+                  setGuides
+                );
+              }}
+            >
               <Text
                 style={{
                   color: "#007AFF",

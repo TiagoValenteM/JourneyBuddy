@@ -46,7 +46,7 @@ function ProfileStack({ navigation }: ProfileStackProps) {
           headerTitle: "",
           headerLeft: () => (
             <Text style={{ fontSize: 20, fontWeight: "600" }}>
-              {currentUser?.username || currentUser?.email}
+              {authenticatedUser?.username}
             </Text>
           ),
           headerLeftContainerStyle: {
