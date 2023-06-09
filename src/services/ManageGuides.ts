@@ -260,29 +260,36 @@ const handleCreateGuide = async (
   authenticatedUser: UserProfile | undefined,
   guide: Guide,
   guides: Guide[],
-  setGuides: any
+  setGuides: any,
+  showError: any
 ) => {
   try {
-    // 1 - Upload guide
-    await setDoc(doc(db, "guides", guide?.uid), guide);
-
-    // 2 - Upload pictures
+    // 1 - Upload pictures
+    let imagesUrl: string[] | any;
     if (guide?.pictures?.length > 0) {
-      const imagesUrl = await Promise.all(
-        guide?.pictures?.map(async (picture: string) =>
-          uploadMultiplePictures(guide?.uid, picture)
+      imagesUrl = await Promise.all(
+        guide?.pictures?.map(
+          async (picture: string) =>
+            await uploadMultiplePictures(guide?.uid, picture)
         )
-      ).catch((error) => {
-        console.log(error);
-      });
-
-      // 3 - Update guide with pictures url
-      await updateDoc(doc(db, "guides", guide?.uid), {
-        pictures: imagesUrl,
+      ).catch(() => {
+        showError("Error uploading guide pictures. Please try again later.");
+        return;
       });
     }
 
-    // 4 - Update user's guides
+    // Return early if imagesUrl is not available
+    if (!imagesUrl) {
+      return;
+    }
+
+    // 2 - Upload guide and update with pictures URL if available
+    await setDoc(doc(db, "guides", guide?.uid), {
+      ...guide,
+      pictures: imagesUrl,
+    });
+
+    // 3 - Update user's guides
     const userDocRef = doc(db, "user_profiles", authenticatedUser!.uid);
     const userDocData = (await getDoc(userDocRef)).data();
     const userGuides = userDocData?.guides || [];

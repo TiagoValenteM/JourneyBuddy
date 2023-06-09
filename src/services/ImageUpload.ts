@@ -10,6 +10,7 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
+import ImageResizer from "react-native-image-resizer";
 
 const defaultProfilePicture =
   "https://firebasestorage.googleapis.com/v0/b/journeybuddy2023.appspot.com/o/profile_pictures%2Fdefault_profile_picture.jpg?alt=media&token=2ecdbd0a-d2a7-4f5d-8ba7-a0457904a264";
@@ -23,7 +24,7 @@ const selectImage = async (currentUser: UserProfile) => {
   const result = await ImagePicker.launchImageLibraryAsync({
     mediaTypes: ImagePicker.MediaTypeOptions.Images,
     allowsEditing: true,
-    quality: 0.5,
+    quality: 0.3,
   });
 
   if (!result?.canceled) {
@@ -36,7 +37,7 @@ const selectMultipleImages = async (): Promise<string[]> => {
   if (status === "granted") {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.5,
+      quality: 0.3,
       allowsMultipleSelection: true,
     });
 
@@ -50,16 +51,32 @@ const selectMultipleImages = async (): Promise<string[]> => {
 
 const uploadMultiplePictures = async (guide_uid: string, uri: string) => {
   if (uri.includes("file://")) {
-    const response = await fetch(uri);
-    const blob = await response.blob();
+    try {
+      const compressedImage = await ImageResizer.createResizedImage(
+        uri,
+        400,
+        500,
+        "JPEG",
+        60
+      );
+      const compressedUri = compressedImage.uri;
 
-    const filename = uri.split("/").pop();
-    const storageRef = ref(storage, `guide_pictures/${guide_uid}/${filename}`);
+      const response = await fetch(compressedUri);
+      const blob = await response.blob();
 
-    const snapshot = await uploadBytes(storageRef, blob);
-    return await getDownloadURL(snapshot.ref);
+      const filename = compressedUri.split("/").pop();
+      const storageRef = ref(
+        storage,
+        `guide_pictures/${guide_uid}/${filename}`
+      );
+
+      const snapshot = await uploadBytes(storageRef, blob);
+      return await getDownloadURL(snapshot.ref);
+    } catch (error) {
+      throw error;
+    }
   }
-  return uri;
+  return undefined;
 };
 
 const uploadProfilePicture = async (uri: string, currentUser: UserProfile) => {

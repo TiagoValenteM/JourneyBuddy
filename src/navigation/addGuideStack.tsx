@@ -7,6 +7,7 @@ import { Coordinate, Guide } from "../models/guides";
 import { useAuthenticatedUser } from "../context/authenticatedUserContext";
 import { handleCreateGuide } from "../services/ManageGuides";
 import { usePressedGuide } from "../context/pressedGuideContext";
+import { useError } from "../hooks/useError";
 
 const Stack = createStackNavigator();
 
@@ -15,6 +16,7 @@ interface AddGuideStackProps {
 }
 
 function AddGuideStack({ navigation }: AddGuideStackProps) {
+  const { showError } = useError();
   const { authenticatedUser, setAuthenticatedUser } = useAuthenticatedUser();
   const { guides, setGuides } = usePressedGuide();
   const [markerCoordinate, setMarkerCoordinate] = React.useState<Coordinate>();
@@ -24,6 +26,30 @@ function AddGuideStack({ navigation }: AddGuideStackProps) {
   const [refreshing, setRefreshing] = React.useState(false);
   const [guide, setGuide] = React.useState<Guide>(new Guide(authenticatedUser));
 
+  const checkGuide = (guide: Guide) => {
+    if (guide?.title === "") {
+      Alert.alert("Please enter a title");
+      return false;
+    }
+
+    if (guide?.description === "") {
+      Alert.alert("Please enter a description");
+      return false;
+    }
+
+    if (guide.pictures?.length === 0) {
+      Alert.alert("Please select at least one picture");
+      return false;
+    }
+
+    if (guide.places?.length === 0) {
+      Alert.alert("Please select at least one location");
+      return false;
+    }
+
+    return true;
+  };
+
   return (
     <Stack.Navigator>
       <Stack.Screen
@@ -32,14 +58,22 @@ function AddGuideStack({ navigation }: AddGuideStackProps) {
           headerTitle: "New Guide",
           headerRight: () => (
             <TouchableOpacity
-              onPress={() => {
-                handleCreateGuide(
-                  setAuthenticatedUser,
-                  authenticatedUser,
-                  guide,
-                  guides,
-                  setGuides
-                );
+              onPress={async () => {
+                if (checkGuide(guide)) {
+                  try {
+                    await handleCreateGuide(
+                      setAuthenticatedUser,
+                      authenticatedUser,
+                      guide,
+                      guides,
+                      setGuides,
+                      showError
+                    );
+                    setGuide(new Guide(authenticatedUser));
+                  } catch (error) {
+                    showError("Error creating guide.");
+                  }
+                }
               }}
             >
               <Text

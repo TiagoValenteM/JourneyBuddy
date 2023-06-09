@@ -2,9 +2,8 @@ import React from "react";
 import { TextInput, View, Text, ScrollView } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import debounce from "../utils/debounce";
-import SelectLocationModal from "../components/modals/SelectLocationModal";
+import SelectLocationModal from "../components/modals/LocationPickerModal";
 import { Coordinate } from "../models/guides";
-import ErrorIndicator from "../components/indicators/ErrorIndicator";
 import { useError } from "../hooks/useError";
 
 interface LocationPickerProps {
@@ -33,9 +32,10 @@ const LocationPicker = ({
 }: LocationPickerProps) => {
   const { showError } = useError();
   const handlePlaceSearch = async (text: string) => {
+    setModalVisible(false);
     try {
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${text}`
+        `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${text}&limit=10&accept-language=en-US`
       );
       const locationData = await response.json();
       if (locationData?.length > 0) {
@@ -142,15 +142,17 @@ function AddPlacesScreen<StackScreenProps>({
   const [locationList, setLocationList] = React.useState<any>();
 
   return (
-    <ScrollView>
-      <LocationPicker
-        setModalVisible={setModalVisible}
-        setLocationList={setLocationList}
-        markerCoordinate={markerCoordinate}
-        setMarkerCoordinate={setMarkerCoordinate}
-        locationName={locationName}
-        setLocationName={setLocationName}
-      />
+    <View style={{ height: "100%", flex: 1 }}>
+      <ScrollView>
+        <LocationPicker
+          setModalVisible={setModalVisible}
+          setLocationList={setLocationList}
+          markerCoordinate={markerCoordinate}
+          setMarkerCoordinate={setMarkerCoordinate}
+          locationName={locationName}
+          setLocationName={setLocationName}
+        />
+      </ScrollView>
       <SelectLocationModal
         modalVisible={modalVisible}
         setModalVisible={setModalVisible}
@@ -158,7 +160,7 @@ function AddPlacesScreen<StackScreenProps>({
         setLocationName={setLocationName}
         setMarkerCoordinate={setMarkerCoordinate}
       />
-    </ScrollView>
+    </View>
   );
 }
 

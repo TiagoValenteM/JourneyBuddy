@@ -56,51 +56,55 @@ function Homepage({ navigation }: HomepageProps) {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
-      {guides.map((guide, index) => (
-        <View key={index} style={{ marginVertical: 10 }}>
-          <View style={{ marginVertical: 10 }}>
-            <UserIdentifier
-              selectedUsername={guide?.author}
-              selectedUserUid={guide?.user_id}
-              homepage={true}
-              navigation={navigation}
-            />
-          </View>
-          <View style={{ marginVertical: 10 }}>
-            <GuideIdentifier guide={guide} />
-          </View>
-          <View style={{ marginVertical: 10 }}>
-            <Text style={{ fontSize: 20, fontWeight: "700", marginBottom: 20 }}>
-              Pictures
-            </Text>
-            <CarouselPictures images={guide?.pictures} />
-          </View>
-          <View style={{ marginVertical: 10 }}>
-            <View
-              style={{
-                flex: 1,
-                flexDirection: "row",
-                justifyContent: "space-between",
-              }}
-            >
+      {guides
+        .sort((a, b) => (b.dateCreated > a.dateCreated ? 1 : -1))
+        .map((guide, index) => (
+          <View key={index} style={{ marginVertical: 10 }}>
+            <View style={{ marginVertical: 10 }}>
+              <UserIdentifier
+                selectedUsername={guide?.author}
+                selectedUserUid={guide?.user_id}
+                homepage={true}
+                navigation={navigation}
+              />
+            </View>
+            <View style={{ marginVertical: 10 }}>
+              <GuideIdentifier guide={guide} />
+            </View>
+            <View style={{ marginVertical: 10 }}>
               <Text
                 style={{ fontSize: 20, fontWeight: "700", marginBottom: 20 }}
               >
-                Locations
+                Pictures
               </Text>
-              <TouchableOpacity
-                onPress={() => {
-                  setPressedGuide(guide);
-                  navigation.navigate("MapOverview");
+              <CarouselPictures images={guide?.pictures} />
+            </View>
+            <View style={{ marginVertical: 10 }}>
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  justifyContent: "space-between",
                 }}
               >
-                <Feather name={"map"} size={25} color={"#000"} />
-              </TouchableOpacity>
+                <Text
+                  style={{ fontSize: 20, fontWeight: "700", marginBottom: 20 }}
+                >
+                  Locations
+                </Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    setPressedGuide(guide);
+                    navigation.navigate("MapOverview");
+                  }}
+                >
+                  <Feather name={"map"} size={25} color={"#000"} />
+                </TouchableOpacity>
+              </View>
+              <CarouselLocations places={guide?.places} />
             </View>
-            <CarouselLocations places={guide?.places} />
           </View>
-        </View>
-      ))}
+        ))}
     </ScrollView>
   );
 }
