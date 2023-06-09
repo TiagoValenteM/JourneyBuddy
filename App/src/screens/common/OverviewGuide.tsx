@@ -8,8 +8,8 @@ import {
   Alert,
   RefreshControl,
 } from "react-native";
-import { Guide } from "../models/guides";
-import average from "../utils/average";
+import { Guide } from "../../models/guides";
+import average from "../../utils/average";
 import React from "react";
 import Feather from "react-native-vector-icons/Feather";
 import {
@@ -19,20 +19,20 @@ import {
   hasRatedByUser,
   updateGuideComments,
   UpdateGuideRating,
-} from "../services/ManageGuides";
-import LoadingIndicator from "../components/indicators/LoadingIndicator";
-import { usePressedGuide } from "../context/pressedGuideContext";
-import CarouselLocations from "../components/carousels/CarouselLocations";
-import CarouselPictures from "../components/carousels/CarouselPictures";
-import UserIdentifier from "../components/identifiers/UserIdentifier";
-import GuideIdentifier from "../components/identifiers/GuideIdentifier";
-import { useAuthenticatedUser } from "../context/authenticatedUserContext";
+} from "../../services/ManageGuides";
+import LoadingIndicator from "../../components/indicators/LoadingIndicator";
+import { usePressedGuide } from "../../context/pressedGuideContext";
+import CarouselLocations from "../../components/carousels/CarouselLocations";
+import CarouselPictures from "../../components/carousels/CarouselPictures";
+import UserIdentifier from "../../components/identifiers/UserIdentifier";
+import GuideIdentifier from "../../components/identifiers/GuideIdentifier";
+import { useAuthenticatedUser } from "../../context/authenticatedUserContext";
 
 interface GuideInDetailScreenProps {
   navigation: any;
 }
 
-function GuideInDetailScreen({ navigation }: GuideInDetailScreenProps) {
+function OverviewGuideView({ navigation }: GuideInDetailScreenProps) {
   const { pressedGuide, guides, setGuides } = usePressedGuide();
   const { authenticatedUser, setAuthenticatedUser } = useAuthenticatedUser();
   const [rating, setRating] = React.useState(0);
@@ -456,4 +456,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default GuideInDetailScreen;
+export default OverviewGuideView;

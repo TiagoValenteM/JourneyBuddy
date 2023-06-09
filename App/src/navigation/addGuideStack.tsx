@@ -1,6 +1,6 @@
-import AddGuideScreen from "../screens/AddGuide";
+import UploadGuideView from "../screens/uploadGuideStack/UploadGuide";
 import { Text, TouchableOpacity, Alert } from "react-native";
-import AddPlacesScreen from "../screens/AddPlaces";
+import LocationPickerView from "../screens/common/LocationPicker";
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import { Coordinate, Guide } from "../models/guides";
@@ -21,7 +21,7 @@ function AddGuideStack({ navigation }: AddGuideStackProps) {
   const { guides, setGuides } = usePressedGuide();
   const [markerCoordinate, setMarkerCoordinate] = React.useState<Coordinate>();
   const [locationName, setLocationName] = React.useState(
-    "Search for a location or tap on the map"
+    "searchStack for a location or tap on the map"
   );
   const [refreshing, setRefreshing] = React.useState(false);
   const [guide, setGuide] = React.useState<Guide>(new Guide(authenticatedUser));
@@ -67,7 +67,7 @@ function AddGuideStack({ navigation }: AddGuideStackProps) {
         }}
       >
         {(props) => (
-          <AddGuideScreen
+          <UploadGuideView
             {...props}
             authenticatedUser={authenticatedUser}
             navigation={navigation}
@@ -124,14 +124,14 @@ function AddGuideStack({ navigation }: AddGuideStackProps) {
         }}
       >
         {(props) => (
-          <AddPlacesScreen
+          <LocationPickerView
             {...props}
             markerCoordinate={markerCoordinate}
             setMarkerCoordinate={setMarkerCoordinate}
             locationName={
               locationName?.length > 0
                 ? locationName
-                : "Search for a location or tap on the map"
+                : "searchStack for a location or tap on the map"
             }
             setLocationName={setLocationName}
           />

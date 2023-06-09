@@ -6,20 +6,20 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { getAllGuides } from "../services/ManageGuides";
-import { Guide } from "../models/guides";
-import CarouselLocations from "../components/carousels/CarouselLocations";
-import CarouselPictures from "../components/carousels/CarouselPictures";
-import UserIdentifier from "../components/identifiers/UserIdentifier";
-import GuideIdentifier from "../components/identifiers/GuideIdentifier";
+import { getAllGuides } from "../../services/ManageGuides";
+import { Guide } from "../../models/guides";
+import CarouselLocations from "../../components/carousels/CarouselLocations";
+import CarouselPictures from "../../components/carousels/CarouselPictures";
+import UserIdentifier from "../../components/identifiers/UserIdentifier";
+import GuideIdentifier from "../../components/identifiers/GuideIdentifier";
 import Feather from "react-native-vector-icons/Feather";
-import { usePressedGuide } from "../context/pressedGuideContext";
+import { usePressedGuide } from "../../context/pressedGuideContext";
 
 interface HomepageProps {
   navigation: any;
 }
 
-function Homepage({ navigation }: HomepageProps) {
+function HomepageView({ navigation }: HomepageProps) {
   const { setPressedGuide } = usePressedGuide();
   const [guides, setGuides] = useState<Guide[]>([]);
   const [refreshing, setRefreshing] = React.useState(false);
@@ -110,4 +110,4 @@ function Homepage({ navigation }: HomepageProps) {
   );
 }
 
-export default Homepage;
+export default HomepageView;

@@ -1,5 +1,5 @@
 import React from "react";
-import logo from "../../assets/logo.png";
+import logo from "../../../assets/logo.png";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import {
   Image,
@@ -9,19 +9,18 @@ import {
   Text,
   View,
 } from "react-native";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
-import { auth, db } from "../config/firebase";
-import CachedImage from "../components/images/CachedImage";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../config/firebase";
+import CachedImage from "../../components/images/CachedImage";
 
-function SignUpScreen<StackScreenProps>({ navigation }: { navigation: any }) {
+function SignInView<StackScreenProps>({ navigation }: { navigation: any }) {
   const [value, setValue] = React.useState({
     email: "",
     password: "",
     error: "",
   });
 
-  async function signUp() {
+  async function signIn() {
     if (value.email === "" || value.password === "") {
       setValue({
         ...value,
@@ -30,43 +29,40 @@ function SignUpScreen<StackScreenProps>({ navigation }: { navigation: any }) {
       return;
     }
 
-    createUserWithEmailAndPassword(auth, value.email, value.password)
-      .then(async (userCredential) => {
-        setDoc(doc(db, "user_profiles", userCredential.user.uid), {
-          email: userCredential.user.email,
-          uid: userCredential.user.uid,
-        })
-          .then(() => {
-            navigation.navigate("Sign In");
-          })
-          .catch((error) => {
-            setValue({
-              ...value,
-              error: error.message,
-            });
-          });
-      })
-      .catch((error) => {
-        setValue({
-          ...value,
-          error: error.message,
-        });
+    try {
+      await signInWithEmailAndPassword(auth, value.email, value.password);
+    } catch (error: any) {
+      setValue({
+        ...value,
+        error: error.message,
       });
+    }
   }
 
   return (
     <View className="w-full h-full">
       <View className="mx-4 h-5/6 flex justify-center align-center space-y-6">
-        <CachedImage
-          source={logo}
-          style={{ width: 100, height: 100, alignSelf: "center" }}
-        />
+        <View className={"flex flex-row w-full justify-around items-center"}>
+          <CachedImage
+            source={logo}
+            style={{
+              width: 100,
+              height: 100,
+              alignSelf: "center",
+              borderRadius: 20,
+            }}
+          />
+          <Text className={"block text-2xl font-bold text-center text-white"}>
+            JourneyBuddy
+          </Text>
+        </View>
+
         <Text className="block text-2xl font-bold text-center text-white">
-          Sign Up
+          Sign In
         </Text>
 
-        <View className="space-y-6">
-          <View className="mt-1 space-y-4">
+        <View className="space-y-10">
+          <View className="mt-1 space-y-8">
             <View className="flex flex-row justify-center align-center rounded-xl px-1 py-1 bg-gray-100">
               <Icon style={styles.icon} name="email" size={18} color="gray" />
               <TextInput
@@ -77,7 +73,7 @@ function SignUpScreen<StackScreenProps>({ navigation }: { navigation: any }) {
               />
             </View>
 
-            <View className="flex- flex-row justify-center align-center rounded-xl px-1 py-1 bg-gray-100">
+            <View className="flex flex-row justify-center align-center rounded-xl px-1 py-1 bg-gray-100">
               <Icon style={styles.icon} name="lock" size={18} color="gray" />
               <TextInput
                 placeholder="Password"
@@ -90,19 +86,19 @@ function SignUpScreen<StackScreenProps>({ navigation }: { navigation: any }) {
           <Pressable className="bg-background border border-white rounded-3xl py-2 px-4 m-4">
             <Text
               className="text-center text-white font-bold text-base"
-              onPress={signUp}
+              onPress={signIn}
             >
-              Sign Up
+              Sign In
             </Text>
           </Pressable>
         </View>
         <Text className="text-center text-white text-base">
-          Have an account?{" "}
+          Don't Have an account?{" "}
           <Text
             className="text-blue"
-            onPress={() => navigation.navigate("Sign In")}
+            onPress={() => navigation.navigate("Sign Up")}
           >
-            Sign In
+            Sign Up
           </Text>
         </Text>
       </View>
@@ -110,7 +106,7 @@ function SignUpScreen<StackScreenProps>({ navigation }: { navigation: any }) {
   );
 }
 
-export default SignUpScreen;
+export default SignInView;
 
 const styles = StyleSheet.create({
   icon: {
@@ -124,5 +120,9 @@ const styles = StyleSheet.create({
     paddingLeft: 0,
     backgroundColor: "#fff",
     color: "#424242",
+  },
+  error: {
+    color: "red",
+    marginBottom: 10,
   },
 });

@@ -1,9 +1,9 @@
 import { createStackNavigator } from "@react-navigation/stack";
-import Homepage from "../screens/Homepage";
+import HomepageView from "../screens/homepageStack/Homepage";
 import React from "react";
-import ProfileScreen from "../screens/Profile";
+import ProfileView from "../screens/common/Profile";
 import { useCurrentUser } from "../context/currentUserContext";
-import FullScreenMap from "../screens/FullScreenMap";
+import OverviewMapView from "../screens/common/OverviewMap";
 import { usePressedGuide } from "../context/pressedGuideContext";
 
 const Stack = createStackNavigator();
@@ -17,7 +17,7 @@ function HomepageStack() {
     <Stack.Navigator>
       <Stack.Screen
         name="Homepage"
-        component={Homepage}
+        component={HomepageView}
         options={{
           headerTitle: "Homepage",
         }}
@@ -30,7 +30,7 @@ function HomepageStack() {
         }}
       >
         {(props) => (
-          <ProfileScreen
+          <ProfileView
             {...props}
             modalVisible={modalVisible}
             setModalVisible={setModalVisible}
@@ -45,7 +45,7 @@ function HomepageStack() {
         })}
       >
         {(props) => (
-          <FullScreenMap {...props} guidePlaces={pressedGuide?.places} />
+          <OverviewMapView {...props} guidePlaces={pressedGuide?.places} />
         )}
       </Stack.Screen>
     </Stack.Navigator>

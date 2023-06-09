@@ -2,7 +2,7 @@ import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Feather from "react-native-vector-icons/Feather";
-import SearchScreen from "../screens/Search";
+import SearchView from "../screens/searchStack/Search";
 import AddGuideStack from "./addGuideStack";
 import ProfileStack from "./profileStack";
 import { getAuthUserProfile } from "../database/userRepository";
@@ -67,7 +67,7 @@ export default function UserStack() {
         })}
       >
         <Tab.Screen name="HomepageStack" component={HomepageStack} />
-        <Tab.Screen name="SearchStack" component={SearchScreen} />
+        <Tab.Screen name="SearchStack" component={SearchView} />
         <Tab.Screen name="GuidesStack" component={AddGuideStack} />
         <Tab.Screen name="ProfileStack" component={ProfileStack} />
       </Tab.Navigator>

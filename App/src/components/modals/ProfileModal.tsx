@@ -58,7 +58,7 @@ const ProfileModal = ({ modalVisible, setModalVisible }: ProfileModalProps) => {
               fontWeight: "600",
             }}
           >
-            Logout
+            Sign Out
           </Text>
         </TouchableOpacity>
       </BottomSheetView>

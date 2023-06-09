@@ -1,10 +1,10 @@
 import React from "react";
 import { TextInput, View, Text, ScrollView } from "react-native";
 import MapView, { Marker } from "react-native-maps";
-import debounce from "../utils/debounce";
-import SelectLocationModal from "../components/modals/LocationPickerModal";
-import { Coordinate } from "../models/guides";
-import { useError } from "../hooks/useError";
+import debounce from "../../utils/debounce";
+import SelectLocationModal from "../../components/modals/LocationPickerModal";
+import { Coordinate } from "../../models/guides";
+import { useError } from "../../hooks/useError";
 
 interface LocationPickerProps {
   setModalVisible: any;
@@ -132,7 +132,7 @@ const LocationPicker = ({
   );
 };
 
-function AddPlacesScreen<StackScreenProps>({
+function LocationPickerView<StackScreenProps>({
   markerCoordinate,
   setMarkerCoordinate,
   locationName,
@@ -164,4 +164,4 @@ function AddPlacesScreen<StackScreenProps>({
   );
 }
 
-export default AddPlacesScreen;
+export default LocationPickerView;

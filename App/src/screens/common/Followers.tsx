@@ -1,10 +1,10 @@
 import { RefreshControl, ScrollView, Text, View } from "react-native";
 import React, { useEffect, useState } from "react";
-import UserIdentifier from "../components/identifiers/UserIdentifier";
-import { getUsername, getUserByUID } from "../database/userRepository";
-import { useCurrentUser } from "../context/currentUserContext";
+import UserIdentifier from "../../components/identifiers/UserIdentifier";
+import { getUsername, getUserByUID } from "../../database/userRepository";
+import { useCurrentUser } from "../../context/currentUserContext";
 
-function FollowersScreen() {
+function FollowersView() {
   const { currentUser } = useCurrentUser();
   const [refreshing, setRefreshing] = useState(false);
   const [followers, setFollowers] = useState<UserProfile[] | []>([]);
@@ -65,4 +65,4 @@ function FollowersScreen() {
   );
 }
 
-export default FollowersScreen;
+export default FollowersView;

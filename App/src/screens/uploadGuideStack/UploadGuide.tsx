@@ -9,9 +9,9 @@ import {
   Image,
 } from "react-native";
 import Feather from "react-native-vector-icons/Feather";
-import { Guide } from "../models/guides";
-import { selectMultipleImages } from "../services/ImageUpload";
-import CachedImage from "../components/images/CachedImage";
+import { Guide } from "../../models/guides";
+import { selectMultipleImages } from "../../services/ImageUpload";
+import CachedImage from "../../components/images/CachedImage";
 
 interface AddGuideScreenProps {
   navigation: any;
@@ -22,7 +22,7 @@ interface AddGuideScreenProps {
   updateGuideCallback: any;
 }
 
-const AddGuideScreen: React.FC<AddGuideScreenProps> = ({
+const UploadGuideView: React.FC<AddGuideScreenProps> = ({
   navigation,
   authenticatedUser,
   setRefreshing,
@@ -267,4 +267,4 @@ const AddGuideScreen: React.FC<AddGuideScreenProps> = ({
   );
 };
 
-export default AddGuideScreen;
+export default UploadGuideView;

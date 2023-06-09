@@ -1,15 +1,15 @@
 import MapView, { Marker } from "react-native-maps";
 import React from "react";
-import { Place } from "../models/guides";
+import { Place } from "../../models/guides";
 import { Pressable, Text, View } from "react-native";
 import Feather from "react-native-vector-icons/Feather";
-import { usePressedGuide } from "../context/pressedGuideContext";
+import { usePressedGuide } from "../../context/pressedGuideContext";
 
 interface FullScreenMapProps {
   guidePlaces: Place[] | undefined;
   navigation: any;
 }
-function FullScreenMap({ guidePlaces, navigation }: FullScreenMapProps) {
+function OverviewMapView({ guidePlaces, navigation }: FullScreenMapProps) {
   const { pressedGuide, setPressedGuide } = usePressedGuide();
   const [selectedPlace, setSelectedPlace] = React.useState<Place | null>(null);
   const initialRegion = {
@@ -105,4 +105,4 @@ function FullScreenMap({ guidePlaces, navigation }: FullScreenMapProps) {
   );
 }
 
-export default FullScreenMap;
+export default OverviewMapView;

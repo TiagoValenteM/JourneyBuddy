@@ -1,14 +1,14 @@
 import React from "react";
 import Feather from "react-native-vector-icons/Feather";
 import { Alert, Text, TouchableOpacity } from "react-native";
-import ProfileScreen from "../screens/Profile";
-import EditProfileScreen from "../screens/EditProfile";
+import ProfileView from "../screens/common/Profile";
+import UpdateProfileView from "../screens/common/UpdateProfile";
 import { createStackNavigator } from "@react-navigation/stack";
-import GuideInDetailScreen from "../screens/GuideInDetail";
+import OverviewGuideView from "../screens/common/OverviewGuide";
 import { Coordinate, Guide } from "../models/guides";
-import FullScreenMap from "../screens/FullScreenMap";
-import EditGuideScreen from "../screens/EditGuideScreen";
-import AddPlacesScreen from "../screens/AddPlaces";
+import OverviewMapView from "../screens/common/OverviewMap";
+import UpdateGuideView from "../screens/common/UpdateGuide";
+import LocationPickerView from "../screens/common/LocationPicker";
 import { usePressedGuide } from "../context/pressedGuideContext";
 import { useAuthenticatedUser } from "../context/authenticatedUserContext";
 import { useCurrentUser } from "../context/currentUserContext";
@@ -32,7 +32,7 @@ function ProfileStack({ navigation }: ProfileStackProps) {
   const { currentUser, pressedUser, setPressedUser } = useCurrentUser();
   const [markerCoordinate, setMarkerCoordinate] = React.useState<Coordinate>();
   const [locationName, setLocationName] = React.useState(
-    "Search for a location or tap on the map"
+    "searchStack for a location or tap on the map"
   );
 
   return (
@@ -60,7 +60,7 @@ function ProfileStack({ navigation }: ProfileStackProps) {
         })}
       >
         {(props) => (
-          <ProfileScreen
+          <ProfileView
             {...props}
             modalVisible={modalVisible}
             setModalVisible={setModalVisible}
@@ -97,14 +97,14 @@ function ProfileStack({ navigation }: ProfileStackProps) {
             </TouchableOpacity>
           ),
         }}
-        component={EditProfileScreen}
+        component={UpdateProfileView}
       />
       <Stack.Screen
         name={"GuideInDetail"}
         options={{
           headerTitle: "Guide",
         }}
-        component={GuideInDetailScreen}
+        component={OverviewGuideView}
       />
       <Stack.Screen
         name={"FullScreenMap"}
@@ -113,7 +113,7 @@ function ProfileStack({ navigation }: ProfileStackProps) {
         }}
       >
         {(props) => (
-          <FullScreenMap {...props} guidePlaces={pressedGuide?.places} />
+          <OverviewMapView {...props} guidePlaces={pressedGuide?.places} />
         )}
       </Stack.Screen>
       <Stack.Screen
@@ -153,7 +153,7 @@ function ProfileStack({ navigation }: ProfileStackProps) {
         }}
       >
         {(props) => (
-          <EditGuideScreen
+          <UpdateGuideView
             {...props}
             navigation={navigation}
             authenticatedUser={authenticatedUser!!}
@@ -213,14 +213,14 @@ function ProfileStack({ navigation }: ProfileStackProps) {
         }}
       >
         {(props) => (
-          <AddPlacesScreen
+          <LocationPickerView
             {...props}
             markerCoordinate={markerCoordinate}
             setMarkerCoordinate={setMarkerCoordinate}
             locationName={
               locationName?.length > 0
                 ? locationName
-                : "Search for a location or tap on the map"
+                : "searchStack for a location or tap on the map"
             }
             setLocationName={setLocationName}
           />

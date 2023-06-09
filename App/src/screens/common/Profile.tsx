@@ -1,13 +1,13 @@
 import React from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
-import ProfileModal from "../components/modals/ProfileModal";
-import { getGuidesCurrentUser } from "../services/ManageGuides";
-import { Guide } from "../models/guides";
-import GridImage from "../components/grids/GridImage";
-import ProfileIdentifier from "../components/identifiers/ProfileIdentifier";
-import { useCurrentUser } from "../context/currentUserContext";
-import { useAuthenticatedUser } from "../context/authenticatedUserContext";
-import { usePressedGuide } from "../context/pressedGuideContext";
+import ProfileModal from "../../components/modals/ProfileModal";
+import { getGuidesCurrentUser } from "../../services/ManageGuides";
+import { Guide } from "../../models/guides";
+import GridImage from "../../components/grids/GridImage";
+import ProfileIdentifier from "../../components/identifiers/ProfileIdentifier";
+import { useCurrentUser } from "../../context/currentUserContext";
+import { useAuthenticatedUser } from "../../context/authenticatedUserContext";
+import { usePressedGuide } from "../../context/pressedGuideContext";
 
 interface ProfileScreenProps {
   navigation: any;
@@ -16,7 +16,7 @@ interface ProfileScreenProps {
   isAuthUser: boolean;
 }
 
-function ProfileScreen({
+function ProfileView({
   navigation,
   modalVisible,
   setModalVisible,
@@ -74,4 +74,4 @@ function ProfileScreen({
   );
 }
 
-export default ProfileScreen;
+export default ProfileView;

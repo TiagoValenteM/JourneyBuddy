@@ -9,10 +9,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { Guide, Place } from "../models/guides";
-import { selectMultipleImages } from "../services/ImageUpload";
+import { Guide, Place } from "../../models/guides";
+import { selectMultipleImages } from "../../services/ImageUpload";
 import Feather from "react-native-vector-icons/Feather";
-import CachedImage from "../components/images/CachedImage";
+import CachedImage from "../../components/images/CachedImage";
 
 interface EditGuideScreenProps {
   navigation: any;
@@ -23,7 +23,7 @@ interface EditGuideScreenProps {
   updateGuideCallback: any;
 }
 
-const EditGuideScreen = ({
+const UpdateGuideView = ({
   navigation,
   setRefreshing,
   refreshing,
@@ -321,4 +321,4 @@ const EditGuideScreen = ({
   );
 };
 
-export default EditGuideScreen;
+export default UpdateGuideView;

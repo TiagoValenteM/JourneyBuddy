@@ -1,7 +1,7 @@
 import React from "react";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
-import FollowingScreen from "../screens/Following";
-import FollowersScreen from "../screens/Followers";
+import FollowingView from "../screens/common/Following";
+import FollowersView from "../screens/common/Followers";
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -19,8 +19,8 @@ const FollowingTabs = () => {
         },
       }}
     >
-      <Tab.Screen name="Followers" component={FollowersScreen} />
-      <Tab.Screen name="Following" component={FollowingScreen} />
+      <Tab.Screen name="Followers" component={FollowersView} />
+      <Tab.Screen name="Following" component={FollowingView} />
     </Tab.Navigator>
   );
 };

@@ -1,8 +1,8 @@
 import React from "react";
 import { Pressable, Text, View } from "react-native";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../../hooks/useAuth";
 
-function SearchScreen<StackScreenProps>({ navigation }: { navigation: any }) {
+function SearchView<StackScreenProps>({ navigation }: { navigation: any }) {
   const { user } = useAuth();
 
   return (
@@ -21,4 +21,4 @@ function SearchScreen<StackScreenProps>({ navigation }: { navigation: any }) {
   );
 }
 
-export default SearchScreen;
+export default SearchView;

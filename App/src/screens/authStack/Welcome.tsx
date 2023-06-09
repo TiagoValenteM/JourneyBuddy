@@ -2,9 +2,9 @@ import React from "react";
 import { Text, Pressable, Image, View } from "react-native";
 import { StackScreenProps } from "@react-navigation/stack";
 import { LinearGradient } from "expo-linear-gradient";
-import CachedImage from "../components/images/CachedImage";
+import CachedImage from "../../components/images/CachedImage";
 
-function WelcomeScreen<StackScreenProps>({ navigation }: { navigation: any }) {
+function WelcomeView<StackScreenProps>({ navigation }: { navigation: any }) {
   return (
     <View className="w-full h-full">
       <LinearGradient
@@ -14,7 +14,7 @@ function WelcomeScreen<StackScreenProps>({ navigation }: { navigation: any }) {
         <View className="mx-4 h-full flex justify-center align-center space-y-6">
           <View>
             <CachedImage
-              source={require("../../assets/phone.png")}
+              source={require("../../../assets/phone.png")}
               style={{ width: 250, height: 250, alignSelf: "center" }}
             />
           </View>
@@ -49,4 +49,4 @@ function WelcomeScreen<StackScreenProps>({ navigation }: { navigation: any }) {
   );
 }
 
-export default WelcomeScreen;
+export default WelcomeView;
