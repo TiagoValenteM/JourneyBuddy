@@ -7,7 +7,8 @@ import {
   updateDoc,
   where,
   deleteDoc,
-  setDoc,
+  writeBatch,
+  runTransaction,
   arrayRemove,
 } from "firebase/firestore";
 import { db } from "../config/firebase";
@@ -214,7 +215,8 @@ const deleteGuide = async (
 const handleUpdateGuide = (
   setPressedGuide: React.Dispatch<React.SetStateAction<Guide | undefined>>,
   pressedGuide: Guide,
-  navigation: any
+  navigation: any,
+  showError: (message: string) => void
 ) => {
   if (pressedGuide?.uid) {
     const guideRef = doc(db, "guides", pressedGuide.uid);
@@ -228,8 +230,11 @@ const handleUpdateGuide = (
                 async (picture) =>
                   await uploadMultiplePictures(pressedGuide?.uid, picture)
               )
-            ).catch((error) => {
-              console.log("Error updating guide", error);
+            ).catch(() => {
+              showError(
+                "Error uploading guide pictures. Please try again later."
+              );
+              return;
             });
 
             console.log("UPDATED PICTURES, NOW GUIDE AGAIN...");
@@ -264,40 +269,47 @@ const handleCreateGuide = async (
   showError: any
 ) => {
   try {
-    // 1 - Upload pictures
-    let imagesUrl: string[] | any;
-    if (guide?.pictures?.length > 0) {
-      imagesUrl = await Promise.all(
-        guide?.pictures?.map(
-          async (picture: string) =>
-            await uploadMultiplePictures(guide?.uid, picture)
-        )
-      ).catch(() => {
-        showError("Error uploading guide pictures. Please try again later.");
-        return;
-      });
-    }
+    let updatedGuides: string[] = [];
+
+    const result = await runTransaction(db, async (transaction) => {
+      // 1 - Update user's guides
+      const userDocRef = doc(db, "user_profiles", authenticatedUser!.uid);
+      const userDoc = await transaction.get(userDocRef);
+      const userDocData = userDoc.data();
+      const userGuides = userDocData?.guides || [];
+      updatedGuides = [...userGuides, guide?.uid];
+      transaction.update(userDocRef, { guides: updatedGuides });
+
+      // 2 - Upload pictures and update guide
+      let imagesUrl: string[] | any;
+      if (guide?.pictures?.length > 0) {
+        imagesUrl = await Promise.all(
+          guide?.pictures?.map(
+            async (picture: string) =>
+              await uploadMultiplePictures(guide?.uid, picture)
+          )
+        ).catch(() => {
+          showError("Error uploading guide pictures. Please try again later.");
+        });
+      }
+
+      return imagesUrl;
+    });
 
     // Return early if imagesUrl is not available
-    if (!imagesUrl) {
+    if (!result) {
       return;
     }
 
-    // 2 - Upload guide and update with pictures URL if available
-    await setDoc(doc(db, "guides", guide?.uid), {
-      ...guide,
-      pictures: imagesUrl,
-    });
+    const imagesUrl = result;
 
-    // 3 - Update user's guides
-    const userDocRef = doc(db, "user_profiles", authenticatedUser!.uid);
-    const userDocData = (await getDoc(userDocRef)).data();
-    const userGuides = userDocData?.guides || [];
-    const updatedGuides = [...userGuides, guide?.uid];
+    const batch = writeBatch(db);
 
-    await updateDoc(userDocRef, {
-      guides: updatedGuides,
-    });
+    const guideRef = doc(db, "guides", guide?.uid);
+    batch.set(guideRef, { ...guide, pictures: imagesUrl });
+
+    // Commit the batched writes
+    await batch.commit();
 
     Alert.alert("Guide created successfully");
 
@@ -314,6 +326,7 @@ const handleCreateGuide = async (
     console.log("Guides updated successfully!");
   } catch (error) {
     console.log("Error creating guide:", error);
+    // Handle error and perform necessary actions (e.g., show error message)
   }
 };
 

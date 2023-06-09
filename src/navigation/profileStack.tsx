@@ -15,6 +15,7 @@ import { useCurrentUser } from "../context/currentUserContext";
 import { handleUpdateGuide } from "../services/ManageGuides";
 import FollowingTabs from "./FollowingTabs";
 import { handleUpdateProfile } from "../database/userRepository";
+import { useError } from "../hooks/useError";
 
 const Stack = createStackNavigator();
 
@@ -23,6 +24,7 @@ interface ProfileStackProps {
 }
 
 function ProfileStack({ navigation }: ProfileStackProps) {
+  const { showError } = useError();
   const { setPressedGuide, pressedGuide } = usePressedGuide();
   const [modalVisible, setModalVisible] = React.useState(false);
   const [refreshing, setRefreshing] = React.useState(false);
@@ -130,7 +132,12 @@ function ProfileStack({ navigation }: ProfileStackProps) {
                   paddingRight: 15,
                 }}
                 onPress={() =>
-                  handleUpdateGuide(setPressedGuide, pressedGuide!, navigation)
+                  handleUpdateGuide(
+                    setPressedGuide,
+                    pressedGuide!,
+                    navigation,
+                    showError
+                  )
                 }
               >
                 Done
