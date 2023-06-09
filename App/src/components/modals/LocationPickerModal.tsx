@@ -57,7 +57,7 @@ const LocationPickerModal = ({
           Locations
         </Text>
         {locationList &&
-          locationList.map((item, index) => {
+          locationList.map((item) => {
             return (
               <TouchableOpacity
                 key={item.place_id}

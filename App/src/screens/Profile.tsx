@@ -1,6 +1,6 @@
 import React from "react";
-import { RefreshControl, ScrollView } from "react-native";
-import MenuModal from "../components/modals/MenuModal";
+import { RefreshControl, ScrollView, View } from "react-native";
+import ProfileModal from "../components/modals/ProfileModal";
 import { getGuidesCurrentUser } from "../services/ManageGuides";
 import { Guide } from "../models/guides";
 import GridImage from "../components/grids/GridImage";
@@ -56,19 +56,21 @@ function ProfileScreen({
   }, [currentUser]);
 
   return (
-    <ScrollView
-      style={{ flex: 1, paddingHorizontal: 20 }}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      <ProfileIdentifier navigation={navigation} isAuthUser={isAuthUser} />
-      <GridImage guides={guides} navigation={navigation} />
-      <MenuModal
+    <View style={{ height: "100%", flex: 1 }}>
+      <ScrollView
+        style={{ flex: 1, paddingHorizontal: 20 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <ProfileIdentifier navigation={navigation} isAuthUser={isAuthUser} />
+        <GridImage guides={guides} navigation={navigation} />
+      </ScrollView>
+      <ProfileModal
         modalVisible={modalVisible}
         setModalVisible={setModalVisible}
       />
-    </ScrollView>
+    </View>
   );
 }
 
