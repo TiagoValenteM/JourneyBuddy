@@ -35,6 +35,8 @@ function ProfileStack({ navigation }: ProfileStackProps) {
     "searchStack for a location or tap on the map"
   );
 
+  console.log(modalVisible);
+
   return (
     <Stack.Navigator>
       <Stack.Screen
@@ -62,9 +64,9 @@ function ProfileStack({ navigation }: ProfileStackProps) {
         {(props) => (
           <ProfileView
             {...props}
-            modalVisible={modalVisible}
-            setModalVisible={setModalVisible}
             isAuthUser={true}
+            setModalVisible={setModalVisible}
+            modalVisible={modalVisible}
           />
         )}
       </Stack.Screen>

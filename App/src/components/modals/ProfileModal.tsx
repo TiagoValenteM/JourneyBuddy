@@ -7,14 +7,13 @@ import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 const auth = getAuth();
 
 interface ProfileModalProps {
-  modalVisible: boolean;
   setModalVisible: any;
 }
 
-const ProfileModal = ({ modalVisible, setModalVisible }: ProfileModalProps) => {
+const ProfileModal = ({ setModalVisible }: ProfileModalProps) => {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const snapPoints = ["30%"];
-  return modalVisible ? (
+  return (
     <BottomSheet
       style={{
         borderTopLeftRadius: 30,
@@ -63,7 +62,7 @@ const ProfileModal = ({ modalVisible, setModalVisible }: ProfileModalProps) => {
         </TouchableOpacity>
       </BottomSheetView>
     </BottomSheet>
-  ) : null;
+  );
 };
 
 export default ProfileModal;

@@ -1,5 +1,4 @@
 import { createStackNavigator } from "@react-navigation/stack";
-import HomepageView from "../screens/homepageStack/Homepage";
 import React from "react";
 import ProfileView from "../screens/common/Profile";
 import { useCurrentUser } from "../context/currentUserContext";
@@ -7,24 +6,25 @@ import OverviewMapView from "../screens/common/OverviewMap";
 import { useGuide } from "../context/GuideContext";
 import OverviewGuideView from "../screens/common/OverviewGuide";
 import FollowingTabs from "./FollowingTabs";
+import SearchView from "../screens/searchStack/Search";
 
 const Stack = createStackNavigator();
 
-function HomepageStack() {
+function SearchStack() {
   const { currentUser } = useCurrentUser();
   const { pressedGuide } = useGuide();
 
   return (
     <Stack.Navigator>
       <Stack.Screen
-        name="Homepage"
-        component={HomepageView}
+        name="Search"
+        component={SearchView}
         options={{
-          headerTitle: "Homepage",
+          headerTitle: "Search",
         }}
       />
       <Stack.Screen
-        name="ProfileHomepage"
+        name="ProfileSearch"
         options={{
           headerTitle: currentUser?.username,
           headerBackTitle: "Back",
@@ -65,4 +65,4 @@ function HomepageStack() {
   );
 }
 
-export default HomepageStack;
+export default SearchStack;

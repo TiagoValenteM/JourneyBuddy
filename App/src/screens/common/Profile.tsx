@@ -10,16 +10,16 @@ import { useGuide } from "../../context/GuideContext";
 
 interface ProfileScreenProps {
   navigation: any;
-  modalVisible: boolean;
-  setModalVisible: any;
   isAuthUser: boolean;
+  modalVisible?: boolean;
+  setModalVisible?: any;
 }
 
 function ProfileView({
   navigation,
+  isAuthUser,
   modalVisible,
   setModalVisible,
-  isAuthUser,
 }: ProfileScreenProps) {
   const { currentUser } = useCurrentUser();
   const { authenticatedUser } = useAuthenticatedUser();
@@ -72,10 +72,7 @@ function ProfileView({
           </View>
         )}
       </ScrollView>
-      <ProfileModal
-        modalVisible={modalVisible}
-        setModalVisible={setModalVisible}
-      />
+      {modalVisible && <ProfileModal setModalVisible={setModalVisible} />}
     </View>
   );
 }
