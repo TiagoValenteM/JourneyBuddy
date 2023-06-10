@@ -4,14 +4,15 @@ import React from "react";
 import ProfileView from "../screens/common/Profile";
 import { useCurrentUser } from "../context/currentUserContext";
 import OverviewMapView from "../screens/common/OverviewMap";
-import { usePressedGuide } from "../context/pressedGuideContext";
+import { useGuide } from "../context/GuideContext";
+import OverviewGuideView from "../screens/common/OverviewGuide";
 
 const Stack = createStackNavigator();
 
 function HomepageStack() {
   const [modalVisible, setModalVisible] = React.useState(false);
   const { currentUser } = useCurrentUser();
-  const { pressedGuide } = usePressedGuide();
+  const { pressedGuide } = useGuide();
 
   return (
     <Stack.Navigator>
@@ -48,6 +49,13 @@ function HomepageStack() {
           <OverviewMapView {...props} guidePlaces={pressedGuide?.places} />
         )}
       </Stack.Screen>
+      <Stack.Screen
+        name={"GuideInDetail"}
+        options={{
+          headerTitle: "Guide",
+        }}
+        component={OverviewGuideView}
+      />
     </Stack.Navigator>
   );
 }

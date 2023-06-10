@@ -21,7 +21,7 @@ import {
   UpdateGuideRating,
 } from "../../services/ManageGuides";
 import LoadingIndicator from "../../components/indicators/LoadingIndicator";
-import { usePressedGuide } from "../../context/pressedGuideContext";
+import { useGuide } from "../../context/GuideContext";
 import CarouselLocations from "../../components/carousels/CarouselLocations";
 import CarouselPictures from "../../components/carousels/CarouselPictures";
 import UserIdentifier from "../../components/identifiers/UserIdentifier";
@@ -33,7 +33,7 @@ interface GuideInDetailScreenProps {
 }
 
 function OverviewGuideView({ navigation }: GuideInDetailScreenProps) {
-  const { pressedGuide, guides, setGuides } = usePressedGuide();
+  const { pressedGuide, guides, setGuides } = useGuide();
   const { authenticatedUser, setAuthenticatedUser } = useAuthenticatedUser();
   const [rating, setRating] = React.useState(0);
   const [newComment, setNewComment] = React.useState("");
@@ -180,7 +180,7 @@ function OverviewGuideView({ navigation }: GuideInDetailScreenProps) {
           <Text style={ratingStyles.sectionTitle}>Locations</Text>
           <TouchableOpacity
             onPress={() => {
-              navigation.navigate("FullScreenMap");
+              navigation.navigate("MapOverview");
             }}
           >
             <Feather name={"map"} size={25} color={"#000"} />

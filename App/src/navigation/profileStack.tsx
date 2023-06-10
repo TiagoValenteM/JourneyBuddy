@@ -9,7 +9,7 @@ import { Coordinate, Guide } from "../models/guides";
 import OverviewMapView from "../screens/common/OverviewMap";
 import UpdateGuideView from "../screens/common/UpdateGuide";
 import LocationPickerView from "../screens/common/LocationPicker";
-import { usePressedGuide } from "../context/pressedGuideContext";
+import { useGuide } from "../context/GuideContext";
 import { useAuthenticatedUser } from "../context/authenticatedUserContext";
 import { useCurrentUser } from "../context/currentUserContext";
 import { checkGuide, handleUpdateGuide } from "../services/ManageGuides";
@@ -25,7 +25,7 @@ interface ProfileStackProps {
 
 function ProfileStack({ navigation }: ProfileStackProps) {
   const { showError } = useError();
-  const { setPressedGuide, pressedGuide } = usePressedGuide();
+  const { setPressedGuide, pressedGuide, guides, setGuides } = useGuide();
   const [modalVisible, setModalVisible] = React.useState(false);
   const [refreshing, setRefreshing] = React.useState(false);
   const { authenticatedUser, setAuthenticatedUser } = useAuthenticatedUser();
@@ -107,7 +107,7 @@ function ProfileStack({ navigation }: ProfileStackProps) {
         component={OverviewGuideView}
       />
       <Stack.Screen
-        name={"FullScreenMap"}
+        name={"MapOverview"}
         options={{
           headerShown: false,
         }}
@@ -134,12 +134,15 @@ function ProfileStack({ navigation }: ProfileStackProps) {
                 onPress={async () => {
                   if (checkGuide(pressedGuide!)) {
                     try {
-                      await handleUpdateGuide(
+                      handleUpdateGuide(
                         setPressedGuide,
                         pressedGuide!,
                         navigation,
-                        showError
+                        showError,
+                        guides,
+                        setGuides
                       );
+                      navigation.navigate("GuideInDetail");
                     } catch (error) {
                       showError("Error updating guide.");
                     }

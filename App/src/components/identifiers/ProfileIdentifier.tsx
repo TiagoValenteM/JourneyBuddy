@@ -1,6 +1,5 @@
-import React, { useEffect } from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
-import { defaultProfilePicture } from "../../services/ImageUpload";
+import React from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useCurrentUser } from "../../context/currentUserContext";
 import { useAuthenticatedUser } from "../../context/authenticatedUserContext";
 import { followUser, unfollowUser } from "../../database/userRepository";
@@ -16,8 +15,6 @@ const ProfileIdentifier: React.FC<ProfileIdentifierProps> = ({
 }) => {
   const { currentUser, setCurrentUser } = useCurrentUser();
   const { authenticatedUser, setAuthenticatedUser } = useAuthenticatedUser();
-
-  useEffect(() => {}, [authenticatedUser, currentUser]);
 
   const handleFollow = async () => {
     try {
@@ -52,7 +49,7 @@ const ProfileIdentifier: React.FC<ProfileIdentifierProps> = ({
       <View style={identifierStyles.photoDetailsContainer}>
         <CachedImage
           source={{
-            uri: authenticatedUser?.profilePicturePath || defaultProfilePicture,
+            uri: authenticatedUser!.profilePicturePath,
           }}
           style={identifierStyles.profilePicture}
         ></CachedImage>
@@ -114,7 +111,7 @@ const ProfileIdentifier: React.FC<ProfileIdentifierProps> = ({
       <View style={identifierStyles.photoDetailsContainer}>
         <CachedImage
           source={{
-            uri: currentUser?.profilePicturePath || defaultProfilePicture,
+            uri: currentUser!.profilePicturePath,
           }}
           style={identifierStyles.profilePicture}
         ></CachedImage>

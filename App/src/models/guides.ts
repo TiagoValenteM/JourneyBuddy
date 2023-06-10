@@ -1,4 +1,5 @@
 import uuid from "react-native-uuid";
+import UserProfile from "./userProfiles";
 
 interface Place {
   name: string;

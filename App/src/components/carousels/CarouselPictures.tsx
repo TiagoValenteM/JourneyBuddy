@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import { View, FlatList, Dimensions, StyleSheet } from "react-native";
 import CachedImage from "../images/CachedImage";
+import uuid from "react-native-uuid";
 
 interface CarouselPicturesProps {
   images: string[];

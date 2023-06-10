@@ -3,22 +3,24 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Feather from "react-native-vector-icons/Feather";
 import SearchView from "../screens/searchStack/Search";
-import AddGuideStack from "./addGuideStack";
+import UploadGuideStack from "./uploadGuideStack";
 import ProfileStack from "./profileStack";
 import { getAuthUserProfile } from "../database/userRepository";
-import LoadingIndicator from "../components/indicators/LoadingIndicator";
 import { useAuthenticatedUser } from "../context/authenticatedUserContext";
 import HomepageStack from "./homepageStack";
 import { useCurrentUser } from "../context/currentUserContext";
+import { StatusBar } from "react-native";
+import { useLoading } from "../hooks/useLoading";
 
 const Tab = createBottomTabNavigator();
 
 export default function UserStack() {
-  const { setAuthenticatedUser, authenticatedUser } = useAuthenticatedUser();
+  const { setAuthenticatedUser } = useAuthenticatedUser();
   const { setCurrentUser } = useCurrentUser();
-  const [isLoading, setIsLoading] = React.useState(true); // Track loading state
+  const { startLoading, stopLoading } = useLoading();
 
   React.useEffect(() => {
+    startLoading();
     getAuthUserProfile()
       .then((user) => {
         setAuthenticatedUser(user);
@@ -28,16 +30,13 @@ export default function UserStack() {
         console.error("Error fetching user profile:", error);
       })
       .finally(() => {
-        setIsLoading(false);
+        stopLoading();
       });
   }, []);
 
-  if (isLoading) {
-    return <LoadingIndicator />;
-  }
-
   return (
     <NavigationContainer>
+      <StatusBar barStyle="dark-content" backgroundColor="white" />
       <Tab.Navigator
         screenOptions={({ route }) => ({
           tabBarShowLabel: false,
@@ -68,7 +67,7 @@ export default function UserStack() {
       >
         <Tab.Screen name="HomepageStack" component={HomepageStack} />
         <Tab.Screen name="SearchStack" component={SearchView} />
-        <Tab.Screen name="GuidesStack" component={AddGuideStack} />
+        <Tab.Screen name="GuidesStack" component={UploadGuideStack} />
         <Tab.Screen name="ProfileStack" component={ProfileStack} />
       </Tab.Navigator>
     </NavigationContainer>

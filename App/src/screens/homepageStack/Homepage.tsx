@@ -13,14 +13,14 @@ import CarouselPictures from "../../components/carousels/CarouselPictures";
 import UserIdentifier from "../../components/identifiers/UserIdentifier";
 import GuideIdentifier from "../../components/identifiers/GuideIdentifier";
 import Feather from "react-native-vector-icons/Feather";
-import { usePressedGuide } from "../../context/pressedGuideContext";
+import { useGuide } from "../../context/GuideContext";
 
 interface HomepageProps {
   navigation: any;
 }
 
 function HomepageView({ navigation }: HomepageProps) {
-  const { setPressedGuide } = usePressedGuide();
+  const { setPressedGuide } = useGuide();
   const [guides, setGuides] = useState<Guide[]>([]);
   const [refreshing, setRefreshing] = React.useState(false);
 

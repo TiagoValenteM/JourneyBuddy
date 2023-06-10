@@ -1,13 +1,12 @@
 import React from "react";
-import { RefreshControl, ScrollView, View } from "react-native";
+import { RefreshControl, ScrollView, View, Text } from "react-native";
 import ProfileModal from "../../components/modals/ProfileModal";
 import { getGuidesCurrentUser } from "../../services/ManageGuides";
-import { Guide } from "../../models/guides";
 import GridImage from "../../components/grids/GridImage";
 import ProfileIdentifier from "../../components/identifiers/ProfileIdentifier";
 import { useCurrentUser } from "../../context/currentUserContext";
 import { useAuthenticatedUser } from "../../context/authenticatedUserContext";
-import { usePressedGuide } from "../../context/pressedGuideContext";
+import { useGuide } from "../../context/GuideContext";
 
 interface ProfileScreenProps {
   navigation: any;
@@ -25,30 +24,19 @@ function ProfileView({
   const { currentUser } = useCurrentUser();
   const { authenticatedUser } = useAuthenticatedUser();
   const [refreshing, setRefreshing] = React.useState(false);
-  const { guides, setGuides } = usePressedGuide();
+  const { guides, setGuides } = useGuide();
 
-  const onRefresh = async () => {
+  const onRefresh = () => {
     setRefreshing(true);
 
-    const fetchUserGuides = async () => {
-      try {
-        let fetchedGuides: Guide[];
-
-        if (isAuthUser) {
-          fetchedGuides = await getGuidesCurrentUser(authenticatedUser!);
-        } else {
-          fetchedGuides = await getGuidesCurrentUser(currentUser!);
-        }
-
+    getGuidesCurrentUser(isAuthUser ? authenticatedUser! : currentUser!)
+      .then((fetchedGuides) => {
         setGuides(fetchedGuides);
-      } catch (error) {
-        console.log("Error fetching user guides:", error);
-      }
-
-      setRefreshing(false);
-    };
-
-    await fetchUserGuides();
+        setRefreshing(false);
+      })
+      .catch((err) => {
+        console.log("Error fetching user guides:", err);
+      });
   };
 
   React.useEffect(() => {
@@ -64,7 +52,21 @@ function ProfileView({
         }
       >
         <ProfileIdentifier navigation={navigation} isAuthUser={isAuthUser} />
-        <GridImage guides={guides} navigation={navigation} />
+        {guides?.length > 0 ? (
+          <GridImage guides={guides} navigation={navigation} />
+        ) : (
+          <View
+            style={{
+              flexDirection: "column",
+              backgroundColor: "#dfe0e3",
+              borderRadius: 10,
+              padding: 15,
+              marginVertical: 10,
+            }}
+          >
+            <Text style={{ textAlign: "center" }}>No guides found</Text>
+          </View>
+        )}
       </ScrollView>
       <ProfileModal
         modalVisible={modalVisible}

@@ -6,8 +6,9 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { Coordinate, Guide } from "../models/guides";
 import { useAuthenticatedUser } from "../context/authenticatedUserContext";
 import { checkGuide, handleCreateGuide } from "../services/ManageGuides";
-import { usePressedGuide } from "../context/pressedGuideContext";
+import { useGuide } from "../context/GuideContext";
 import { useError } from "../hooks/useError";
+import { useLoading } from "../hooks/useLoading";
 
 const Stack = createStackNavigator();
 
@@ -15,13 +16,14 @@ interface AddGuideStackProps {
   navigation: any;
 }
 
-function AddGuideStack({ navigation }: AddGuideStackProps) {
+function UploadGuideStack({ navigation }: AddGuideStackProps) {
   const { showError } = useError();
+  const { startLoading, stopLoading } = useLoading();
   const { authenticatedUser, setAuthenticatedUser } = useAuthenticatedUser();
-  const { guides, setGuides } = usePressedGuide();
+  const { guides, setGuides } = useGuide();
   const [markerCoordinate, setMarkerCoordinate] = React.useState<Coordinate>();
   const [locationName, setLocationName] = React.useState(
-    "searchStack for a location or tap on the map"
+    "Search for a location or tap on the map"
   );
   const [refreshing, setRefreshing] = React.useState(false);
   const [guide, setGuide] = React.useState<Guide>(new Guide(authenticatedUser));
@@ -36,6 +38,7 @@ function AddGuideStack({ navigation }: AddGuideStackProps) {
             <TouchableOpacity
               onPress={async () => {
                 if (checkGuide(guide)) {
+                  startLoading();
                   try {
                     await handleCreateGuide(
                       setAuthenticatedUser,
@@ -46,6 +49,8 @@ function AddGuideStack({ navigation }: AddGuideStackProps) {
                       showError
                     );
                     setGuide(new Guide(authenticatedUser));
+                    stopLoading();
+                    Alert.alert("Guide created successfully");
                   } catch (error) {
                     showError("Error creating guide.");
                   }
@@ -131,7 +136,7 @@ function AddGuideStack({ navigation }: AddGuideStackProps) {
             locationName={
               locationName?.length > 0
                 ? locationName
-                : "searchStack for a location or tap on the map"
+                : "Search for a location or tap on the map"
             }
             setLocationName={setLocationName}
           />
@@ -141,4 +146,4 @@ function AddGuideStack({ navigation }: AddGuideStackProps) {
   );
 }
 
-export default AddGuideStack;
+export default UploadGuideStack;

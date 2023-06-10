@@ -10,12 +10,12 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import ImageResizer from "react-native-image-resizer";
+import UserProfile from "../models/userProfiles";
 
-const defaultProfilePicture =
-  "https://firebasestorage.googleapis.com/v0/b/journeybuddy2023.appspot.com/o/profile_pictures%2Fdefault_profile_picture.jpg?alt=media&token=2ecdbd0a-d2a7-4f5d-8ba7-a0457904a264";
-
-const selectImage = async (currentUser: UserProfile) => {
+const handleProfilePictureUpdate = async (
+  authUser: UserProfile,
+  setAuthenticatedUser: any
+) => {
   const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (status !== "granted") {
     return; // Handle permission denied
@@ -24,15 +24,54 @@ const selectImage = async (currentUser: UserProfile) => {
   const result = await ImagePicker.launchImageLibraryAsync({
     mediaTypes: ImagePicker.MediaTypeOptions.Images,
     allowsEditing: true,
+    aspect: [1, 1],
     quality: 0.3,
   });
 
   if (!result?.canceled) {
-    await uploadProfilePicture(result.assets[0].uri, currentUser); // Upload the selected image to Firebase
+    try {
+      const response = await fetch(result.assets[0].uri);
+      const blob = await response.blob();
+
+      const filename = result.assets[0].uri.split("/").pop();
+      const storageRef = ref(storage, `profile_pictures/${filename}`);
+
+      const snapshot = await uploadBytes(storageRef, blob);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+
+      const userProfilesCollectionRef = collection(db, "user_profiles");
+      const queryFindCurrentUser = query(
+        userProfilesCollectionRef,
+        where("uid", "==", authUser?.uid)
+      );
+
+      const querySnapshotUser = await getDocs(queryFindCurrentUser);
+
+      if (!querySnapshotUser.empty) {
+        const userRef = doc(db, "user_profiles", querySnapshotUser.docs[0].id);
+
+        await updateDoc(userRef, {
+          profilePicturePath: downloadURL,
+        });
+
+        const updatedUser: UserProfile = {
+          ...(authUser || {}),
+          profilePicturePath: downloadURL,
+        } as UserProfile;
+
+        setAuthenticatedUser(updatedUser);
+
+        console.log("Profile Photo updated successfully!");
+      } else {
+        console.log("Error trying to update profile photo.");
+      }
+    } catch (error) {
+      console.log("Error handling profile picture.");
+    }
   }
 };
 
-const selectMultipleImages = async (): Promise<string[]> => {
+const selectPictures = async (): Promise<string[]> => {
   const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (status === "granted") {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -49,82 +88,15 @@ const selectMultipleImages = async (): Promise<string[]> => {
   return [];
 };
 
-const uploadMultiplePictures = async (guide_uid: string, uri: string) => {
-  if (uri.includes("file://")) {
-    try {
-      const compressedImage = await ImageResizer.createResizedImage(
-        uri,
-        400,
-        500,
-        "JPEG",
-        60
-      );
-      const compressedUri = compressedImage.uri;
-
-      const response = await fetch(compressedUri);
-      const blob = await response.blob();
-
-      const filename = compressedUri.split("/").pop();
-      const storageRef = ref(
-        storage,
-        `guide_pictures/${guide_uid}/${filename}`
-      );
-
-      const snapshot = await uploadBytes(storageRef, blob);
-      return await getDownloadURL(snapshot.ref);
-    } catch (error) {
-      throw error;
-    }
-  }
-  return undefined;
-};
-
-const uploadProfilePicture = async (uri: string, currentUser: UserProfile) => {
+const uploadPicture = async (guide_uid: string, uri: string) => {
   const response = await fetch(uri);
   const blob = await response.blob();
 
   const filename = uri.split("/").pop();
-  const storageRef = ref(storage, `profile_pictures/${filename}`);
+  const storageRef = ref(storage, `guide_pictures/${guide_uid}/${filename}`);
 
   const snapshot = await uploadBytes(storageRef, blob);
-  const downloadURL = await getDownloadURL(snapshot.ref);
-
-  await handleUploadProfilePic(currentUser, downloadURL);
+  return await getDownloadURL(snapshot.ref);
 };
 
-const handleUploadProfilePic = async (
-  currentUser: UserProfile,
-  downloadURL: string
-) => {
-  const userProfilesCollectionRef = collection(db, "user_profiles");
-  const queryFindCurrentUser = query(
-    userProfilesCollectionRef,
-    where("uid", "==", currentUser?.uid)
-  );
-
-  const querySnapshotUser = await getDocs(queryFindCurrentUser);
-
-  if (!querySnapshotUser.empty) {
-    const userRef = doc(db, "user_profiles", querySnapshotUser.docs[0].id);
-
-    try {
-      await updateDoc(userRef, {
-        profilePicturePath:
-          downloadURL || currentUser?.profilePicturePath || "",
-      });
-      console.log("Profile updated successfully!");
-    } catch (error) {
-      console.log("Error updating profile:", error);
-    }
-  } else {
-    console.log("No matching user profile found");
-  }
-};
-
-export {
-  selectImage,
-  selectMultipleImages,
-  uploadProfilePicture,
-  uploadMultiplePictures,
-  defaultProfilePicture,
-};
+export { handleProfilePictureUpdate, selectPictures, uploadPicture };

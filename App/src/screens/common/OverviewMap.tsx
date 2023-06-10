@@ -3,14 +3,14 @@ import React from "react";
 import { Place } from "../../models/guides";
 import { Pressable, Text, View } from "react-native";
 import Feather from "react-native-vector-icons/Feather";
-import { usePressedGuide } from "../../context/pressedGuideContext";
+import { useGuide } from "../../context/GuideContext";
 
-interface FullScreenMapProps {
+interface OverviewMapProps {
   guidePlaces: Place[] | undefined;
   navigation: any;
 }
-function OverviewMapView({ guidePlaces, navigation }: FullScreenMapProps) {
-  const { pressedGuide, setPressedGuide } = usePressedGuide();
+function OverviewMapView({ guidePlaces, navigation }: OverviewMapProps) {
+  const { pressedGuide } = useGuide();
   const [selectedPlace, setSelectedPlace] = React.useState<Place | null>(null);
   const initialRegion = {
     latitude: guidePlaces?.[0]?.coordinates?.latitude || 38.7223,

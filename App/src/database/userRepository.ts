@@ -8,6 +8,7 @@ import {
   writeBatch,
 } from "firebase/firestore";
 import { auth, db } from "../config/firebase";
+import UserProfile from "../models/userProfiles";
 
 async function getAuthUserProfile(): Promise<UserProfile | undefined> {
   if (auth?.currentUser?.uid) {
@@ -129,7 +130,7 @@ async function followUser(
       const updatedCurrentUser: UserProfile = {
         ...(currentUser || {}),
         followers: updateFollowers()!,
-      };
+      } as UserProfile;
 
       setCurrentUser(updatedCurrentUser);
     } catch (error) {
@@ -157,7 +158,7 @@ async function followUser(
       const updatedUser: UserProfile = {
         ...(authenticatedUser || {}),
         following: updateFollowing(),
-      };
+      } as UserProfile;
 
       setAuthenticatedUser(updatedUser);
     } catch (error) {
@@ -204,7 +205,7 @@ async function unfollowUser(
       const updatedCurrentUser: UserProfile = {
         ...(currentUser || {}),
         followers: updateFollowers()!,
-      };
+      } as UserProfile;
 
       setCurrentUser(updatedCurrentUser);
     } catch (error) {
@@ -232,7 +233,7 @@ async function unfollowUser(
       const updatedUser: UserProfile = {
         ...(authenticatedUser || {}),
         following: updateFollowing(),
-      };
+      } as UserProfile;
 
       setAuthenticatedUser(updatedUser);
     } catch (error) {

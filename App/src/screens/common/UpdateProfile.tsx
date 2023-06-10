@@ -1,4 +1,5 @@
 import {
+  Image,
   ScrollView,
   Text,
   TextInput,
@@ -6,38 +7,51 @@ import {
   View,
 } from "react-native";
 import React from "react";
-import { defaultProfilePicture, selectImage } from "../../services/ImageUpload";
+import { handleProfilePictureUpdate } from "../../services/ImageUpload";
 import { useCurrentUser } from "../../context/currentUserContext";
 import { useAuthenticatedUser } from "../../context/authenticatedUserContext";
-import CachedImage from "../../components/images/CachedImage";
+import UserProfile from "../../models/userProfiles";
+import { useLoading } from "../../hooks/useLoading";
+import { useError } from "../../hooks/useError";
 
 function UpdateProfileView<StackScreenProps>() {
   const { pressedUser, setPressedUser } = useCurrentUser();
-  const { authenticatedUser } = useAuthenticatedUser();
+  const { authenticatedUser, setAuthenticatedUser } = useAuthenticatedUser();
+  const { startLoading, stopLoading } = useLoading();
+  const { showError } = useError();
 
   React.useEffect(() => {
     setPressedUser(authenticatedUser);
   }, [authenticatedUser]);
 
   const handleFullNameChange = (text: string): void => {
-    setPressedUser((prevPressedUser) => ({
-      ...prevPressedUser!,
-      fullName: text,
-    }));
+    setPressedUser(
+      (prevPressedUser) =>
+        ({
+          ...prevPressedUser!,
+          fullName: text,
+        } as UserProfile)
+    );
   };
 
   const handleUsernameChange = (text: string): void => {
-    setPressedUser((prevPressedUser) => ({
-      ...prevPressedUser!,
-      username: text,
-    }));
+    setPressedUser(
+      (prevPressedUser) =>
+        ({
+          ...prevPressedUser,
+          username: text,
+        } as UserProfile)
+    );
   };
 
   const handleEmailChange = (text: string): void => {
-    setPressedUser((prevPressedUser) => ({
-      ...prevPressedUser!,
-      email: text,
-    }));
+    setPressedUser(
+      (prevPressedUser) =>
+        ({
+          ...prevPressedUser!,
+          email: text,
+        } as UserProfile)
+    );
   };
 
   return (
@@ -50,9 +64,9 @@ function UpdateProfileView<StackScreenProps>() {
           flexDirection: "row",
         }}
       >
-        <CachedImage
+        <Image
           source={{
-            uri: pressedUser?.profilePicturePath || defaultProfilePicture,
+            uri: authenticatedUser!.profilePicturePath,
           }}
           style={{
             width: 100,
@@ -60,9 +74,21 @@ function UpdateProfileView<StackScreenProps>() {
             borderRadius: 50,
             backgroundColor: "#dfe0e3",
           }}
-        ></CachedImage>
+        ></Image>
         <TouchableOpacity
-          onPress={() => selectImage(pressedUser!!)}
+          onPress={async () => {
+            try {
+              startLoading();
+              await handleProfilePictureUpdate(
+                authenticatedUser!,
+                setAuthenticatedUser
+              );
+            } catch (error) {
+              showError("Error updating profile picture. Try again later.");
+            } finally {
+              stopLoading();
+            }
+          }}
           style={{
             backgroundColor: "#dfe0e3",
             borderRadius: 10,

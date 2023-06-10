@@ -1,6 +1,6 @@
 import { StyleSheet, View, Dimensions, Text, Pressable } from "react-native";
 import { Guide } from "../../models/guides";
-import { usePressedGuide } from "../../context/pressedGuideContext";
+import { useGuide } from "../../context/GuideContext";
 import CachedImage from "../images/CachedImage";
 
 const screenWidth = Dimensions.get("window").width;
@@ -16,7 +16,7 @@ interface GridItemProps {
 }
 
 const GridImage = ({ guides, navigation }: GridImageProps) => {
-  const { setPressedGuide } = usePressedGuide();
+  const { setPressedGuide } = useGuide();
 
   const renderItem = ({ item, navigation }: GridItemProps) => (
     <Pressable

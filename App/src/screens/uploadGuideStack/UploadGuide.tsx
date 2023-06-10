@@ -10,8 +10,9 @@ import {
 } from "react-native";
 import Feather from "react-native-vector-icons/Feather";
 import { Guide } from "../../models/guides";
-import { selectMultipleImages } from "../../services/ImageUpload";
+import { selectPictures } from "../../services/ImageUpload";
 import CachedImage from "../../components/images/CachedImage";
+import UserProfile from "../../models/userProfiles";
 
 interface AddGuideScreenProps {
   navigation: any;
@@ -37,7 +38,7 @@ const UploadGuideView: React.FC<AddGuideScreenProps> = ({
   };
 
   const handleSelectImages = () => {
-    selectMultipleImages()
+    selectPictures()
       .then((images) => {
         const newImages = currentGuide?.pictures
           ? [...currentGuide.pictures, ...images]
@@ -128,8 +129,9 @@ const UploadGuideView: React.FC<AddGuideScreenProps> = ({
                       backgroundColor: "#dfe0e3",
                     }}
                   >
-                    <CachedImage
+                    <Image
                       source={{ uri: picture }}
+                      resizeMode="cover"
                       style={{ width: "100%", height: "100%" }}
                     />
                     <TouchableOpacity

@@ -1,128 +1,320 @@
 import React from "react";
-import logo from "../../../assets/logo.png";
-import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import {
-  Image,
-  Pressable,
-  StyleSheet,
   TextInput,
   Text,
   View,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+  StatusBar,
+  Image,
+  SafeAreaView,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDocs,
+  query,
+  setDoc,
+  where,
+} from "firebase/firestore";
 import { auth, db } from "../../config/firebase";
-import CachedImage from "../../components/images/CachedImage";
+import { LinearGradient } from "expo-linear-gradient";
+import { useError } from "../../hooks/useError";
+import UserProfile from "../../models/userProfiles";
 
 function SignUpView<StackScreenProps>({ navigation }: { navigation: any }) {
+  const { showError } = useError();
   const [value, setValue] = React.useState({
     email: "",
+    username: "",
+    fullName: "",
     password: "",
-    error: "",
   });
 
+  const handleScreenPress = () => {
+    Keyboard.dismiss(); // Dismiss the keyboard when the screen is pressed
+  };
+
   async function signUp() {
-    if (value.email === "" || value.password === "") {
-      setValue({
-        ...value,
-        error: "Email and password are mandatory.",
-      });
+    if (
+      value.email === "" ||
+      value.password === "" ||
+      value.username === "" ||
+      value.fullName === ""
+    ) {
+      showError("All fields are mandatory.");
       return;
     }
 
-    createUserWithEmailAndPassword(auth, value.email, value.password)
-      .then(async (userCredential) => {
-        setDoc(doc(db, "user_profiles", userCredential.user.uid), {
-          email: userCredential.user.email,
-          uid: userCredential.user.uid,
-        })
-          .then(() => {
-            navigation.navigate("Sign In");
-          })
-          .catch((error) => {
-            setValue({
-              ...value,
-              error: error.message,
-            });
-          });
-      })
-      .catch((error) => {
-        setValue({
-          ...value,
-          error: error.message,
-        });
-      });
+    if (value.password.length < 10) {
+      showError("Password should be at least 10 characters long.");
+      return;
+    }
+
+    if (!value.email.includes("@") || !value.email.includes(".")) {
+      showError("Invalid email address.");
+      return;
+    }
+
+    try {
+      // Check if the username already exists
+      const emailSnapshot = await getDocs(
+        query(
+          collection(db, "user_profiles"),
+          where("email", "==", value.email)
+        )
+      );
+
+      if (!emailSnapshot.empty) {
+        showError("Email already exists.");
+        return;
+      }
+
+      // Check if the username already exists
+      const usernameSnapshot = await getDocs(
+        query(
+          collection(db, "user_profiles"),
+          where("username", "==", value.username)
+        )
+      );
+
+      if (!usernameSnapshot.empty) {
+        showError("Username already exists.");
+        return;
+      }
+
+      // Create the user and save the profile
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        value.email,
+        value.password
+      );
+
+      // Create the user profile object
+      const userProfile = new UserProfile(
+        value.email,
+        value.username,
+        value.fullName,
+        userCredential.user.uid
+      );
+
+      await setDoc(
+        doc(db, "user_profiles", userCredential.user.uid),
+        userProfile.toJSON()
+      );
+
+      navigation.navigate("SignIn");
+    } catch (error) {
+      showError();
+    }
   }
 
   return (
-    <View className="w-full h-full">
-      <View className="mx-4 h-5/6 flex justify-center align-center space-y-6">
-        <CachedImage
-          source={logo}
-          style={{ width: 100, height: 100, alignSelf: "center" }}
-        />
-        <Text className="block text-2xl font-bold text-center text-white">
-          Sign Up
-        </Text>
-
-        <View className="space-y-6">
-          <View className="mt-1 space-y-4">
-            <View className="flex flex-row justify-center align-center rounded-xl px-1 py-1 bg-gray-100">
-              <Icon style={styles.icon} name="email" size={18} color="gray" />
-              <TextInput
-                placeholder="Email"
-                value={value.email}
-                className="flex-1 pt-2.5 pr-2.5 pb-2.5 pl-0"
-                onChangeText={(text) => setValue({ ...value, email: text })}
-              />
-            </View>
-
-            <View className="flex- flex-row justify-center align-center rounded-xl px-1 py-1 bg-gray-100">
-              <Icon style={styles.icon} name="lock" size={18} color="gray" />
-              <TextInput
-                placeholder="Password"
-                className="flex-1 pt-2.5 pr-2.5 pb-2.5 pl-0"
-                onChangeText={(text) => setValue({ ...value, password: text })}
-                secureTextEntry={true}
-              />
-            </View>
-          </View>
-          <Pressable className="bg-background border border-white rounded-3xl py-2 px-4 m-4">
-            <Text
-              className="text-center text-white font-bold text-base"
-              onPress={signUp}
-            >
-              Sign Up
-            </Text>
-          </Pressable>
-        </View>
-        <Text className="text-center text-white text-base">
-          Have an account?{" "}
-          <Text
-            className="text-blue"
-            onPress={() => navigation.navigate("Sign In")}
+    <TouchableWithoutFeedback onPress={handleScreenPress}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1, backgroundColor: "#dfe0e3" }}
+      >
+        <View style={{ flex: 1, backgroundColor: "#dfe0e3" }}>
+          <StatusBar barStyle="light-content" backgroundColor="#1c7ef3" />
+          <LinearGradient
+            colors={["#1c7ef3", "#1cbafa", "#dfe0e3"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            style={{
+              flex: 1,
+              paddingHorizontal: 25,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
           >
-            Sign In
-          </Text>
-        </Text>
-      </View>
-    </View>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                marginBottom: 100,
+              }}
+            >
+              <Image
+                source={require("../../../assets/logo.png")}
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 10,
+                  marginRight: 15,
+                }}
+              />
+              <Text style={{ fontSize: 20, color: "white", fontWeight: "700" }}>
+                JourneyBuddy
+              </Text>
+            </View>
+          </LinearGradient>
+
+          <SafeAreaView style={{ flex: 1 }}>
+            <View
+              style={{
+                justifyContent: "flex-start",
+                alignItems: "center",
+                marginTop: -170,
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor: "white",
+                  borderRadius: 15,
+                  padding: 20,
+                  width: "90%",
+                  shadowColor: "#000",
+                  shadowOpacity: 0.1,
+                  shadowOffset: {
+                    width: 1,
+                    height: 3,
+                  },
+                  elevation: 3,
+                }}
+              >
+                <View style={{ marginBottom: 20 }}>
+                  <Text style={{ fontSize: 16, fontWeight: "500" }}>Email</Text>
+                  <TextInput
+                    maxLength={25}
+                    placeholder="Email"
+                    style={{
+                      padding: 10,
+                      borderBottomWidth: 2,
+                      borderBottomColor: "#dfe0e3",
+                      marginTop: 10,
+                    }}
+                    value={value.email}
+                    onChangeText={(text) => setValue({ ...value, email: text })}
+                  />
+                </View>
+                <View style={{ marginBottom: 20 }}>
+                  <Text style={{ fontSize: 16, fontWeight: "500" }}>
+                    Username
+                  </Text>
+                  <TextInput
+                    maxLength={25}
+                    placeholder="Username"
+                    style={{
+                      padding: 10,
+                      borderBottomWidth: 2,
+                      borderBottomColor: "#dfe0e3",
+                      marginTop: 10,
+                    }}
+                    value={value.username}
+                    onChangeText={(text) =>
+                      setValue({ ...value, username: text })
+                    }
+                  />
+                </View>
+                <View style={{ marginBottom: 20 }}>
+                  <Text style={{ fontSize: 16, fontWeight: "500" }}>Name</Text>
+                  <TextInput
+                    maxLength={25}
+                    placeholder="Name"
+                    style={{
+                      padding: 10,
+                      borderBottomWidth: 2,
+                      borderBottomColor: "#dfe0e3",
+                      marginTop: 10,
+                    }}
+                    value={value.fullName}
+                    onChangeText={(text) =>
+                      setValue({ ...value, fullName: text })
+                    }
+                  />
+                </View>
+                <View style={{ marginBottom: 20 }}>
+                  <Text style={{ fontSize: 16, fontWeight: "500" }}>
+                    Password
+                  </Text>
+                  <TextInput
+                    maxLength={25}
+                    placeholder="Password"
+                    style={{
+                      padding: 10,
+                      borderBottomWidth: 2,
+                      borderBottomColor: "#dfe0e3",
+                      marginTop: 10,
+                    }}
+                    onChangeText={(text) =>
+                      setValue({ ...value, password: text })
+                    }
+                    secureTextEntry={true}
+                  />
+                </View>
+              </View>
+              <LinearGradient
+                colors={["#1c7ef3", "#1cbafa"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={{
+                  borderRadius: 13,
+                  marginVertical: 20,
+                  height: 40,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  width: "90%",
+                }}
+              >
+                <TouchableOpacity onPress={signUp} style={{ width: "100%" }}>
+                  <Text
+                    style={{
+                      color: "white",
+                      fontSize: 16,
+                      fontWeight: "bold",
+                      textAlign: "center",
+                    }}
+                  >
+                    Sign Up
+                  </Text>
+                </TouchableOpacity>
+              </LinearGradient>
+
+              <TouchableOpacity
+                style={{
+                  backgroundColor: "transparent",
+                  borderRadius: 13,
+                  marginVertical: 15,
+                  height: 40,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  width: "70%",
+                }}
+                onPress={() => navigation.goBack()}
+              >
+                <View style={{ flexDirection: "row", gap: 5 }}>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      fontWeight: "600",
+                      textAlign: "center",
+                    }}
+                  >
+                    Already a member?
+                  </Text>
+                  <Text
+                    style={{
+                      color: "#1c7ef3",
+                      fontSize: 16,
+                      fontWeight: "600",
+                      textAlign: "center",
+                    }}
+                  >
+                    Sign In
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </SafeAreaView>
+        </View>
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
   );
 }
 
 export default SignUpView;
-
-const styles = StyleSheet.create({
-  icon: {
-    padding: 10,
-  },
-  input: {
-    flex: 1,
-    paddingTop: 10,
-    paddingRight: 10,
-    paddingBottom: 10,
-    paddingLeft: 0,
-    backgroundColor: "#fff",
-    color: "#424242",
-  },
-});

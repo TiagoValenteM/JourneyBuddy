@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, ReactNode } from "react";
+import UserProfile from "../models/userProfiles";
 
 interface CurrentUserContextProps {
   currentUser: UserProfile | undefined;

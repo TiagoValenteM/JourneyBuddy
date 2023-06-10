@@ -5,14 +5,14 @@ import {
   ScrollView,
   Text,
   TextInput,
-  TouchableHighlight,
   TouchableOpacity,
   View,
 } from "react-native";
 import { Guide, Place } from "../../models/guides";
-import { selectMultipleImages } from "../../services/ImageUpload";
+import { selectPictures } from "../../services/ImageUpload";
 import Feather from "react-native-vector-icons/Feather";
 import CachedImage from "../../components/images/CachedImage";
+import UserProfile from "../../models/userProfiles";
 
 interface EditGuideScreenProps {
   navigation: any;
@@ -56,7 +56,7 @@ const UpdateGuideView = ({
   };
 
   const handleSelectImages = () => {
-    selectMultipleImages()
+    selectPictures()
       .then((images) => {
         const newImages = currentGuide?.pictures
           ? [...currentGuide.pictures, ...images]
@@ -187,8 +187,9 @@ const UpdateGuideView = ({
                       backgroundColor: "#dfe0e3",
                     }}
                   >
-                    <CachedImage
+                    <Image
                       source={{ uri: picture }}
+                      resizeMode="cover"
                       style={{ width: "100%", height: "100%" }}
                     />
                     <TouchableOpacity
