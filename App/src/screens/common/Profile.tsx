@@ -53,7 +53,11 @@ function ProfileView({
       >
         <ProfileIdentifier navigation={navigation} isAuthUser={isAuthUser} />
         {guides?.length > 0 ? (
-          <GridImage guides={guides} navigation={navigation} />
+          <GridImage
+            guides={guides}
+            navigation={navigation}
+            authUser={authenticatedUser!}
+          />
         ) : (
           <View
             style={{

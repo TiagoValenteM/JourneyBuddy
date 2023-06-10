@@ -6,6 +6,7 @@ import { useCurrentUser } from "../context/currentUserContext";
 import OverviewMapView from "../screens/common/OverviewMap";
 import { useGuide } from "../context/GuideContext";
 import OverviewGuideView from "../screens/common/OverviewGuide";
+import FollowingTabs from "./FollowingTabs";
 
 const Stack = createStackNavigator();
 
@@ -55,6 +56,18 @@ function HomepageStack() {
           headerTitle: "Guide",
         }}
         component={OverviewGuideView}
+      />
+      <Stack.Screen
+        name={"FollowInteraction"}
+        component={FollowingTabs}
+        options={{
+          headerTitle: currentUser?.username,
+          headerBackTitle: "Back",
+          headerStyle: {
+            shadowColor: "transparent",
+            elevation: 0,
+          },
+        }}
       />
     </Stack.Navigator>
   );
