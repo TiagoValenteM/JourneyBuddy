@@ -1,68 +1,42 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   Image,
-  RefreshControl,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
-import { Guide, Place } from "../../models/guides";
+import { Guide } from "../../models/guides";
 import { selectPictures } from "../../services/ImageUpload";
 import Feather from "react-native-vector-icons/Feather";
-import CachedImage from "../../components/images/CachedImage";
-import UserProfile from "../../models/userProfiles";
+import { useGuide } from "../../context/GuideContext";
 
 interface EditGuideScreenProps {
   navigation: any;
-  authenticatedUser: UserProfile;
-  setRefreshing: any;
-  refreshing: boolean;
-  currentGuide: Guide;
-  updateGuideCallback: any;
 }
 
-const UpdateGuideView = ({
-  navigation,
-  setRefreshing,
-  refreshing,
-  currentGuide,
-  updateGuideCallback,
-}: EditGuideScreenProps) => {
-  const [title, setTitle] = useState(currentGuide.title);
-  const [description, setDescription] = useState(currentGuide.description);
-  const [selectedImages, setSelectedImages] = useState<string[]>(
-    currentGuide.pictures
-  );
-  const [selectedPlaces, setSelectedPlaces] = useState<Place[]>(
-    currentGuide.places
-  );
+const UpdateGuideView = ({ navigation }: EditGuideScreenProps) => {
+  const { tempGuide, setTempGuide, pressedGuide } = useGuide();
 
-  useEffect(() => {
-    if (currentGuide) {
-      setSelectedImages(currentGuide?.pictures);
-      setSelectedPlaces(currentGuide?.places);
-    }
-  }, [currentGuide]);
-
-  const updateGuide = () => {
-    updateGuideCallback({
-      ...currentGuide,
-      title,
-      description,
-      places: selectedPlaces,
-    });
-  };
+  console.log(tempGuide);
+  React.useEffect(() => {
+    setTempGuide(pressedGuide);
+  }, []);
 
   const handleSelectImages = () => {
     selectPictures()
       .then((images) => {
-        const newImages = currentGuide?.pictures
-          ? [...currentGuide.pictures, ...images]
+        const newImages = tempGuide?.pictures
+          ? [...tempGuide.pictures, ...images]
           : images;
-
-        updateGuideCallback({ ...currentGuide, pictures: newImages });
+        setTempGuide(
+          (prevTempGuide) =>
+            ({
+              ...prevTempGuide,
+              pictures: newImages,
+            } as Guide)
+        );
       })
       .catch((error) => {
         console.log(error);
@@ -70,41 +44,51 @@ const UpdateGuideView = ({
   };
 
   const handleDeleteImage = (index: number) => {
-    const newImages = [...currentGuide?.pictures];
+    const newImages = [...tempGuide!.pictures];
     newImages.splice(index, 1);
-    updateGuideCallback({
-      ...currentGuide,
-      pictures: newImages,
-    });
+    setTempGuide(
+      (prevTempGuide) =>
+        ({
+          ...prevTempGuide,
+          pictures: newImages,
+        } as Guide)
+    );
   };
 
   const handleDeletePlace = (index: number) => {
-    const newPlaces = [...currentGuide?.places];
+    const newPlaces = [...tempGuide!.places];
     newPlaces.splice(index, 1);
-    updateGuideCallback({
-      ...currentGuide,
-      places: newPlaces,
-    });
+    setTempGuide(
+      (prevTempGuide) =>
+        ({
+          ...prevTempGuide,
+          places: newPlaces,
+        } as Guide)
+    );
   };
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    if (currentGuide) {
-      setTitle(currentGuide.title);
-      setDescription(currentGuide.description);
-      setSelectedImages(currentGuide.pictures);
-      setSelectedPlaces(currentGuide.places);
-    }
-    setRefreshing(false);
+  const handleTitleChange = (text: string): void => {
+    setTempGuide(
+      (prevTempGuide) =>
+        ({
+          ...prevTempGuide,
+          title: text,
+        } as Guide)
+    );
   };
 
-  return (
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
+  const handleDescriptionChange = (text: string): void => {
+    setTempGuide(
+      (prevTempGuide) =>
+        ({
+          ...prevTempGuide,
+          description: text,
+        } as Guide)
+    );
+  };
+
+  return tempGuide ? (
+    <ScrollView showsVerticalScrollIndicator={false}>
       <View style={{ marginVertical: 10, flex: 1 }}>
         <View style={{ paddingHorizontal: 25, marginVertical: 20 }}>
           <Text style={{ fontSize: 14, fontWeight: "500" }}>Title</Text>
@@ -119,11 +103,8 @@ const UpdateGuideView = ({
               borderBottomColor: "#dfe0e3",
               marginTop: 10,
             }}
-            value={title}
-            onChangeText={(text) => {
-              setTitle(text);
-              updateGuide();
-            }}
+            value={tempGuide?.title}
+            onChangeText={handleTitleChange}
           />
         </View>
         <View style={{ paddingHorizontal: 25, marginVertical: 20 }}>
@@ -139,11 +120,8 @@ const UpdateGuideView = ({
               borderBottomColor: "#dfe0e3",
               marginTop: 10,
             }}
-            value={description}
-            onChangeText={(text) => {
-              setDescription(text);
-              updateGuide();
-            }}
+            value={tempGuide?.description}
+            onChangeText={handleDescriptionChange}
           />
         </View>
 
@@ -168,13 +146,13 @@ const UpdateGuideView = ({
                 <Feather name="plus-circle" size={30} color="black" />
               </TouchableOpacity>
             </View>
-            {selectedImages?.length > 0 ? (
+            {tempGuide?.pictures?.length > 0 ? (
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 style={{ flexDirection: "row" }}
               >
-                {selectedImages?.map((picture, index) => (
+                {tempGuide?.pictures?.map((picture, index) => (
                   <View
                     key={index}
                     style={{
@@ -250,8 +228,8 @@ const UpdateGuideView = ({
               </TouchableOpacity>
             </View>
             <View style={{ flexDirection: "column" }}>
-              {selectedPlaces?.length > 0 ? (
-                selectedPlaces?.map((place, index) => (
+              {tempGuide?.places?.length > 0 ? (
+                tempGuide?.places?.map((place, index) => (
                   <View
                     key={index}
                     style={{
@@ -319,6 +297,8 @@ const UpdateGuideView = ({
         </View>
       </View>
     </ScrollView>
+  ) : (
+    <View />
   );
 };
 

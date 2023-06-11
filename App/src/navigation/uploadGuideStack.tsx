@@ -37,7 +37,7 @@ function UploadGuideStack({ navigation }: AddGuideStackProps) {
           headerRight: () => (
             <TouchableOpacity
               onPress={async () => {
-                if (checkGuide(guide)) {
+                if (checkGuide(guide, showError)) {
                   startLoading();
                   try {
                     await handleCreateGuide(

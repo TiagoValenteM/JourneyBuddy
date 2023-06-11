@@ -6,37 +6,34 @@ import {
   getDoc,
   getDocs,
   query,
-  runTransaction,
   setDoc,
   updateDoc,
   where,
-  writeBatch,
 } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { Guide, Rating } from "../models/guides";
 import { uploadPicture } from "./ImageUpload";
-import { Alert } from "react-native";
 import React from "react";
 import UserProfile from "../models/userProfiles";
 
-const checkGuide = (guide: Guide) => {
+const checkGuide = (guide: Guide, showError: any) => {
   if (guide?.title === "") {
-    Alert.alert("Please enter a title");
+    showError("Please enter a title.");
     return false;
   }
 
   if (guide?.description === "") {
-    Alert.alert("Please enter a description");
+    showError("Please enter a description.");
     return false;
   }
 
   if (guide.pictures?.length === 0) {
-    Alert.alert("Please select at least one picture");
+    showError("Please select at least one picture.");
     return false;
   }
 
   if (guide.places?.length === 0) {
-    Alert.alert("Please select at least one location");
+    showError("Please select at least one place.");
     return false;
   }
 
@@ -110,7 +107,9 @@ const getGuideDetailed = async (uid: string): Promise<Guide | undefined> => {
 const updateGuideComments = async (
   guideId: string,
   comment: string,
-  authUserUsername: string
+  authUserUsername: string,
+  setPressedGuide: any,
+  showError: any
 ) => {
   const newComment = [
     {
@@ -139,19 +138,28 @@ const updateGuideComments = async (
         comments: updatedComments,
       });
 
+      setPressedGuide({
+        ...(guideDoc.data() as Guide),
+        comments: updatedComments,
+      });
+
       console.log("Comments updated successfully!");
     } catch (error) {
       console.log("Error updating comments:", error);
+      showError("Error updating comments. Please try again.");
     }
   } else {
     console.log("No matching guide found");
+    showError("No matching guide to comment. Please try again.");
   }
 };
 
 const UpdateGuideRating = async (
   guideId: string,
   rate: number,
-  authUserID: string
+  authUserID: string,
+  setPressedGuide: any,
+  showError: any
 ) => {
   const newRating = [
     {
@@ -180,12 +188,19 @@ const UpdateGuideRating = async (
         rating: updatedRating,
       });
 
+      setPressedGuide({
+        ...(guideDoc.data() as Guide),
+        rating: updatedRating,
+      });
+
       console.log("Rating updated successfully!");
     } catch (error) {
       console.log("Error updating rating:", error);
+      showError("Error updating rating. Please try again.");
     }
   } else {
-    console.log("No matching guide found");
+    console.log("No matching guide to rate.");
+    showError("No matching guide to rate. Please try again.");
   }
 };
 
@@ -209,7 +224,8 @@ const deleteGuide = async (
   authenticatedUser: UserProfile | any,
   setAuthenticatedUser: any,
   guides: Guide[],
-  setGuides: any
+  setGuides: any,
+  showError: any
 ) => {
   try {
     const guideRef = doc(db, "guides", guideId);
@@ -235,28 +251,27 @@ const deleteGuide = async (
     console.log("Guide deleted successfully");
   } catch (error) {
     console.error("Error deleting guide:", error);
+    showError("Error deleting guide. Please try again later.");
   }
 };
 
 const handleUpdateGuide = (
   setPressedGuide: React.Dispatch<React.SetStateAction<Guide | undefined>>,
-  pressedGuide: Guide,
+  setTempGuide: React.Dispatch<React.SetStateAction<Guide | undefined>>,
+  tempGuide: Guide,
   navigation: any,
-  showError: (message: string) => void,
-  guides: Guide[],
-  setGuides: any
+  showError: (message: string) => void
 ) => {
-  if (pressedGuide?.uid) {
-    const guideRef = doc(db, "guides", pressedGuide.uid);
-    updateDoc(guideRef, { ...pressedGuide })
+  if (tempGuide?.uid) {
+    const guideRef = doc(db, "guides", tempGuide.uid);
+    updateDoc(guideRef, { ...tempGuide })
       .then(async () => {
-        console.log("UPDATED GUIDE, NOW PICTURES...");
-        if (pressedGuide?.pictures?.length > 0) {
+        console.log("updated guide, now uploading pictures.");
+        if (tempGuide?.pictures?.length > 0) {
           try {
             const imagesUrl = await Promise.all(
-              pressedGuide?.pictures?.map(
-                async (picture) =>
-                  await uploadPicture(pressedGuide?.uid, picture)
+              tempGuide?.pictures?.map(
+                async (picture) => await uploadPicture(tempGuide?.uid, picture)
               )
             ).catch((err) => {
               console.log(err);
@@ -266,27 +281,24 @@ const handleUpdateGuide = (
               return;
             });
 
-            console.log("UPDATED PICTURES, NOW GUIDE AGAIN...");
+            console.log("uploaded images, now updating guide.");
 
             await updateDoc(guideRef, {
               pictures: imagesUrl,
             });
 
-            console.log("UPDATED GUIDE FINALLY...");
+            console.log("updated guide successfully!");
 
-            Alert.alert("Guide updated successfully");
-            setPressedGuide({ ...pressedGuide });
-
-            const updatedGuidesOnDevice = [...guides, pressedGuide];
-            setGuides(updatedGuidesOnDevice);
+            setPressedGuide({ ...tempGuide });
           } catch (error) {
             console.log(error);
-            Alert.alert("Error updating guide");
+            showError("Error updating guide. Please try again later.");
           }
         }
       })
       .catch((error) => {
         console.log("Error updating guide", error);
+        showError("Error updating guide. Please try again later.");
       });
   }
 };
@@ -348,7 +360,7 @@ const handleCreateGuide = async (
     }
   } catch (error) {
     console.log("Error creating guide:", error);
-    showError("Error creating guide.");
+    showError("Error creating guide. Please try again later.");
   }
 };
 

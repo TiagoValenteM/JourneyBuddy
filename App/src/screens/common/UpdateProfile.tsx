@@ -22,7 +22,7 @@ function UpdateProfileView<StackScreenProps>() {
 
   React.useEffect(() => {
     setPressedUser(authenticatedUser);
-  }, [authenticatedUser]);
+  }, []);
 
   const handleFullNameChange = (text: string): void => {
     setPressedUser(

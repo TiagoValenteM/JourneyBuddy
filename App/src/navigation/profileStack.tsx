@@ -16,6 +16,7 @@ import { checkGuide, handleUpdateGuide } from "../services/ManageGuides";
 import FollowingTabs from "./FollowingTabs";
 import { handleUpdateProfile } from "../database/userRepository";
 import { useError } from "../hooks/useError";
+import { useLoading } from "../hooks/useLoading";
 
 const Stack = createStackNavigator();
 
@@ -25,17 +26,15 @@ interface ProfileStackProps {
 
 function ProfileStack({ navigation }: ProfileStackProps) {
   const { showError } = useError();
-  const { setPressedGuide, pressedGuide, guides, setGuides } = useGuide();
+  const { startLoading, stopLoading } = useLoading();
+  const { setPressedGuide, pressedGuide, tempGuide, setTempGuide } = useGuide();
   const [modalVisible, setModalVisible] = React.useState(false);
-  const [refreshing, setRefreshing] = React.useState(false);
   const { authenticatedUser, setAuthenticatedUser } = useAuthenticatedUser();
   const { currentUser, pressedUser, setPressedUser } = useCurrentUser();
   const [markerCoordinate, setMarkerCoordinate] = React.useState<Coordinate>();
   const [locationName, setLocationName] = React.useState(
-    "searchStack for a location or tap on the map"
+    "Search for a location or tap on the map"
   );
-
-  console.log(modalVisible);
 
   return (
     <Stack.Navigator>
@@ -134,19 +133,24 @@ function ProfileStack({ navigation }: ProfileStackProps) {
                   paddingRight: 15,
                 }}
                 onPress={async () => {
-                  if (checkGuide(pressedGuide!)) {
+                  if (checkGuide(tempGuide!, showError)) {
                     try {
-                      handleUpdateGuide(
+                      startLoading();
+
+                      await handleUpdateGuide(
                         setPressedGuide,
-                        pressedGuide!,
+                        setTempGuide,
+                        tempGuide!,
                         navigation,
-                        showError,
-                        guides,
-                        setGuides
+                        showError
                       );
+
+                      stopLoading();
+                      Alert.alert("Guide updated successfully");
                       navigation.navigate("GuideInDetail");
                     } catch (error) {
                       showError("Error updating guide.");
+                      stopLoading();
                     }
                   }
                 }}
@@ -156,19 +160,8 @@ function ProfileStack({ navigation }: ProfileStackProps) {
             </TouchableOpacity>
           ),
         }}
-      >
-        {(props) => (
-          <UpdateGuideView
-            {...props}
-            navigation={navigation}
-            authenticatedUser={authenticatedUser!!}
-            setRefreshing={setRefreshing}
-            refreshing={refreshing}
-            currentGuide={pressedGuide!!}
-            updateGuideCallback={setPressedGuide}
-          />
-        )}
-      </Stack.Screen>
+        component={UpdateGuideView}
+      />
       <Stack.Screen
         name={"EditPlaces"}
         options={{
@@ -187,11 +180,11 @@ function ProfileStack({ navigation }: ProfileStackProps) {
                     },
                   };
 
-                  const newPlaces = pressedGuide?.places
-                    ? [...pressedGuide.places, newPlace]
+                  const newPlaces = tempGuide?.places
+                    ? [...tempGuide.places, newPlace]
                     : [newPlace];
-                  setPressedGuide({
-                    ...pressedGuide,
+                  setTempGuide({
+                    ...tempGuide,
                     places: newPlaces,
                   } as Guide);
 
@@ -225,7 +218,7 @@ function ProfileStack({ navigation }: ProfileStackProps) {
             locationName={
               locationName?.length > 0
                 ? locationName
-                : "searchStack for a location or tap on the map"
+                : "Search for a location or tap on the map"
             }
             setLocationName={setLocationName}
           />

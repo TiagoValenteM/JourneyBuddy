@@ -43,7 +43,7 @@ function SearchStack() {
         )}
       </Stack.Screen>
       <Stack.Screen
-        name={"GuideInDetail"}
+        name={"GuideOverview"}
         options={{
           headerTitle: "Guide",
         }}

@@ -8,7 +8,6 @@ import {
   Alert,
   RefreshControl,
 } from "react-native";
-import { Guide } from "../../models/guides";
 import average from "../../utils/average";
 import React from "react";
 import Feather from "react-native-vector-icons/Feather";
@@ -27,70 +26,56 @@ import CarouselPictures from "../../components/carousels/CarouselPictures";
 import UserIdentifier from "../../components/identifiers/UserIdentifier";
 import GuideIdentifier from "../../components/identifiers/GuideIdentifier";
 import { useAuthenticatedUser } from "../../context/authenticatedUserContext";
+import { useError } from "../../hooks/useError";
 
 interface GuideInDetailScreenProps {
   navigation: any;
 }
 
 function OverviewGuideView({ navigation }: GuideInDetailScreenProps) {
-  const { pressedGuide, guides, setGuides } = useGuide();
+  const { showError } = useError();
+  const { pressedGuide, guides, setGuides, setPressedGuide } = useGuide();
   const { authenticatedUser, setAuthenticatedUser } = useAuthenticatedUser();
   const [rating, setRating] = React.useState(0);
   const [newComment, setNewComment] = React.useState("");
-  const [fetchTrigger, setFetchTrigger] = React.useState(false);
   const [refreshing, setRefreshing] = React.useState(false);
-  const [selectedGuide, setSelectedGuide] = React.useState<Guide | undefined>(
-    undefined
-  );
-
-  const fetchData = async () => {
-    try {
-      if (pressedGuide?.uid) {
-        const guide = await getGuideDetailed(pressedGuide.uid);
-        setSelectedGuide(guide);
-      }
-    } catch (error) {}
-  };
 
   const onRefresh = () => {
     setRefreshing(true);
-    fetchData().finally(() => setRefreshing(false));
+    getGuideDetailed(pressedGuide!.uid)
+      .then(() => setRefreshing(false))
+      .catch(() => showError("Failed to load guide. Please try again later."));
   };
 
-  React.useEffect(() => {
-    onRefresh();
-  }, [fetchTrigger]);
-
-  if (selectedGuide === undefined) {
+  if (pressedGuide === undefined) {
     return <LoadingIndicator />;
   }
 
-  const handleFetchAgain = () => {
-    setFetchTrigger(!fetchTrigger);
-  };
-
-  const averageRating = selectedGuide?.rating
-    ? average(selectedGuide?.rating?.map((rating) => rating.rate))
+  const averageRating = pressedGuide?.rating
+    ? average(pressedGuide?.rating?.map((rating) => rating.rate))
     : 0;
 
   const handleRating = (rate: number) => {
-    if (hasRatedByUser(authenticatedUser!.uid, selectedGuide?.rating)) {
+    if (hasRatedByUser(authenticatedUser!.uid, pressedGuide?.rating)) {
       return Alert.alert("You have already rated this guide");
     }
-    UpdateGuideRating(selectedGuide!!.uid, rate, authenticatedUser!.uid).then(
-      () => {
-        handleFetchAgain();
-      }
+    UpdateGuideRating(
+      pressedGuide!.uid,
+      rate,
+      authenticatedUser!.uid,
+      setPressedGuide,
+      showError
     );
   };
 
   const handleAddComment = (newComment: string) => {
     updateGuideComments(
-      selectedGuide!!.uid,
+      pressedGuide!.uid,
       newComment,
-      authenticatedUser!.username
+      authenticatedUser!.username,
+      setPressedGuide,
+      showError
     ).then(() => {
-      handleFetchAgain();
       setNewComment("");
     });
   };
@@ -110,7 +95,8 @@ function OverviewGuideView({ navigation }: GuideInDetailScreenProps) {
             authenticatedUser,
             setAuthenticatedUser,
             guides,
-            setGuides
+            setGuides,
+            showError
           ).then(navigation.navigate("Profile"));
         },
       },
@@ -119,7 +105,7 @@ function OverviewGuideView({ navigation }: GuideInDetailScreenProps) {
 
   const votedRating = getRatingByUser(
     authenticatedUser!.uid,
-    selectedGuide?.rating
+    pressedGuide?.rating
   );
 
   return (
@@ -129,7 +115,7 @@ function OverviewGuideView({ navigation }: GuideInDetailScreenProps) {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
-      {authenticatedUser?.uid === selectedGuide?.user_id ? (
+      {authenticatedUser?.uid === pressedGuide?.user_id ? (
         <View
           style={{
             flexDirection: "row",
@@ -148,7 +134,7 @@ function OverviewGuideView({ navigation }: GuideInDetailScreenProps) {
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
-              confirmDeleteGuide(selectedGuide?.uid);
+              confirmDeleteGuide(pressedGuide?.uid);
             }}
           >
             <Feather name={"trash"} size={28} color={"#000"} />
@@ -160,19 +146,19 @@ function OverviewGuideView({ navigation }: GuideInDetailScreenProps) {
 
       <View style={{ marginBottom: 40 }}>
         <UserIdentifier
-          selectedUsername={selectedGuide?.author}
-          selectedUserUid={selectedGuide?.user_id}
+          selectedUsername={pressedGuide?.author}
+          selectedUserUid={pressedGuide?.user_id}
           homepage={false}
         />
       </View>
 
       <View style={{ marginBottom: 40 }}>
-        <GuideIdentifier guide={selectedGuide} />
+        <GuideIdentifier guide={pressedGuide} />
       </View>
 
       <View style={{ marginBottom: 40 }}>
         <Text style={ratingStyles.sectionTitle}>Pictures</Text>
-        <CarouselPictures images={selectedGuide?.pictures} />
+        <CarouselPictures images={pressedGuide?.pictures} />
       </View>
 
       <View style={{ marginBottom: 40 }}>
@@ -186,7 +172,7 @@ function OverviewGuideView({ navigation }: GuideInDetailScreenProps) {
             <Feather name={"map"} size={25} color={"#000"} />
           </TouchableOpacity>
         </View>
-        <CarouselLocations places={selectedGuide?.places} />
+        <CarouselLocations places={pressedGuide?.places} />
       </View>
 
       <View style={ratingStyles.containerBottomMargin}>
@@ -225,9 +211,9 @@ function OverviewGuideView({ navigation }: GuideInDetailScreenProps) {
               marginRight: 10,
             }}
           >
-            {selectedGuide?.rating?.length === 1
-              ? selectedGuide?.rating?.length + " Rating"
-              : selectedGuide?.rating?.length + " Ratings"}
+            {pressedGuide?.rating?.length === 1
+              ? pressedGuide?.rating?.length + " Rating"
+              : pressedGuide?.rating?.length + " Ratings"}
           </Text>
         </View>
 
@@ -245,7 +231,7 @@ function OverviewGuideView({ navigation }: GuideInDetailScreenProps) {
                 key={value}
                 style={{ marginHorizontal: 5 }}
                 onPress={() => {
-                  if (authenticatedUser?.uid !== selectedGuide?.user_id) {
+                  if (authenticatedUser?.uid !== pressedGuide?.user_id) {
                     handleRating(value);
                     setRating(value);
                   }
@@ -268,8 +254,8 @@ function OverviewGuideView({ navigation }: GuideInDetailScreenProps) {
 
       <View style={ratingStyles.containerBottomMargin}>
         <Text style={ratingStyles.sectionTitle}>Comments</Text>
-        {selectedGuide?.comments && selectedGuide.comments.length > 0 ? (
-          selectedGuide.comments.map((comment, index) => (
+        {pressedGuide?.comments && pressedGuide.comments.length > 0 ? (
+          pressedGuide.comments.map((comment, index) => (
             <View style={styles.commentItem} key={index}>
               <Text style={styles.commentText}>{comment.comment}</Text>
               <Text style={styles.commentAuthor}>{"@" + comment.username}</Text>
