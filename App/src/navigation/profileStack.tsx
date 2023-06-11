@@ -27,7 +27,14 @@ interface ProfileStackProps {
 function ProfileStack({ navigation }: ProfileStackProps) {
   const { showError } = useError();
   const { startLoading, stopLoading } = useLoading();
-  const { setPressedGuide, pressedGuide, tempGuide, setTempGuide } = useGuide();
+  const {
+    setPressedGuide,
+    pressedGuide,
+    tempGuide,
+    setTempGuide,
+    guides,
+    setGuides,
+  } = useGuide();
   const [modalVisible, setModalVisible] = React.useState(false);
   const { authenticatedUser, setAuthenticatedUser } = useAuthenticatedUser();
   const { currentUser, pressedUser, setPressedUser } = useCurrentUser();
@@ -142,7 +149,9 @@ function ProfileStack({ navigation }: ProfileStackProps) {
                         setTempGuide,
                         tempGuide!,
                         navigation,
-                        showError
+                        showError,
+                        guides,
+                        setGuides
                       );
 
                       stopLoading();

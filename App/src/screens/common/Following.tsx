@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import UserIdentifier from "../../components/identifiers/UserIdentifier";
 import { getUsername, getUserByUID } from "../../database/userRepository";
 import { useCurrentUser } from "../../context/currentUserContext";
+import UserProfile from "../../models/userProfiles";
 
 function FollowingView() {
   const { currentUser } = useCurrentUser();

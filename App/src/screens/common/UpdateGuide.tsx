@@ -43,15 +43,17 @@ const UpdateGuideView = ({ navigation }: EditGuideScreenProps) => {
   };
 
   const handleDeleteImage = (index: number) => {
-    const newImages = [...tempGuide!.pictures];
-    newImages.splice(index, 1);
-    setTempGuide(
-      (prevTempGuide) =>
-        ({
-          ...prevTempGuide,
-          pictures: newImages,
-        } as Guide)
-    );
+    setTempGuide((prevTempGuide: Guide | undefined) => {
+      if (!prevTempGuide) return prevTempGuide;
+
+      const newPictures = [...prevTempGuide.pictures];
+      newPictures.splice(index, 1);
+
+      return {
+        ...prevTempGuide,
+        pictures: newPictures,
+      };
+    });
   };
 
   const handleDeletePlace = (index: number) => {

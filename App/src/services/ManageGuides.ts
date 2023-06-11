@@ -253,51 +253,63 @@ const deleteGuide = async (
   }
 };
 
-const handleUpdateGuide = (
+const handleUpdateGuide = async (
   setPressedGuide: React.Dispatch<React.SetStateAction<Guide | undefined>>,
   setTempGuide: React.Dispatch<React.SetStateAction<Guide | undefined>>,
   tempGuide: Guide,
   navigation: any,
-  showError: (message: string) => void
+  showError: (message: string) => void,
+  guides: Guide[],
+  setGuides: any
 ) => {
   if (tempGuide?.uid) {
     const guideRef = doc(db, "guides", tempGuide.uid);
-    updateDoc(guideRef, { ...tempGuide })
-      .then(async () => {
-        console.log("updated guide, now uploading pictures.");
-        if (tempGuide?.pictures?.length > 0) {
-          try {
-            const imagesUrl = await Promise.all(
-              tempGuide?.pictures?.map(
-                async (picture) => await uploadPicture(tempGuide?.uid, picture)
-              )
-            ).catch((err) => {
-              console.log(err);
-              showError(
-                "Error uploading guide images. Please try again later."
-              );
-              return;
-            });
+    try {
+      await updateDoc(guideRef, { ...tempGuide });
 
-            console.log("uploaded images, now updating guide.");
+      console.log("updated guide, now uploading pictures.");
+      if (tempGuide?.pictures?.length > 0) {
+        try {
+          const imagesUrl = await Promise.all(
+            tempGuide?.pictures?.map(
+              async (picture) => await uploadPicture(tempGuide?.uid, picture)
+            )
+          ).catch((err) => {
+            console.log(err);
+            showError("Error uploading guide images. Please try again later.");
+            return;
+          });
 
-            await updateDoc(guideRef, {
-              pictures: imagesUrl,
-            });
+          console.log("uploaded images, now updating guide.");
 
-            console.log("updated guide successfully!");
+          await updateDoc(guideRef, {
+            pictures: imagesUrl,
+          });
 
-            setPressedGuide({ ...tempGuide });
-          } catch (error) {
-            console.log(error);
-            showError("Error updating guide. Please try again later.");
-          }
+          console.log("updated guide successfully!");
+
+          setPressedGuide({ ...tempGuide });
+
+          const updatedGuidesOnDevice = guides.map((guide) =>
+            guide.uid === tempGuide.uid ? tempGuide : guide
+          );
+          setGuides(updatedGuidesOnDevice);
+        } catch (error) {
+          console.log(error);
+          showError("Error updating guide. Please try again later.");
         }
-      })
-      .catch((error) => {
-        console.log("Error updating guide", error);
-        showError("Error updating guide. Please try again later.");
-      });
+      } else {
+        setPressedGuide({ ...tempGuide });
+
+        const updatedGuidesOnDevice = guides.map((guide) =>
+          guide.uid === tempGuide.uid ? tempGuide : guide
+        );
+        setGuides(updatedGuidesOnDevice);
+      }
+    } catch (error) {
+      console.log("Error updating guide", error);
+      showError("Error updating guide. Please try again later.");
+    }
   }
 };
 

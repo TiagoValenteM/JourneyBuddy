@@ -72,7 +72,9 @@ function SignInView({ navigation }: SignInViewProps) {
               }}
             >
               <Image
-                source={require("../../../assets/logo.png")}
+                source={{
+                  uri: "https://i.imgur.com/j7qbzry.jpg",
+                }}
                 style={{
                   width: 60,
                   height: 60,

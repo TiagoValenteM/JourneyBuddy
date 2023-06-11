@@ -15,13 +15,18 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.tiagomvalente.JourneyBuddy"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.tiagomvalente.JourneyBuddy"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -31,12 +36,20 @@
         "expo-image-picker",
         {
           "photosPermission": "Allow JourneyBuddy to access your photos",
-            "cameraPermission": "Allow JourneyBuddy to access your camera",
-            "allowsEditing": true,
-            "aspect": [4, 3],
-            "quality": 1
+          "cameraPermission": "Allow JourneyBuddy to access your camera",
+          "allowsEditing": true,
+          "aspect": [
+            4,
+            3
+          ],
+          "quality": 1
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "95fb7f1c-da64-441c-a514-37f0fc032a0c"
+      }
+    }
   }
 }

@@ -140,7 +140,9 @@ function SignUpView<StackScreenProps>({ navigation }: { navigation: any }) {
               }}
             >
               <Image
-                source={require("../../../assets/logo.png")}
+                source={{
+                  uri: "https://i.imgur.com/j7qbzry.jpg",
+                }}
                 style={{
                   width: 40,
                   height: 40,
