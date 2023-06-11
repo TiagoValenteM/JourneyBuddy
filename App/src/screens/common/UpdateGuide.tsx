@@ -19,7 +19,6 @@ interface EditGuideScreenProps {
 const UpdateGuideView = ({ navigation }: EditGuideScreenProps) => {
   const { tempGuide, setTempGuide, pressedGuide } = useGuide();
 
-  console.log(tempGuide);
   React.useEffect(() => {
     setTempGuide(pressedGuide);
   }, []);

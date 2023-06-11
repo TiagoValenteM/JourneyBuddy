@@ -44,7 +44,7 @@ async function getCachedLocalFile(directory: string, remoteUri: string) {
   const fileInfo = await FileSystem.getInfoAsync(fileUri);
 
   if (!fileInfo.exists) {
-    console.log(`File isn't cached locally. Downloading from: ${remoteUri}`);
+    // console.log(`File isn't cached locally. Downloading from: ${remoteUri}`);
     await FileSystem.downloadAsync(remoteUri, fileUri);
   }
 
@@ -65,11 +65,11 @@ const CachedImage: React.FC<CachedImageProps> = ({
       } else {
         getCachedLocalFile("images/", source.uri)
           .then((fileUri) => {
-            console.log(`Loading cached Image: ${fileUri}`);
+            // console.log(`Loading cached Image: ${fileUri}`);
             setLocalSource({ uri: fileUri });
           })
           .catch((err) => {
-            console.log("Error caching image, using remote...");
+            // console.log("Error caching image, using remote...");
             console.log(err);
             setLocalSource({ uri: source.uri }); // Defaults to remote uri
           });

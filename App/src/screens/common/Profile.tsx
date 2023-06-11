@@ -1,12 +1,14 @@
 import React from "react";
 import { RefreshControl, ScrollView, View, Text } from "react-native";
 import ProfileModal from "../../components/modals/ProfileModal";
-import { getGuidesCurrentUser } from "../../services/ManageGuides";
+import { getGuidesUser } from "../../services/ManageGuides";
 import GridImage from "../../components/grids/GridImage";
 import ProfileIdentifier from "../../components/identifiers/ProfileIdentifier";
 import { useCurrentUser } from "../../context/currentUserContext";
 import { useAuthenticatedUser } from "../../context/authenticatedUserContext";
 import { useGuide } from "../../context/GuideContext";
+import { useLoading } from "../../hooks/useLoading";
+import { useError } from "../../hooks/useError";
 
 interface ProfileScreenProps {
   navigation: any;
@@ -24,26 +26,37 @@ function ProfileView({
   const { currentUser } = useCurrentUser();
   const { authenticatedUser } = useAuthenticatedUser();
   const [refreshing, setRefreshing] = React.useState(false);
-  const { guides, setGuides } = useGuide();
+  const { selectedUserGuides, setSelectedUserGuides, guides } = useGuide();
+  const { startLoading, stopLoading } = useLoading();
+  const { showError } = useError();
 
   const onRefresh = () => {
     setRefreshing(true);
-
-    getGuidesCurrentUser(isAuthUser ? authenticatedUser! : currentUser!)
+    getGuidesUser(currentUser?.uid)
       .then((fetchedGuides) => {
-        setGuides(fetchedGuides);
+        setSelectedUserGuides(fetchedGuides);
         setRefreshing(false);
       })
       .catch((err) => {
+        showError("Failed to load guides. Please try again later.");
         console.log("Error fetching user guides:", err);
       });
   };
 
   React.useEffect(() => {
-    onRefresh();
-  }, [currentUser]);
+    startLoading();
+    getGuidesUser(currentUser?.uid)
+      .then((fetchedGuides) => {
+        setSelectedUserGuides(fetchedGuides);
+        stopLoading();
+      })
+      .catch((err) => {
+        showError("Failed to load guides. Please try again later.");
+        console.log("Error fetching user guides:", err);
+      });
+  }, []);
 
-  return (
+  return authenticatedUser ? (
     <View style={{ height: "100%", flex: 1 }}>
       <ScrollView
         style={{ flex: 1, paddingHorizontal: 20 }}
@@ -52,28 +65,42 @@ function ProfileView({
         }
       >
         <ProfileIdentifier navigation={navigation} isAuthUser={isAuthUser} />
-        {guides?.length > 0 ? (
+
+        {isAuthUser && authenticatedUser?.guides?.length > 0 && (
           <GridImage
             guides={guides}
             navigation={navigation}
             authUser={authenticatedUser!}
           />
-        ) : (
-          <View
-            style={{
-              flexDirection: "column",
-              backgroundColor: "#dfe0e3",
-              borderRadius: 10,
-              padding: 15,
-              marginVertical: 10,
-            }}
-          >
-            <Text style={{ textAlign: "center" }}>No guides found</Text>
-          </View>
         )}
+
+        {!isAuthUser && selectedUserGuides?.length > 0 && (
+          <GridImage
+            guides={selectedUserGuides}
+            navigation={navigation}
+            authUser={authenticatedUser!}
+          />
+        )}
+
+        {(!isAuthUser && selectedUserGuides?.length === 0) ||
+          (isAuthUser && authenticatedUser?.guides.length === 0 && (
+            <View
+              style={{
+                flexDirection: "column",
+                backgroundColor: "#dfe0e3",
+                borderRadius: 10,
+                padding: 15,
+                marginVertical: 10,
+              }}
+            >
+              <Text style={{ textAlign: "center" }}>No guides found</Text>
+            </View>
+          ))}
       </ScrollView>
       {modalVisible && <ProfileModal setModalVisible={setModalVisible} />}
     </View>
+  ) : (
+    <View />
   );
 }
 

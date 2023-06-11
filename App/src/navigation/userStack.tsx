@@ -11,27 +11,36 @@ import { useCurrentUser } from "../context/currentUserContext";
 import { StatusBar } from "react-native";
 import { useLoading } from "../hooks/useLoading";
 import SearchStack from "./searchStack";
+import { useGuide } from "../context/GuideContext";
+import { getGuidesUser } from "../services/ManageGuides";
 
 const Tab = createBottomTabNavigator();
 
 export default function UserStack() {
   const { setAuthenticatedUser } = useAuthenticatedUser();
   const { setCurrentUser } = useCurrentUser();
+  const { setGuides } = useGuide();
   const { startLoading, stopLoading } = useLoading();
 
   React.useEffect(() => {
-    startLoading();
-    getAuthUserProfile()
-      .then((user) => {
+    const fetchData = async () => {
+      try {
+        startLoading();
+
+        const user = await getAuthUserProfile();
         setAuthenticatedUser(user);
         setCurrentUser(user);
-      })
-      .catch((error) => {
+
+        const authUserGuides = await getGuidesUser(user?.uid);
+        setGuides(authUserGuides);
+      } catch (error) {
         console.error("Error fetching user profile:", error);
-      })
-      .finally(() => {
+      } finally {
         stopLoading();
-      });
+      }
+    };
+
+    fetchData();
   }, []);
 
   return (

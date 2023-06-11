@@ -40,14 +40,12 @@ const checkGuide = (guide: Guide, showError: any) => {
   return true;
 };
 
-const getGuidesCurrentUser = async (
-  currentUser: UserProfile
-): Promise<Guide[]> => {
+const getGuidesUser = async (user_id: string | undefined): Promise<Guide[]> => {
   try {
     const userGuidesCollectionRef = collection(db, "guides");
     const queryFindUserGuides = query(
       userGuidesCollectionRef,
-      where("user_id", "==", currentUser?.uid)
+      where("user_id", "==", user_id)
     );
 
     const querySnapshotUser = await getDocs(queryFindUserGuides);
@@ -368,7 +366,7 @@ export {
   checkGuide,
   getAllGuides,
   getGuideDetailed,
-  getGuidesCurrentUser,
+  getGuidesUser,
   updateGuideComments,
   UpdateGuideRating,
   hasRatedByUser,
