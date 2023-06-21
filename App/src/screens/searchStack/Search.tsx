@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Text, View, ScrollView, RefreshControl, TouchableOpacity, StyleSheet, Image } from "react-native";
 import SearchBar from "../../components/searchbar/SearchBar";
 import { Feather } from '@expo/vector-icons';
-import { getAllGuides } from "../../services/ManageGuides";
 import { Guide } from "../../models/guides";
 import { useGuide } from "../../context/GuideContext";
 import GuideIdentifier from "../../components/identifiers/GuideIdentifier";
@@ -11,7 +10,7 @@ import UserProfile from "../../models/userProfiles";
 import { useCurrentUser } from "../../context/currentUserContext";
 import { getUsername, getUserByUID } from "../../database/userRepository";
 import { User } from "firebase/auth";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../config/firebase";
 
 
@@ -39,12 +38,14 @@ function SearchView({ navigation }: { navigation: any }) {
   const [peopleSearchResults, setPeopleSearchResults] = useState<string[]>([]);
   const [guides, setGuides] = useState<Guide[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
-
+  const [input, setInput] = useState<string | null>(null);
 
   //logic - setSearchForGuides(!searchForGuides)
 
   const handleSearch = (query: string) => {
     console.log(`Searching for ${searchForGuides ? 'guides' : 'people'} - Query: ${query}`);
+    setInput(query)
+    console.log(input)
 
     if (searchForGuides) {
       // Perform guide search logic and set the search results
@@ -57,10 +58,11 @@ function SearchView({ navigation }: { navigation: any }) {
     }
   };
 
+  
   //fetching guides
   const fetchGuides = async () => {
     try {
-      const guides = await getAllGuides();
+      const guides = await getAllGuidesHere(input);
       setGuides(guides);
     } catch (error) {
       console.log("Error fetching guides:", error);
@@ -72,7 +74,7 @@ function SearchView({ navigation }: { navigation: any }) {
   //fetching people
   const fetchUsers = async () => {
     try {
-      const users = await getAllUsers();
+      const users = await getAllUsers(input);
       setUsers(users);
       console.log("Users:", users);
     } catch (error) {
@@ -82,12 +84,40 @@ function SearchView({ navigation }: { navigation: any }) {
     }
     };
 
+    // function to retrieve all guides here
+    const getAllGuidesHere = async (title: string | null): Promise<Guide[]> => {
+      try {
+        const userGuidesCollectionRef = collection(db, "guides");
+        const queryFindGuides = query(
+          userGuidesCollectionRef,
+          where("title", ">=", title)
+        );
+
+        const querySnapshotUser = await getDocs(queryFindGuides);
+    
+        if (!querySnapshotUser.empty) {
+          return querySnapshotUser.docs.map((doc) => doc.data() as Guide);
+        } else {
+          console.log("No matching user profile found");
+          return [];
+        }
+      } catch (error) {
+        console.log("Error retrieving user guides:", error);
+        return [];
+      }
+    };
+    
 
   // function to retrieve all users
-  const getAllUsers = async (): Promise<UserProfile[]> => {
+  const getAllUsers = async (username: string | null): Promise<UserProfile[]> => {
     try {
-      const userCollectionRef = collection(db, "users");
-      const querySnapshotUser = await getDocs(userCollectionRef);
+      const userCollectionRef = collection(db, "user_profiles");
+      const queryFindUsers = query(
+        userCollectionRef,
+        where("username", ">=", username)
+      );
+      const querySnapshotUser = await getDocs(queryFindUsers);
+      
   
       if (!querySnapshotUser.empty) {
         return querySnapshotUser.docs.map((doc) => doc.data() as UserProfile);
@@ -100,7 +130,8 @@ function SearchView({ navigation }: { navigation: any }) {
       return [];
     }
   };
-    
+
+
   // awaiting fetching
   React.useEffect(() => {
     const fetchData = async () => {
@@ -112,16 +143,12 @@ function SearchView({ navigation }: { navigation: any }) {
     fetchData().then();
   }, []);
 
-
-  // updating
+  // updating 
   const onRefresh = () => {
     setRefreshing(true);
     fetchGuides().then();
     fetchUsers().then();
   };
-
-
-  const [activeTab, setActiveTab] = useState('Tab1');
 
   return (
     <ScrollView
@@ -131,7 +158,6 @@ function SearchView({ navigation }: { navigation: any }) {
     }
     >
       <View>
-  
         <SearchBar onSearch={handleSearch}/>
       </View>
 
@@ -213,18 +239,11 @@ function SearchView({ navigation }: { navigation: any }) {
                 .map((user, index) => (
                   <View key={index} style={{ marginVertical: 10, flexDirection:'row'}}>
                     <View style={{ marginVertical: 5, marginHorizontal: 10}}>
-                      <Image
-                        source={{ uri: user.profilePicturePath }}
-                        style={{ width: 100, height: 100 }}
-                      />
                     </View>
                     <View style={{ marginVertical: 10 }}>
-                      <UserIdentifier key={user.uid} selectedUsername={user.username} selectedUserUid={user.uid} homepage={false} />
+                      <UserIdentifier key={user.uid} selectedUsername={user.username} selectedUserUid={user.uid} homepage={true} />
                     </View> 
                   </View>
-
-          
-                
               ))}
           </View>
           )}
