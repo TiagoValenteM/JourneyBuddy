@@ -40,6 +40,7 @@ const identifierStyles = StyleSheet.create({
   container: {
     alignItems: "flex-start",
     justifyContent: "space-between",
+    paddingRight: 100,
   },
   title: {
     fontSize: 20,
@@ -47,8 +48,9 @@ const identifierStyles = StyleSheet.create({
     marginBottom: 10,
   },
   description: {
-    fontSize: 14,
+    fontSize: 13,
     marginBottom: 10,
+
   },
   date: {
     fontSize: 14,
