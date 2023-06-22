@@ -104,6 +104,7 @@ const identifierStyles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    marginBottom: 6,
   },
   userPictureContainer: {
     flexDirection: "row",

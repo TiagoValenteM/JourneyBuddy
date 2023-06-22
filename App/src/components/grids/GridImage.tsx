@@ -103,6 +103,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     fontWeight: "600",
     left: 10,
+    right: 1,
     bottom: 10,
     color: "white",
     fontSize: 20,
