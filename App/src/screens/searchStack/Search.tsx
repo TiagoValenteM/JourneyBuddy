@@ -21,7 +21,11 @@ import { db } from "../../config/firebase";
 const TabScreen1 = () => <View style={styles.tabContent}></View>;
 const TabScreen2 = () => <View style={styles.tabContent}></View>;
 
-function SearchView({}: { navigation: any }) {
+interface SearchProps {
+  navigation: any;
+}
+
+function SearchView({ navigation }: SearchProps) {
   //const { user } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
   const [searchForGuides, setSearchForGuides] = useState(true);
@@ -203,7 +207,6 @@ function SearchView({}: { navigation: any }) {
               {users.map((user, index) => (
                 <View
                   key={index}
-                  style={{ marginVertical: 10, flexDirection: "row" }}
                 >
                   <View
                     style={{ marginVertical: 5, marginHorizontal: 10 }}
@@ -214,6 +217,7 @@ function SearchView({}: { navigation: any }) {
                       selectedUsername={user.username}
                       selectedUserUid={user.uid}
                       homepage={true}
+                      navigation={navigation}
                     />
                   </View>
                 </View>
