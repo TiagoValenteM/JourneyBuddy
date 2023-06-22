@@ -80,10 +80,10 @@ function SearchView({}: { navigation: any }) {
     const handleSearch = () => {
       console.log(searchQuery);
 
-      if (searchForGuides) {
+      if (searchQuery.length > 0 && searchForGuides) {
         getGuides(searchQuery).then((result) => setGuides(result));
         console.log(guides);
-      } else {
+      } else if (searchQuery.length > 0 && !searchForGuides){
         getUsers(searchQuery).then((result) => setUsers(result));
         console.log(users);
       }
@@ -94,12 +94,13 @@ function SearchView({}: { navigation: any }) {
         <TextInput
           style={stylesSearch.searchInput}
           maxLength={30}
-          placeholder="Guides, People ..."
+          placeholder="Guides, People..."
           value={searchQuery}
           onChangeText={(text) => setSearchQuery(text)}
         />
 
-        <Button title="Search" onPress={handleSearch} />
+          <Button title="Search" onPress={handleSearch} />
+
       </View>
     );
   };
@@ -207,7 +208,7 @@ function SearchView({}: { navigation: any }) {
                   <View
                     style={{ marginVertical: 5, marginHorizontal: 10 }}
                   ></View>
-                  <View style={{ marginVertical: 10 }}>
+                  <View style={{ marginVertical: 10,  marginHorizontal: 10 }}>
                     <UserIdentifier
                       key={user.uid}
                       selectedUsername={user.username}
