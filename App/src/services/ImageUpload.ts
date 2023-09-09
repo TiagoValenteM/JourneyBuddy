@@ -1,4 +1,5 @@
 import * as ImagePicker from "expo-image-picker";
+import * as ImageManipulator from "expo-image-manipulator";
 import "firebase/storage";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { db, storage } from "../config/firebase";
@@ -88,9 +89,25 @@ const selectPictures = async (): Promise<string[]> => {
   return [];
 };
 
+const resizeImage = async (uri: string) => {
+  try {
+    const resizedImage = await ImageManipulator.manipulateAsync(
+      uri,
+      [{ resize: { width: 1080, height: 1350 } }],
+      { compress: 0.2, format: ImageManipulator.SaveFormat.JPEG }
+    );
+
+    return resizedImage.uri;
+  } catch (error) {
+    console.error("Error resizing image:", error);
+    throw error; // Rethrow the error for handling at a higher level
+  }
+};
+
 const uploadPicture = async (guide_uid: string, uri: string) => {
   if (uri.includes("file://")) {
-    const response = await fetch(uri);
+    const resizedUri = await resizeImage(uri);
+    const response = await fetch(resizedUri);
     const blob = await response.blob();
 
     const filename = uri.split("/").pop();

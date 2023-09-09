@@ -1,7 +1,6 @@
 import React, { useRef, useState } from "react";
 import { View, FlatList, Dimensions, StyleSheet } from "react-native";
 import CachedImage from "../images/CachedImage";
-import uuid from "react-native-uuid";
 
 interface CarouselPicturesProps {
   images: string[];
@@ -22,6 +21,17 @@ const CarouselPictures: React.FC<CarouselPicturesProps> = ({ images }) => {
     const index = Math.floor(contentOffset.x / windowWidth);
     setCurrentIndex(index);
   };
+
+  const viewAbilityConfig = useRef({
+    itemVisiblePercentThreshold: 50,
+  });
+
+  const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
+    if (viewableItems.length > 0) {
+      const firstVisibleIndex = viewableItems[0].index || 0;
+      setCurrentIndex(firstVisibleIndex);
+    }
+  });
 
   const CarouselIndicator: React.FC<CarouselIndicatorProps> = ({
     isActive,
@@ -73,6 +83,8 @@ const CarouselPictures: React.FC<CarouselPicturesProps> = ({ images }) => {
             </View>
           </View>
         )}
+        onViewableItemsChanged={onViewableItemsChanged.current}
+        viewabilityConfig={viewAbilityConfig.current}
       />
       <View style={carouselStyles.indicatorContainer}>
         {images?.map((_, index) => (
