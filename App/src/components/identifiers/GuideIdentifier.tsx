@@ -1,36 +1,101 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Pressable,
+} from "react-native";
 import { Guide } from "../../models/guides";
 import { getMonthName } from "../../utils/getMonth";
+import { Feather } from "@expo/vector-icons";
+import { useAuthenticatedUser } from "../../context/authenticatedUserContext";
+import { checkSelectGuide } from "../../services/ManageGuides";
+import { useGuide } from "../../context/GuideContext";
 
 interface GuideIdentifierProps {
   guide: Guide;
+  navigation?: any;
 }
 
-const GuideIdentifier: React.FC<GuideIdentifierProps> = ({ guide }) => {
-  return (
-    <View style={identifierStyles.container}>
-      <Text
-        style={identifierStyles.title}
-        numberOfLines={2}
-        ellipsizeMode={"tail"}
-      >
-        {guide?.title}
-      </Text>
-      <Text
-        style={identifierStyles.description}
-        numberOfLines={5}
-        ellipsizeMode={"tail"}
-      >
-        {guide?.description}
-      </Text>
+const GuideIdentifier: React.FC<GuideIdentifierProps> = ({
+  guide,
+  navigation,
+}) => {
+  const { authenticatedUser, setAuthenticatedUser } = useAuthenticatedUser();
+  const { setPressedGuide } = useGuide();
 
-      <Text style={identifierStyles.date}>
-        {parseInt(guide?.dateCreated.slice(8, 10))}{" "}
-        {getMonthName(parseInt(guide?.dateCreated.slice(5, 7)))}{" "}
-        {guide?.dateCreated.slice(0, 4)}
-      </Text>
-    </View>
+  return (
+    <Pressable
+      style={{
+        justifyContent: "space-between",
+        flexDirection: "row",
+      }}
+      onPress={() => {
+        if (navigation) {
+          setPressedGuide(guide);
+          navigation.navigate("GuideInDetail");
+        }
+      }}
+    >
+      <View style={identifierStyles.container}>
+        <Text
+          style={identifierStyles.title}
+          numberOfLines={2}
+          ellipsizeMode={"tail"}
+        >
+          {guide?.title}
+        </Text>
+        <Text
+          style={identifierStyles.description}
+          numberOfLines={5}
+          ellipsizeMode={"tail"}
+        >
+          {guide?.description}
+        </Text>
+
+        <Text style={identifierStyles.date}>
+          {parseInt(guide?.dateCreated.slice(8, 10))}{" "}
+          {getMonthName(parseInt(guide?.dateCreated.slice(5, 7)))}{" "}
+          {guide?.dateCreated.slice(0, 4)}
+        </Text>
+      </View>
+      <View
+        style={{
+          paddingHorizontal: 8,
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => {
+            checkSelectGuide(
+              guide.uid,
+              authenticatedUser,
+              setAuthenticatedUser
+            );
+          }}
+          style={{
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Feather name={"bookmark"} size={30} color="black" />
+          {authenticatedUser?.savedGuides?.some(
+            (guideUID) => guideUID === guide.uid
+          ) ? (
+            <Feather
+              name={"x"}
+              size={16}
+              color="black"
+              style={{
+                zIndex: 1,
+                position: "absolute",
+                top: 5,
+              }}
+            />
+          ) : null}
+        </TouchableOpacity>
+      </View>
+    </Pressable>
   );
 };
 
@@ -40,7 +105,7 @@ const identifierStyles = StyleSheet.create({
   container: {
     alignItems: "flex-start",
     justifyContent: "space-between",
-    paddingRight: 100,
+    maxWidth: "80%",
   },
   title: {
     fontSize: 20,
@@ -50,7 +115,6 @@ const identifierStyles = StyleSheet.create({
   description: {
     fontSize: 13,
     marginBottom: 10,
-
   },
   date: {
     fontSize: 14,

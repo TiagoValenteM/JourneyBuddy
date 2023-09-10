@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, ReactNode } from "react";
-import { Guide } from "../models/guides";
+import { Guide, Place } from "../models/guides";
 
 interface GuideContextProps {
   pressedGuide: Guide | undefined;
@@ -10,6 +10,8 @@ interface GuideContextProps {
   setSelectedUserGuides: React.Dispatch<React.SetStateAction<Guide[]>>;
   tempGuide: Guide | undefined;
   setTempGuide: React.Dispatch<React.SetStateAction<Guide | undefined>>;
+  selectedPlace: Place | null;
+  setSelectedPlace: React.Dispatch<React.SetStateAction<Place | null>>;
 }
 
 const GuideContext = createContext<GuideContextProps>({
@@ -21,6 +23,8 @@ const GuideContext = createContext<GuideContextProps>({
   setSelectedUserGuides: () => {},
   tempGuide: undefined,
   setTempGuide: () => {},
+  selectedPlace: null,
+  setSelectedPlace: () => {},
 });
 
 interface GuideProviderProps {
@@ -34,6 +38,7 @@ export function GuideProvider({ children }: GuideProviderProps) {
   const [guides, setGuides] = useState<Guide[]>([]);
   const [tempGuide, setTempGuide] = useState<Guide | undefined>(undefined);
   const [selectedUserGuides, setSelectedUserGuides] = useState<Guide[]>([]);
+  const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
 
   return (
     <GuideContext.Provider
@@ -46,6 +51,8 @@ export function GuideProvider({ children }: GuideProviderProps) {
         setSelectedUserGuides,
         tempGuide,
         setTempGuide,
+        selectedPlace,
+        setSelectedPlace,
       }}
     >
       {children}
@@ -63,6 +70,8 @@ export function useGuide() {
     setSelectedUserGuides,
     tempGuide,
     setTempGuide,
+    selectedPlace,
+    setSelectedPlace,
   } = useContext(GuideContext);
 
   return {
@@ -74,5 +83,7 @@ export function useGuide() {
     setSelectedUserGuides,
     tempGuide,
     setTempGuide,
+    selectedPlace,
+    setSelectedPlace,
   };
 }

@@ -9,6 +9,7 @@ import {
 } from "firebase/firestore";
 import { auth, db } from "../config/firebase";
 import UserProfile from "../models/userProfiles";
+import { Place } from "../models/guides";
 
 async function getAuthUserProfile(): Promise<UserProfile | undefined> {
   if (auth?.currentUser?.uid) {
@@ -242,6 +243,70 @@ async function unfollowUser(
   }
 }
 
+async function handleSaveGuide(
+  guideID: string,
+  authenticatedUser: UserProfile | undefined,
+  setAuthenticatedUser: any
+): Promise<Promise<void>> {
+  try {
+    const updatedSavedGuides = [
+      ...(authenticatedUser?.savedGuides || []),
+      guideID || "",
+    ];
+
+    const user = await getUserByUID(authenticatedUser?.uid || "");
+
+    if (user) {
+      // Update the user's savedGuides in Firestore
+      await updateDoc(doc(db, "user_profiles", user.uid), {
+        savedGuides: updatedSavedGuides,
+      });
+
+      // Create the updated user profile
+      const updatedAuthenticatedUser: { savedGuides: (string | undefined)[] } =
+        {
+          ...(authenticatedUser || {}),
+          savedGuides: updatedSavedGuides,
+        };
+
+      // Set the updated user profile in your state or context
+      setAuthenticatedUser(updatedAuthenticatedUser);
+    }
+  } catch (error) {
+    console.log("Error updating profile:", error);
+  }
+}
+
+async function handleUnsavedGuide(
+  guideID: string,
+  authenticatedUser: UserProfile | undefined,
+  setAuthenticatedUser: any
+): Promise<Promise<void>> {
+  try {
+    const updatedSavedGuides = (authenticatedUser?.savedGuides || []).filter(
+      (savedGuideID) => savedGuideID !== guideID
+    );
+
+    const user = await getUserByUID(authenticatedUser?.uid || "");
+
+    if (user) {
+      await updateDoc(doc(db, "user_profiles", user.uid), {
+        savedGuides: updatedSavedGuides,
+      });
+
+      const updatedAuthenticatedUser: { savedGuides: (string | undefined)[] } =
+        {
+          ...(authenticatedUser || {}),
+          savedGuides: updatedSavedGuides,
+        };
+
+      setAuthenticatedUser(updatedAuthenticatedUser);
+    }
+  } catch (error) {
+    console.log("Error updating profile:", error);
+  }
+}
+
 export {
   getAuthUserProfile,
   getUserByUID,
@@ -249,4 +314,6 @@ export {
   followUser,
   unfollowUser,
   handleUpdateProfile,
+  handleSaveGuide,
+  handleUnsavedGuide,
 };

@@ -15,6 +15,10 @@ import { Guide, Rating } from "../models/guides";
 import { uploadPicture } from "./ImageUpload";
 import React from "react";
 import UserProfile from "../models/userProfiles";
+import {
+  handleSaveGuide,
+  handleUnsavedGuide,
+} from "../database/userRepository";
 
 const checkGuide = (guide: Guide, showError: any) => {
   if (guide?.title === "") {
@@ -62,15 +66,21 @@ const getGuidesUser = async (user_id: string | undefined): Promise<Guide[]> => {
   }
 };
 
-const getAllGuides = async (): Promise<Guide[]> => {
+const getSavedGuides = async (
+  savedGuideUIDs: string[] | undefined
+): Promise<Guide[]> => {
   try {
-    const userGuidesCollectionRef = collection(db, "guides");
-    const querySnapshotUser = await getDocs(userGuidesCollectionRef);
+    const guidesQuery = query(
+      collection(db, "guides"),
+      where("uid", "in", savedGuideUIDs)
+    );
 
-    if (!querySnapshotUser.empty) {
-      return querySnapshotUser.docs.map((doc) => doc.data() as Guide);
+    const querySnapshotGuides = await getDocs(guidesQuery);
+
+    if (!querySnapshotGuides.empty) {
+      return querySnapshotGuides.docs.map((doc) => doc.data() as Guide);
     } else {
-      console.log("No matching user profile found");
+      console.log("No matching user guides found");
       return [];
     }
   } catch (error) {
@@ -374,11 +384,35 @@ const handleCreateGuide = async (
   }
 };
 
+const checkSelectGuide = (
+  selectedGuideUID: string,
+  authenticatedUser: UserProfile | undefined,
+  setAuthenticatedUser: any
+) => {
+  if (
+    authenticatedUser?.savedGuides?.some(
+      (guideUID) => guideUID === selectedGuideUID
+    )
+  ) {
+    handleUnsavedGuide(
+      selectedGuideUID,
+      authenticatedUser,
+      setAuthenticatedUser
+    ).then();
+  } else {
+    handleSaveGuide(
+      selectedGuideUID,
+      authenticatedUser,
+      setAuthenticatedUser
+    ).then();
+  }
+};
+
 export {
   checkGuide,
-  getAllGuides,
   getGuideDetailed,
   getGuidesUser,
+  getSavedGuides,
   updateGuideComments,
   UpdateGuideRating,
   hasRatedByUser,
@@ -386,4 +420,5 @@ export {
   handleUpdateGuide,
   getRatingByUser,
   handleCreateGuide,
+  checkSelectGuide,
 };

@@ -1,6 +1,6 @@
 import React from "react";
 import Feather from "react-native-vector-icons/Feather";
-import { Alert, Text, TouchableOpacity } from "react-native";
+import { Alert, Pressable, Text, TouchableOpacity, View } from "react-native";
 import ProfileView from "../screens/common/Profile";
 import UpdateProfileView from "../screens/common/UpdateProfile";
 import { createStackNavigator } from "@react-navigation/stack";
@@ -17,6 +17,9 @@ import FollowingTabs from "./FollowingTabs";
 import { handleUpdateProfile } from "../database/userRepository";
 import { useError } from "../hooks/useError";
 import { useLoading } from "../hooks/useLoading";
+import Saved from "../screens/profileStack/Saved";
+import SavedGuides from "../screens/profileStack/SavedGuidesMap";
+import SavedGuidesGrid from "../screens/profileStack/SavedGuidesGrid";
 
 const Stack = createStackNavigator();
 
@@ -111,6 +114,7 @@ function ProfileStack({ navigation }: ProfileStackProps) {
         name={"GuideInDetail"}
         options={{
           headerTitle: "Guide",
+          headerBackTitle: "Back",
         }}
         component={OverviewGuideView}
       />
@@ -119,11 +123,8 @@ function ProfileStack({ navigation }: ProfileStackProps) {
         options={{
           headerShown: false,
         }}
-      >
-        {(props) => (
-          <OverviewMapView {...props} guidePlaces={pressedGuide?.places} />
-        )}
-      </Stack.Screen>
+        component={OverviewMapView}
+      />
       <Stack.Screen
         name={"EditGuideScreen"}
         options={{
@@ -242,6 +243,23 @@ function ProfileStack({ navigation }: ProfileStackProps) {
             shadowColor: "transparent",
             elevation: 0,
           },
+        }}
+      />
+      <Stack.Screen name={"Saved"} component={Saved} />
+      <Stack.Screen
+        name={"SavedGuidesMap"}
+        component={SavedGuides}
+        options={{
+          headerShown: false,
+          gestureEnabled: false,
+        }}
+      />
+      <Stack.Screen
+        name={"SavedGuidesGrid"}
+        component={SavedGuidesGrid}
+        options={{
+          headerBackTitle: "Back",
+          headerTitle: "Saved Guides",
         }}
       />
     </Stack.Navigator>

@@ -166,7 +166,9 @@ function OverviewGuideView({ navigation }: GuideInDetailScreenProps) {
           <Text style={ratingStyles.sectionTitle}>Locations</Text>
           <TouchableOpacity
             onPress={() => {
-              navigation.navigate("MapOverview");
+              navigation.navigate("MapOverview", {
+                places: pressedGuide?.places,
+              });
             }}
           >
             <Feather name={"map"} size={25} color={"#000"} />
