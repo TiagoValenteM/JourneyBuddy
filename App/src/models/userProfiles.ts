@@ -1,4 +1,5 @@
 import uuid from "react-native-uuid";
+import { Place } from "./guides";
 
 const defaultProfilePicture =
   "https://i.pinimg.com/originals/fa/60/51/fa6051d72b821cb48a8cc71d3481dfef.jpg";
@@ -12,6 +13,8 @@ class UserProfile {
   uid: string = uuid.v4() as string;
   username: string = "";
   guides: string[] = [];
+  savedPlaces: Place[] = [];
+  savedGuides: string[] = [];
 
   constructor(email: string, username: string, fullName: string, uid: string) {
     this.email = email;
@@ -22,6 +25,8 @@ class UserProfile {
     this.following = [];
     this.profilePicturePath = defaultProfilePicture;
     this.guides = [];
+    this.savedPlaces = [];
+    this.savedGuides = [];
   }
 
   toJSON() {
@@ -34,6 +39,8 @@ class UserProfile {
       following: this.following,
       profilePicturePath: this.profilePicturePath,
       guides: this.guides,
+      savedPlaces: this.savedPlaces,
+      savedGuides: this.savedGuides,
     };
   }
 }

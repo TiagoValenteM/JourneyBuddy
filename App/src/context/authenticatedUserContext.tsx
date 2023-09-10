@@ -26,7 +26,10 @@ export function AuthenticatedUserProvider({
 
   return (
     <authenticatedUserContext.Provider
-      value={{ authenticatedUser, setAuthenticatedUser }}
+      value={{
+        authenticatedUser,
+        setAuthenticatedUser,
+      }}
     >
       {children}
     </authenticatedUserContext.Provider>
@@ -38,5 +41,8 @@ export function useAuthenticatedUser() {
     authenticatedUserContext
   );
 
-  return { authenticatedUser, setAuthenticatedUser };
+  return {
+    authenticatedUser,
+    setAuthenticatedUser,
+  };
 }

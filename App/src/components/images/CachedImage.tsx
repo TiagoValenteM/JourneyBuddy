@@ -1,17 +1,12 @@
 import React, { useState, useEffect } from "react";
-import {
-  Image,
-  ImageStyle,
-  ImageResizeMode,
-  ImageSourcePropType,
-} from "react-native";
+import { ImageStyle, ImageSourcePropType } from "react-native";
+import { Image } from "expo-image";
 import * as FileSystem from "expo-file-system";
 import md5 from "md5";
 
 interface CachedImageProps {
   source: { uri: string };
   style: ImageStyle;
-  resizeMode?: ImageResizeMode;
 }
 
 // Checks if given directory exists. If not, creates it
@@ -51,12 +46,9 @@ async function getCachedLocalFile(directory: string, remoteUri: string) {
   return fileUri;
 }
 
-const CachedImage: React.FC<CachedImageProps> = ({
-  source,
-  style,
-  resizeMode = "cover",
-}) => {
+const CachedImage: React.FC<CachedImageProps> = ({ source, style }) => {
   const [localSource, setLocalSource] = useState<ImageSourcePropType>();
+  const blurhash = "ChG0FWNGogkD%%s:t8og";
 
   useEffect(() => {
     if (source?.uri?.length > 0) {
@@ -80,7 +72,16 @@ const CachedImage: React.FC<CachedImageProps> = ({
   }, [source?.uri]);
 
   if (localSource) {
-    return <Image source={localSource} style={style} resizeMode={resizeMode} />;
+    return (
+      <Image
+        source={localSource}
+        style={style}
+        contentFit="cover"
+        transition={300}
+        placeholder={blurhash}
+        cachePolicy={"memory-disk"}
+      />
+    );
   }
 
   return null;

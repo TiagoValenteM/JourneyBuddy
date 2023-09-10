@@ -74,6 +74,7 @@ function UpdateProfileView<StackScreenProps>() {
             borderRadius: 50,
             backgroundColor: "#dfe0e3",
           }}
+          resizeMode={"cover"}
         ></Image>
         <TouchableOpacity
           onPress={async () => {

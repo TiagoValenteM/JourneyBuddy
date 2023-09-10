@@ -4,7 +4,6 @@ import React from "react";
 import ProfileView from "../screens/common/Profile";
 import { useCurrentUser } from "../context/currentUserContext";
 import OverviewMapView from "../screens/common/OverviewMap";
-import { useGuide } from "../context/GuideContext";
 import OverviewGuideView from "../screens/common/OverviewGuide";
 import FollowingTabs from "./FollowingTabs";
 
@@ -12,7 +11,6 @@ const Stack = createStackNavigator();
 
 function HomepageStack() {
   const { currentUser } = useCurrentUser();
-  const { pressedGuide } = useGuide();
 
   return (
     <Stack.Navigator>
@@ -37,11 +35,8 @@ function HomepageStack() {
         options={() => ({
           headerShown: false,
         })}
-      >
-        {(props) => (
-          <OverviewMapView {...props} guidePlaces={pressedGuide?.places} />
-        )}
-      </Stack.Screen>
+        component={OverviewMapView}
+      />
       <Stack.Screen
         name={"GuideInDetail"}
         options={{

@@ -13,14 +13,12 @@ import CarouselPictures from "../../components/carousels/CarouselPictures";
 import UserIdentifier from "../../components/identifiers/UserIdentifier";
 import GuideIdentifier from "../../components/identifiers/GuideIdentifier";
 import Feather from "react-native-vector-icons/Feather";
-import { useGuide } from "../../context/GuideContext";
 
 interface HomepageProps {
   navigation: any;
 }
 
 function HomepageView({ navigation }: HomepageProps) {
-  const { setPressedGuide } = useGuide();
   const [guides, setGuides] = useState<Guide[]>([]);
   const [refreshing, setRefreshing] = React.useState(false);
 
@@ -70,7 +68,7 @@ function HomepageView({ navigation }: HomepageProps) {
               />
             </View>
             <View style={{ marginVertical: 10 }}>
-              <GuideIdentifier guide={guide} />
+              <GuideIdentifier guide={guide} navigation={navigation} />
             </View>
             <View style={{ marginVertical: 10 }}>
               <Text
@@ -95,8 +93,9 @@ function HomepageView({ navigation }: HomepageProps) {
                 </Text>
                 <TouchableOpacity
                   onPress={() => {
-                    setPressedGuide(guide);
-                    navigation.navigate("MapOverview");
+                    navigation.navigate("MapOverview", {
+                      places: guide?.places,
+                    });
                   }}
                 >
                   <Feather name={"map"} size={25} color={"#000"} />

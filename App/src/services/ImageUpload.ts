@@ -1,5 +1,4 @@
 import * as ImagePicker from "expo-image-picker";
-import * as ImageManipulator from "expo-image-manipulator";
 import "firebase/storage";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { db, storage } from "../config/firebase";
@@ -12,6 +11,7 @@ import {
   where,
 } from "firebase/firestore";
 import UserProfile from "../models/userProfiles";
+import resizeImage from "../utils/resizeImage";
 
 const handleProfilePictureUpdate = async (
   authUser: UserProfile,
@@ -24,14 +24,13 @@ const handleProfilePictureUpdate = async (
 
   const result = await ImagePicker.launchImageLibraryAsync({
     mediaTypes: ImagePicker.MediaTypeOptions.Images,
-    allowsEditing: true,
-    aspect: [1, 1],
-    quality: 0.2,
+    quality: 0.3,
   });
 
   if (!result?.canceled) {
     try {
-      const response = await fetch(result.assets[0].uri);
+      const resizedUri = await resizeImage(result.assets[0].uri, 256, 256);
+      const response = await fetch(resizedUri);
       const blob = await response.blob();
 
       const filename = result.assets[0].uri.split("/").pop();
@@ -77,7 +76,7 @@ const selectPictures = async (): Promise<string[]> => {
   if (status === "granted") {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.2,
+      quality: 0.3,
       allowsMultipleSelection: true,
     });
 
@@ -89,24 +88,9 @@ const selectPictures = async (): Promise<string[]> => {
   return [];
 };
 
-const resizeImage = async (uri: string) => {
-  try {
-    const resizedImage = await ImageManipulator.manipulateAsync(
-      uri,
-      [{ resize: { width: 1080, height: 1350 } }],
-      { compress: 0.2, format: ImageManipulator.SaveFormat.JPEG }
-    );
-
-    return resizedImage.uri;
-  } catch (error) {
-    console.error("Error resizing image:", error);
-    throw error; // Rethrow the error for handling at a higher level
-  }
-};
-
 const uploadPicture = async (guide_uid: string, uri: string) => {
   if (uri.includes("file://")) {
-    const resizedUri = await resizeImage(uri);
+    const resizedUri = await resizeImage(uri, 1080, 1350);
     const response = await fetch(resizedUri);
     const blob = await response.blob();
 

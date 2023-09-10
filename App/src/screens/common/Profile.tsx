@@ -97,7 +97,12 @@ function ProfileView({
             </View>
           ))}
       </ScrollView>
-      {modalVisible && <ProfileModal setModalVisible={setModalVisible} />}
+      {modalVisible && (
+        <ProfileModal
+          setModalVisible={setModalVisible}
+          navigation={navigation}
+        />
+      )}
     </View>
   ) : (
     <View />

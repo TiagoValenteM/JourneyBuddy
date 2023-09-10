@@ -11,7 +11,6 @@ import {
 import Feather from "react-native-vector-icons/Feather";
 import { Guide } from "../../models/guides";
 import { selectPictures } from "../../services/ImageUpload";
-import CachedImage from "../../components/images/CachedImage";
 import UserProfile from "../../models/userProfiles";
 
 interface AddGuideScreenProps {

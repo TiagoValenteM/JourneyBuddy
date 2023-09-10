@@ -29,8 +29,8 @@ function SearchView({ navigation }: SearchProps) {
   //const { user } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
   const [searchForGuides, setSearchForGuides] = useState(true);
-  const [guides, setGuides] = useState<Guide[] | undefined >([]);
-  const [users, setUsers] = useState<UserProfile[] | undefined >([]);
+  const [guides, setGuides] = useState<Guide[] | undefined>([]);
+  const [users, setUsers] = useState<UserProfile[] | undefined>([]);
 
   const getGuides = async (title: string | null): Promise<Guide[]> => {
     try {
@@ -38,7 +38,7 @@ function SearchView({ navigation }: SearchProps) {
       const queryFindGuides = query(
         userGuidesCollectionRef,
         where("title", ">=", title),
-        where("title", "<=", title + '\uf8ff')
+        where("title", "<=", title + "\uf8ff")
       );
 
       const querySnapshotUser = await getDocs(queryFindGuides);
@@ -62,7 +62,7 @@ function SearchView({ navigation }: SearchProps) {
       const queryFindUsers = query(
         userCollectionRef,
         where("username", ">=", username),
-        where("username", "<=", username+ '\uf8ff')
+        where("username", "<=", username + "\uf8ff")
       );
       const querySnapshotUser = await getDocs(queryFindUsers);
 
@@ -87,7 +87,7 @@ function SearchView({ navigation }: SearchProps) {
       if (searchQuery.length > 0 && searchForGuides) {
         getGuides(searchQuery).then((result) => setGuides(result));
         console.log(guides);
-      } else if (searchQuery.length > 0 && !searchForGuides){
+      } else if (searchQuery.length > 0 && !searchForGuides) {
         getUsers(searchQuery).then((result) => setUsers(result));
         console.log(users);
       }
@@ -103,8 +103,7 @@ function SearchView({ navigation }: SearchProps) {
           onChangeText={(text) => setSearchQuery(text)}
         />
 
-          <Button title="Search" onPress={handleSearch} />
-
+        <Button title="Search" onPress={handleSearch} />
       </View>
     );
   };
@@ -178,7 +177,7 @@ function SearchView({ navigation }: SearchProps) {
                       />
                     </View>
                     <View style={{ marginVertical: 10 }}>
-                      <GuideIdentifier guide={guide} />
+                      <GuideIdentifier guide={guide} navigation={navigation} />
                     </View>
                   </View>
                 ))}
@@ -205,13 +204,11 @@ function SearchView({ navigation }: SearchProps) {
           ) : (
             <View>
               {users.map((user, index) => (
-                <View
-                  key={index}
-                >
+                <View key={index}>
                   <View
                     style={{ marginVertical: 5, marginHorizontal: 10 }}
                   ></View>
-                  <View style={{ marginVertical: 10,  marginHorizontal: 10 }}>
+                  <View style={{ marginVertical: 10, marginHorizontal: 10 }}>
                     <UserIdentifier
                       key={user.uid}
                       selectedUsername={user.username}
