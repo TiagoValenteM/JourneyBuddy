@@ -60,11 +60,7 @@ const GuideIdentifier: React.FC<GuideIdentifierProps> = ({
           {guide?.dateCreated.slice(0, 4)}
         </Text>
       </View>
-      <View
-        style={{
-          paddingHorizontal: 8,
-        }}
-      >
+      <View>
         <TouchableOpacity
           onPress={() => {
             checkSelectGuide(

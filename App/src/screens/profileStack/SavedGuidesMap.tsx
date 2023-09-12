@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { Image, Pressable, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { Guide } from "../../models/guides";
 import SavedModal from "../../components/modals/SavedModal";
 import MapView, { Marker, Region } from "react-native-maps";
 import Feather from "react-native-vector-icons/Feather";
 import { useGuide } from "../../context/GuideContext";
+import CachedImage from "../../components/images/CachedImage";
 
 interface SavedGuidesMapViewProps {
   navigation: any;
@@ -115,7 +116,7 @@ const SavedGuidesMapView = ({ navigation, route }: SavedGuidesMapViewProps) => {
               navigation.navigate("GuideInDetail");
             }}
           >
-            <Image
+            <CachedImage
               source={{ uri: guide?.pictures[0] }}
               key={index}
               style={{
@@ -124,6 +125,7 @@ const SavedGuidesMapView = ({ navigation, route }: SavedGuidesMapViewProps) => {
                 borderRadius: 20,
                 borderWidth: 2,
                 borderColor: "#dfe0e3",
+                backgroundColor: "white",
               }}
             />
           </Marker>

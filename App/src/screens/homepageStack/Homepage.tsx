@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
+  ActivityIndicator,
   FlatList,
   RefreshControl,
   Text,
@@ -20,17 +21,36 @@ interface HomepageProps {
 
 function HomepageView({ navigation }: HomepageProps) {
   const [guides, setGuides] = useState<Guide[]>([]);
+  const [lastVisibleGuide, setLastVisibleGuide] = useState(undefined);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const pageSize = 7;
 
   const fetchGuides = async () => {
     try {
-      const fetchedGuides = await getGuidesSorted();
-      setGuides(fetchedGuides);
+      if (hasMore) {
+        setLoadingMore(true);
+        const guidesResponse = await getGuidesSorted(
+          pageSize,
+          lastVisibleGuide
+        );
+
+        if (guidesResponse?.guides?.length > 0) {
+          // Append the fetched guides to the existing ones
+          setGuides((prevGuides) => [...prevGuides, ...guidesResponse.guides]);
+          setLastVisibleGuide(guidesResponse.lastGuideSnapshot);
+        } else {
+          // No more guides to load, set hasMore to false
+          setHasMore(false);
+        }
+      }
     } catch (error) {
       console.error("Error fetching guides:", error);
-      // Handle the error gracefully, e.g., show an error message to the user.
+      // Handle the error gracefully
     } finally {
       setRefreshing(false);
+      setLoadingMore(false); // Set loading more to false
     }
   };
 
@@ -41,6 +61,9 @@ function HomepageView({ navigation }: HomepageProps) {
 
   const onRefresh = () => {
     setRefreshing(true);
+    setHasMore(true); // Reset hasMore flag
+    setGuides([]); // Reset guides
+    setLastVisibleGuide(undefined);
     fetchGuides().then(() => setRefreshing(false));
   };
 
@@ -99,6 +122,37 @@ function HomepageView({ navigation }: HomepageProps) {
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
+      ListFooterComponent={() => {
+        if (loadingMore) {
+          return (
+            <ActivityIndicator
+              style={{ marginVertical: 10 }}
+              size="small"
+              color="#000"
+            />
+          );
+        } else {
+          return (
+            <View
+              style={{
+                marginVertical: 20,
+              }}
+            >
+              <Text
+                style={{ textAlign: "center", fontSize: 20, fontWeight: "600" }}
+              >
+                No more guides to load
+              </Text>
+            </View>
+          );
+        }
+      }}
+      onEndReached={() => {
+        if (hasMore && !loadingMore) {
+          fetchGuides();
+        }
+      }}
+      onEndReachedThreshold={0.1}
     />
   );
 }

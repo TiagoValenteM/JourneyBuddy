@@ -46,45 +46,59 @@ async function getCachedLocalFile(directory: string, remoteUri: string) {
   return fileUri;
 }
 
+// const CachedImage: React.FC<CachedImageProps> = ({ source, style }) => {
+//   const [localSource, setLocalSource] = useState<ImageSourcePropType>();
+//   const blurhash = "ChG0FWNGogkD%%s:t8og";
+//
+//   useEffect(() => {
+//     if (source?.uri?.length > 0) {
+//       if (source.uri.includes("file://")) {
+//         setLocalSource({ uri: source.uri });
+//       } else {
+//         getCachedLocalFile("images/", source.uri)
+//           .then((fileUri) => {
+//             // console.log(`Loading cached Image: ${fileUri}`);
+//             setLocalSource({ uri: fileUri });
+//           })
+//           .catch((err) => {
+//             // console.log("Error caching image, using remote...");
+//             console.log(err);
+//             setLocalSource({ uri: source.uri }); // Defaults to remote uri
+//           });
+//       }
+//     } else {
+//       setLocalSource({});
+//     }
+//   }, [source?.uri]);
+//
+//   if (localSource) {
+//     return (
+//       <Image
+//         source={localSource}
+//         style={style}
+//         contentFit="cover"
+//         transition={300}
+//         placeholder={blurhash}
+//         cachePolicy={"memory-disk"}
+//       />
+//     );
+//   }
+//
+//   return null;
+// };
+
 const CachedImage: React.FC<CachedImageProps> = ({ source, style }) => {
-  const [localSource, setLocalSource] = useState<ImageSourcePropType>();
-  const blurhash = "ChG0FWNGogkD%%s:t8og";
-
-  useEffect(() => {
-    if (source?.uri?.length > 0) {
-      if (source.uri.includes("file://")) {
-        setLocalSource({ uri: source.uri });
-      } else {
-        getCachedLocalFile("images/", source.uri)
-          .then((fileUri) => {
-            // console.log(`Loading cached Image: ${fileUri}`);
-            setLocalSource({ uri: fileUri });
-          })
-          .catch((err) => {
-            // console.log("Error caching image, using remote...");
-            console.log(err);
-            setLocalSource({ uri: source.uri }); // Defaults to remote uri
-          });
-      }
-    } else {
-      setLocalSource({});
-    }
-  }, [source?.uri]);
-
-  if (localSource) {
-    return (
-      <Image
-        source={localSource}
-        style={style}
-        contentFit="cover"
-        transition={300}
-        placeholder={blurhash}
-        cachePolicy={"memory-disk"}
-      />
-    );
-  }
-
-  return null;
+  const placeholder = require("../../../assets/placeholder.jpeg");
+  return (
+    <Image
+      source={source.uri}
+      style={style}
+      contentFit="cover"
+      transition={300}
+      placeholder={placeholder}
+      cachePolicy={"memory-disk"}
+    />
+  );
 };
 
 export default CachedImage;

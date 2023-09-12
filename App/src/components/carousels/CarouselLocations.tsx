@@ -57,7 +57,7 @@ const CarouselLocations: React.FC<CarouselLocationsProps> = ({ places }) => {
             >
               <Text
                 style={carouselStyles.locationName}
-                numberOfLines={3}
+                numberOfLines={2}
                 ellipsizeMode="middle"
               >
                 {item.name}
@@ -111,7 +111,6 @@ const carouselStyles = StyleSheet.create({
     backgroundColor: "#dfe0e3",
     borderRadius: 15,
     padding: 20,
-    height: 150,
     justifyContent: "space-between",
   },
   locationName: {
@@ -124,6 +123,7 @@ const carouselStyles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-end",
+    marginTop: 25,
   },
   coordinates: {
     marginHorizontal: 5,

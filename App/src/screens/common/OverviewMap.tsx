@@ -1,7 +1,7 @@
 import MapView, { Marker } from "react-native-maps";
 import React from "react";
 import { Place } from "../../models/guides";
-import { Pressable, View } from "react-native";
+import { Pressable, View, StyleSheet } from "react-native";
 import Feather from "react-native-vector-icons/Feather";
 import SavedModal from "../../components/modals/SavedModal";
 import { useGuide } from "../../context/GuideContext";
@@ -26,47 +26,26 @@ function OverviewMapView({ navigation, route }: OverviewMapProps) {
     };
   }, []);
 
-  return (
-    <View>
-      <View
-        style={{
-          position: "absolute",
-          top: 60,
-          flex: 1,
-          flexDirection: "row",
-          paddingHorizontal: 20,
-          width: "100%",
-          zIndex: 1,
-          justifyContent: "space-between",
-        }}
-      >
+  const BackButton = () => {
+    return (
+      <View style={styles.backButtonContainer}>
         <Pressable
           onPress={() => {
             navigation.goBack();
           }}
-          style={{
-            backgroundColor: "#fff",
-            borderRadius: 50,
-            padding: 10,
-            shadowColor: "#000",
-            shadowOpacity: 0.2,
-            shadowOffset: {
-              width: 1,
-              height: 3,
-            },
-            elevation: 3,
-            height: 50,
-            justifyContent: "center",
-            width: 50,
-            alignItems: "center",
-          }}
+          style={styles.backButton}
         >
           <Feather name={"arrow-left"} size={28} color={"black"} />
         </Pressable>
       </View>
+    );
+  };
 
+  return (
+    <View>
+      <BackButton />
       <MapView.Animated
-        style={{ width: "100%", height: "100%" }}
+        style={styles.mapContainer}
         initialRegion={initialRegion}
         region={
           selectedPlace
@@ -90,3 +69,36 @@ function OverviewMapView({ navigation, route }: OverviewMapProps) {
 }
 
 export default OverviewMapView;
+
+const styles = StyleSheet.create({
+  backButtonContainer: {
+    position: "absolute",
+    top: 60,
+    flex: 1,
+    flexDirection: "row",
+    paddingHorizontal: 20,
+    width: "100%",
+    zIndex: 1,
+    justifyContent: "space-between",
+  },
+  backButton: {
+    backgroundColor: "#fff",
+    borderRadius: 50,
+    padding: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowOffset: {
+      width: 1,
+      height: 3,
+    },
+    elevation: 3,
+    height: 50,
+    justifyContent: "center",
+    width: 50,
+    alignItems: "center",
+  },
+  mapContainer: {
+    width: "100%",
+    height: "100%",
+  },
+});

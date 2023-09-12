@@ -42,7 +42,9 @@ const GridImage = ({
     >
       <CachedImage style={styles.image} source={{ uri: item.pictures[0] }} />
       {renderAlertIcon(item)}
-      <Text style={styles.bioText}>{item.title}</Text>
+      <Text style={styles.bioText} ellipsizeMode={"tail"} numberOfLines={1}>
+        {item.title}
+      </Text>
     </Pressable>
   );
 

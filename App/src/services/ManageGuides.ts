@@ -5,6 +5,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  orderBy,
   query,
   setDoc,
   updateDoc,
@@ -49,7 +50,8 @@ const getGuidesUser = async (user_id: string | undefined): Promise<Guide[]> => {
     const userGuidesCollectionRef = collection(db, "guides");
     const queryFindUserGuides = query(
       userGuidesCollectionRef,
-      where("user_id", "==", user_id)
+      where("user_id", "==", user_id),
+      orderBy("dateCreated", "desc")
     );
 
     const querySnapshotUser = await getDocs(queryFindUserGuides);

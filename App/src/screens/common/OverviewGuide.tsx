@@ -7,6 +7,7 @@ import {
   TextInput,
   Alert,
   RefreshControl,
+  Pressable,
 } from "react-native";
 import average from "../../utils/average";
 import React from "react";
@@ -27,12 +28,14 @@ import UserIdentifier from "../../components/identifiers/UserIdentifier";
 import GuideIdentifier from "../../components/identifiers/GuideIdentifier";
 import { useAuthenticatedUser } from "../../context/authenticatedUserContext";
 import { useError } from "../../hooks/useError";
+import GuideOptionsModal from "../../components/modals/GuideOptionsModal";
 
-interface GuideInDetailScreenProps {
+interface OverviewGuideViewProps {
   navigation: any;
 }
 
-function OverviewGuideView({ navigation }: GuideInDetailScreenProps) {
+function OverviewGuideView({ navigation }: OverviewGuideViewProps) {
+  const [modalVisible, setModalVisible] = React.useState(false);
   const { showError } = useError();
   const { pressedGuide, guides, setGuides, setPressedGuide } = useGuide();
   const { authenticatedUser, setAuthenticatedUser } = useAuthenticatedUser();
@@ -80,209 +83,187 @@ function OverviewGuideView({ navigation }: GuideInDetailScreenProps) {
     });
   };
 
-  const confirmDeleteGuide = (guideId: string) => {
-    Alert.alert("Delete Guide", "Are you sure you want to delete this guide?", [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: () => {
-          deleteGuide(
-            guideId,
-            authenticatedUser,
-            setAuthenticatedUser,
-            guides,
-            setGuides,
-            showError
-          ).then(navigation.navigate("Profile"));
-        },
-      },
-    ]);
-  };
-
   const votedRating = getRatingByUser(
     authenticatedUser!.uid,
     pressedGuide?.rating
   );
 
   return (
-    <ScrollView
-      style={ratingStyles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      {authenticatedUser?.uid === pressedGuide?.user_id ? (
+    <View style={{ height: "100%", flex: 1 }}>
+      <ScrollView
+        style={ratingStyles.container}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         <View
           style={{
-            flexDirection: "row",
-            justifyContent: "flex-end",
             marginTop: 20,
-            marginBottom: 10,
+            marginBottom: 40,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
           }}
         >
-          <TouchableOpacity
-            onPress={() => {
-              navigation.navigate("EditGuideScreen");
-            }}
-            style={{ marginRight: 15 }}
-          >
-            <Feather name={"edit"} size={28} color={"#000"} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              confirmDeleteGuide(pressedGuide?.uid);
-            }}
-          >
-            <Feather name={"trash"} size={28} color={"#000"} />
-          </TouchableOpacity>
+          <View>
+            <UserIdentifier
+              selectedUsername={pressedGuide?.author}
+              selectedUserUid={pressedGuide?.user_id}
+              homepage={false}
+            />
+          </View>
+          {authenticatedUser?.uid === pressedGuide?.user_id && (
+            <Pressable onPress={() => setModalVisible(true)}>
+              <Feather name={"more-vertical"} size={22} color={"black"} />
+            </Pressable>
+          )}
         </View>
-      ) : (
-        <View style={{ marginTop: 20 }}></View>
-      )}
 
-      <View style={{ marginBottom: 40 }}>
-        <UserIdentifier
-          selectedUsername={pressedGuide?.author}
-          selectedUserUid={pressedGuide?.user_id}
-          homepage={false}
-        />
-      </View>
-
-      <View style={{ marginBottom: 40 }}>
-        <GuideIdentifier guide={pressedGuide} />
-      </View>
-
-      <View style={{ marginBottom: 40 }}>
-        <Text style={ratingStyles.sectionTitle}>Pictures</Text>
-        <CarouselPictures images={pressedGuide?.pictures} />
-      </View>
-
-      <View style={{ marginBottom: 40 }}>
-        <View style={ratingStyles.containerRowBetweenWithoutBorder}>
-          <Text style={ratingStyles.sectionTitle}>Locations</Text>
-          <TouchableOpacity
-            onPress={() => {
-              navigation.navigate("MapOverview", {
-                places: pressedGuide?.places,
-              });
-            }}
-          >
-            <Feather name={"map"} size={25} color={"#000"} />
-          </TouchableOpacity>
+        <View style={{ marginBottom: 40 }}>
+          <GuideIdentifier guide={pressedGuide} />
         </View>
-        <CarouselLocations places={pressedGuide?.places} />
-      </View>
 
-      <View style={ratingStyles.containerBottomMargin}>
-        <Text style={ratingStyles.sectionTitle}>Ratings</Text>
-        <View style={ratingStyles.containerRowBetween}>
-          <View
-            style={{
-              flex: 1,
-              justifyContent: "center",
-              alignItems: "center",
-              maxWidth: 150,
-              marginBottom: 10,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 45,
-                fontWeight: "800",
+        <View style={{ marginBottom: 40 }}>
+          <Text style={ratingStyles.sectionTitle}>Pictures</Text>
+          <CarouselPictures images={pressedGuide?.pictures} />
+        </View>
+
+        <View style={{ marginBottom: 40 }}>
+          <View style={ratingStyles.containerRowBetweenWithoutBorder}>
+            <Text style={ratingStyles.sectionTitle}>Locations</Text>
+            <TouchableOpacity
+              onPress={() => {
+                navigation.navigate("MapOverview", {
+                  places: pressedGuide?.places,
+                });
               }}
             >
-              {averageRating}
-            </Text>
-            <Text style={{ fontSize: 14, fontWeight: "500", color: "gray" }}>
-              out of 5
-            </Text>
+              <Feather name={"map"} size={25} color={"#000"} />
+            </TouchableOpacity>
           </View>
-
-          <Text
-            style={{
-              fontSize: 16,
-              fontWeight: "400",
-              color: "gray",
-              textAlign: "right",
-              alignSelf: "flex-start",
-              marginTop: 10,
-              marginRight: 10,
-            }}
-          >
-            {pressedGuide?.rating?.length === 1
-              ? pressedGuide?.rating?.length + " Rating"
-              : pressedGuide?.rating?.length + " Ratings"}
-          </Text>
+          <CarouselLocations places={pressedGuide?.places} />
         </View>
 
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <Text style={{ fontSize: 16, fontWeight: "500" }}>Tap to Rate:</Text>
-          <View style={{ flexDirection: "row" }}>
-            {[1, 2, 3, 4, 5].map((value) => (
-              <TouchableOpacity
-                key={value}
-                style={{ marginHorizontal: 5 }}
-                onPress={() => {
-                  if (authenticatedUser?.uid !== pressedGuide?.user_id) {
-                    handleRating(value);
-                    setRating(value);
-                  }
+        <View style={ratingStyles.containerBottomMargin}>
+          <Text style={ratingStyles.sectionTitle}>Ratings</Text>
+          <View style={ratingStyles.containerRowBetween}>
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+                maxWidth: 150,
+                marginBottom: 10,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 45,
+                  fontWeight: "800",
                 }}
               >
-                <Feather
-                  name="star"
-                  style={
-                    rating >= value || (votedRating && votedRating >= value)
-                      ? { color: "#007AFF" }
-                      : { color: "gray" }
-                  }
-                  size={30}
-                />
-              </TouchableOpacity>
-            ))}
+                {averageRating}
+              </Text>
+              <Text style={{ fontSize: 14, fontWeight: "500", color: "gray" }}>
+                out of 5
+              </Text>
+            </View>
+
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: "400",
+                color: "gray",
+                textAlign: "right",
+                alignSelf: "flex-start",
+                marginTop: 10,
+                marginRight: 10,
+              }}
+            >
+              {pressedGuide?.rating?.length === 1
+                ? pressedGuide?.rating?.length + " Rating"
+                : pressedGuide?.rating?.length + " Ratings"}
+            </Text>
+          </View>
+
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ fontSize: 16, fontWeight: "500" }}>
+              Tap to Rate:
+            </Text>
+            <View style={{ flexDirection: "row" }}>
+              {[1, 2, 3, 4, 5].map((value) => (
+                <TouchableOpacity
+                  key={value}
+                  style={{ marginHorizontal: 5 }}
+                  onPress={() => {
+                    if (authenticatedUser?.uid !== pressedGuide?.user_id) {
+                      handleRating(value);
+                      setRating(value);
+                    }
+                  }}
+                >
+                  <Feather
+                    name="star"
+                    style={
+                      rating >= value || (votedRating && votedRating >= value)
+                        ? { color: "#007AFF" }
+                        : { color: "gray" }
+                    }
+                    size={30}
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
         </View>
-      </View>
 
-      <View style={ratingStyles.containerBottomMargin}>
-        <Text style={ratingStyles.sectionTitle}>Comments</Text>
-        {pressedGuide?.comments && pressedGuide.comments.length > 0 ? (
-          pressedGuide.comments.map((comment, index) => (
-            <View style={styles.commentItem} key={index}>
-              <Text style={styles.commentText}>{comment.comment}</Text>
-              <Text style={styles.commentAuthor}>{"@" + comment.username}</Text>
-            </View>
-          ))
-        ) : (
-          <Text>No comments</Text>
-        )}
-      </View>
+        <View style={ratingStyles.containerBottomMargin}>
+          <Text style={ratingStyles.sectionTitle}>Comments</Text>
+          {pressedGuide?.comments && pressedGuide.comments.length > 0 ? (
+            pressedGuide.comments.map((comment, index) => (
+              <View style={styles.commentItem} key={index}>
+                <Text style={styles.commentText}>{comment.comment}</Text>
+                <Text style={styles.commentAuthor}>
+                  {"@" + comment.username}
+                </Text>
+              </View>
+            ))
+          ) : (
+            <Text>No comments</Text>
+          )}
+        </View>
 
-      <View style={styles.addCommentContainer}>
-        <TextInput
-          style={styles.commentInput}
-          placeholder="Add a comment..."
-          onChangeText={(text) => setNewComment(text)}
-          value={newComment}
+        <View style={styles.addCommentContainer}>
+          <TextInput
+            style={styles.commentInput}
+            placeholder="Add a comment..."
+            onChangeText={(text) => setNewComment(text)}
+            value={newComment}
+          />
+          <TouchableOpacity
+            style={styles.commentButton}
+            onPress={() => handleAddComment(newComment)}
+          >
+            <Text style={styles.commentButtonText}>Post</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+      {modalVisible && (
+        <GuideOptionsModal
+          setModalVisible={setModalVisible}
+          navigation={navigation}
+          guideUid={pressedGuide?.uid}
+          guides={guides}
+          setGuides={setGuides}
         />
-        <TouchableOpacity
-          style={styles.commentButton}
-          onPress={() => handleAddComment(newComment)}
-        >
-          <Text style={styles.commentButtonText}>Post</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+      )}
+    </View>
   );
 }
 
