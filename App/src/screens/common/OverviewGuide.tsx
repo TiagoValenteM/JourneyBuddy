@@ -1,427 +1,149 @@
 import {
   Text,
   View,
-  ScrollView,
-  TouchableOpacity,
   StyleSheet,
-  TextInput,
-  Alert,
   RefreshControl,
-  Pressable,
+  Platform,
+  KeyboardAvoidingView,
 } from "react-native";
-import average from "../../utils/average";
-import React from "react";
-import Feather from "react-native-vector-icons/Feather";
-import {
-  deleteGuide,
-  getGuideDetailed,
-  getRatingByUser,
-  hasRatedByUser,
-  updateGuideComments,
-  UpdateGuideRating,
-} from "../../services/ManageGuides";
+import React, { useEffect } from "react";
 import LoadingIndicator from "../../components/indicators/LoadingIndicator";
 import { useGuide } from "../../context/GuideContext";
-import CarouselLocations from "../../components/carousels/CarouselLocations";
-import CarouselPictures from "../../components/carousels/CarouselPictures";
 import UserIdentifier from "../../components/identifiers/UserIdentifier";
 import GuideIdentifier from "../../components/identifiers/GuideIdentifier";
 import { useAuthenticatedUser } from "../../context/authenticatedUserContext";
-import { useError } from "../../hooks/useError";
 import GuideOptionsModal from "../../components/modals/GuideOptionsModal";
-
+import CarouselPicturesOverview from "../../components/carousels/CarouselPicturesOverview";
+import DynamicHeader from "../../components/headers/DynamicHeader";
+import Animated, { Value } from "react-native-reanimated";
+import RatingsComponent from "../../components/RatingsComponent";
+import PlacePreview from "../../components/PlacePreview";
+import CommentsComponent from "../../components/CommentsComponent";
+import { getSavedGuides } from "../../services/ManageGuides";
 interface OverviewGuideViewProps {
   navigation: any;
 }
 
 function OverviewGuideView({ navigation }: OverviewGuideViewProps) {
   const [modalVisible, setModalVisible] = React.useState(false);
-  const { showError } = useError();
   const { pressedGuide, guides, setGuides, setPressedGuide } = useGuide();
-  const { authenticatedUser, setAuthenticatedUser } = useAuthenticatedUser();
-  const [rating, setRating] = React.useState(0);
-  const [newComment, setNewComment] = React.useState("");
-  const [refreshing, setRefreshing] = React.useState(false);
+  const { authenticatedUser } = useAuthenticatedUser();
+  const scrollY: Animated.Value<number> = new Value(0); // Initialize scrollY
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    getGuideDetailed(pressedGuide!.uid)
-      .then(() => setRefreshing(false))
-      .catch(() => showError("Failed to load guide. Please try again later."));
-  };
+  const handleScroll = Animated.event(
+    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+    { useNativeDriver: false }
+  );
 
   if (pressedGuide === undefined) {
     return <LoadingIndicator />;
   }
 
-  const averageRating = pressedGuide?.rating
-    ? average(pressedGuide?.rating?.map((rating) => rating.rate))
-    : 0;
-
-  const handleRating = (rate: number) => {
-    if (hasRatedByUser(authenticatedUser!.uid, pressedGuide?.rating)) {
-      return Alert.alert("You have already rated this guide");
-    }
-    UpdateGuideRating(
-      pressedGuide!.uid,
-      rate,
-      authenticatedUser!.uid,
-      setPressedGuide,
-      showError
-    );
-  };
-
-  const handleAddComment = (newComment: string) => {
-    updateGuideComments(
-      pressedGuide!.uid,
-      newComment,
-      authenticatedUser!.username,
-      setPressedGuide,
-      showError
-    ).then(() => {
-      setNewComment("");
-    });
-  };
-
-  const votedRating = getRatingByUser(
-    authenticatedUser!.uid,
-    pressedGuide?.rating
-  );
-
   return (
-    <View style={{ height: "100%", flex: 1 }}>
-      <ScrollView
-        style={ratingStyles.container}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
-        <View
-          style={{
-            marginTop: 20,
-            marginBottom: 40,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      style={{ flex: 1 }}
+    >
+      <View style={{ flex: 1 }}>
+        <DynamicHeader scrollY={scrollY} />
+        <Animated.ScrollView
+          onScroll={handleScroll}
+          scrollEventThrottle={20}
+          style={{ flex: 1 }}
         >
-          <View>
+          <CarouselPicturesOverview
+            images={pressedGuide?.pictures}
+            authUserId={authenticatedUser?.uid}
+            guideAuthId={pressedGuide?.user_id}
+            navigation={navigation}
+            setModalVisible={setModalVisible}
+          />
+          <View style={overviewGuideStyles.container}>
+            <GuideIdentifier guide={pressedGuide} />
+          </View>
+
+          <Text style={overviewGuideStyles.title}>Creator</Text>
+          <View style={overviewGuideStyles.container}>
             <UserIdentifier
               selectedUsername={pressedGuide?.author}
               selectedUserUid={pressedGuide?.user_id}
               homepage={false}
             />
           </View>
-          {authenticatedUser?.uid === pressedGuide?.user_id && (
-            <Pressable onPress={() => setModalVisible(true)}>
-              <Feather name={"more-vertical"} size={22} color={"black"} />
-            </Pressable>
-          )}
-        </View>
 
-        <View style={{ marginBottom: 40 }}>
-          <GuideIdentifier guide={pressedGuide} />
-        </View>
-
-        <View style={{ marginBottom: 40 }}>
-          <Text style={ratingStyles.sectionTitle}>Pictures</Text>
-          <CarouselPictures images={pressedGuide?.pictures} />
-        </View>
-
-        <View style={{ marginBottom: 40 }}>
-          <View style={ratingStyles.containerRowBetweenWithoutBorder}>
-            <Text style={ratingStyles.sectionTitle}>Locations</Text>
-            <TouchableOpacity
+          <Text style={overviewGuideStyles.title}>
+            Places{"  "}
+            <Text style={overviewGuideStyles.subtitle}>
+              (Tap the map for more)
+            </Text>
+          </Text>
+          <View style={[overviewGuideStyles.container, { padding: 0 }]}>
+            <PlacePreview
+              place={pressedGuide.places[0]}
               onPress={() => {
                 navigation.navigate("MapOverview", {
                   places: pressedGuide?.places,
+                  title: "Places",
                 });
               }}
-            >
-              <Feather name={"map"} size={25} color={"#000"} />
-            </TouchableOpacity>
+            />
           </View>
-          <CarouselLocations places={pressedGuide?.places} />
-        </View>
 
-        <View style={ratingStyles.containerBottomMargin}>
-          <Text style={ratingStyles.sectionTitle}>Ratings</Text>
-          <View style={ratingStyles.containerRowBetween}>
-            <View
-              style={{
-                flex: 1,
-                justifyContent: "center",
-                alignItems: "center",
-                maxWidth: 150,
-                marginBottom: 10,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 45,
-                  fontWeight: "800",
-                }}
-              >
-                {averageRating}
-              </Text>
-              <Text style={{ fontSize: 14, fontWeight: "500", color: "gray" }}>
-                out of 5
-              </Text>
-            </View>
+          <Text style={overviewGuideStyles.title}>Ratings</Text>
+          <View style={overviewGuideStyles.container}>
+            <RatingsComponent
+              pressedGuide={pressedGuide}
+              authUserId={authenticatedUser!.uid}
+              setPressedGuide={setPressedGuide}
+            />
+          </View>
 
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: "400",
-                color: "gray",
-                textAlign: "right",
-                alignSelf: "flex-start",
-                marginTop: 10,
-                marginRight: 10,
-              }}
-            >
-              {pressedGuide?.rating?.length === 1
-                ? pressedGuide?.rating?.length + " Rating"
-                : pressedGuide?.rating?.length + " Ratings"}
+          <Text style={overviewGuideStyles.title}>
+            Comments{"  "}
+            <Text style={overviewGuideStyles.subtitle}>
+              (Tap a comment for more)
             </Text>
+          </Text>
+          <View style={overviewGuideStyles.container}>
+            <CommentsComponent
+              guideComments={pressedGuide?.comments}
+              guideId={pressedGuide?.uid}
+              authUsername={authenticatedUser!.username}
+              setPressedGuide={setPressedGuide}
+            />
           </View>
-
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <Text style={{ fontSize: 16, fontWeight: "500" }}>
-              Tap to Rate:
-            </Text>
-            <View style={{ flexDirection: "row" }}>
-              {[1, 2, 3, 4, 5].map((value) => (
-                <TouchableOpacity
-                  key={value}
-                  style={{ marginHorizontal: 5 }}
-                  onPress={() => {
-                    if (authenticatedUser?.uid !== pressedGuide?.user_id) {
-                      handleRating(value);
-                      setRating(value);
-                    }
-                  }}
-                >
-                  <Feather
-                    name="star"
-                    style={
-                      rating >= value || (votedRating && votedRating >= value)
-                        ? { color: "#007AFF" }
-                        : { color: "gray" }
-                    }
-                    size={30}
-                  />
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        </View>
-
-        <View style={ratingStyles.containerBottomMargin}>
-          <Text style={ratingStyles.sectionTitle}>Comments</Text>
-          {pressedGuide?.comments && pressedGuide.comments.length > 0 ? (
-            pressedGuide.comments.map((comment, index) => (
-              <View style={styles.commentItem} key={index}>
-                <Text style={styles.commentText}>{comment.comment}</Text>
-                <Text style={styles.commentAuthor}>
-                  {"@" + comment.username}
-                </Text>
-              </View>
-            ))
-          ) : (
-            <Text>No comments</Text>
-          )}
-        </View>
-
-        <View style={styles.addCommentContainer}>
-          <TextInput
-            style={styles.commentInput}
-            placeholder="Add a comment..."
-            onChangeText={(text) => setNewComment(text)}
-            value={newComment}
+        </Animated.ScrollView>
+        {modalVisible && (
+          <GuideOptionsModal
+            setModalVisible={setModalVisible}
+            navigation={navigation}
+            guideUid={pressedGuide?.uid}
+            guides={guides}
+            setGuides={setGuides}
           />
-          <TouchableOpacity
-            style={styles.commentButton}
-            onPress={() => handleAddComment(newComment)}
-          >
-            <Text style={styles.commentButtonText}>Post</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-      {modalVisible && (
-        <GuideOptionsModal
-          setModalVisible={setModalVisible}
-          navigation={navigation}
-          guideUid={pressedGuide?.uid}
-          guides={guides}
-          setGuides={setGuides}
-        />
-      )}
-    </View>
+        )}
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
-const ratingStyles = StyleSheet.create({
+const overviewGuideStyles = StyleSheet.create({
   container: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    marginBottom: 20,
-  },
-  containerBottomMargin: {
-    marginBottom: 40,
-  },
-  containerRowBetween: {
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    borderBottomWidth: 1,
-    borderBottomColor: "#dfe0e3",
-    marginBottom: 10,
-  },
-  containerRowBetweenWithoutBorder: {
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-});
-
-const styles = StyleSheet.create({
-  author: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 10,
+    backgroundColor: "white",
+    borderRadius: 15,
+    padding: 15,
+    margin: 15,
   },
   title: {
-    fontSize: 20,
-    fontWeight: "700",
-    marginBottom: 10,
-  },
-  description: {
-    fontSize: 16,
-    marginBottom: 20,
-  },
-  averageRating: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 10,
-  },
-  date: {
-    fontSize: 14,
-    color: "grey",
-    marginBottom: 20,
-  },
-  imageContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    marginBottom: 20,
-  },
-  image: {
-    width: "33%",
-    height: 100,
-    marginBottom: 10,
-    borderRadius: 10,
-  },
-  placesContainer: {
-    marginBottom: 20,
-  },
-  place: {
-    marginBottom: 10,
-  },
-  placeName: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 5,
-  },
-  placeCoordinates: {
-    fontSize: 14,
-    color: "grey",
-  },
-  mapContainer: {
-    borderRadius: 20,
-    marginBottom: 20,
-  },
-  map: {
-    width: "100%",
-    height: 300,
-    borderRadius: 20,
-  },
-  ratingContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  tapToRateText: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  ratingStars: {
-    flexDirection: "row",
-  },
-  starButton: {
-    marginHorizontal: 5,
-  },
-  starFilled: {
-    color: "#007AFF",
-  },
-  starOutline: {
-    color: "gray",
-  },
-  commentsContainer: {
-    marginBottom: 20,
-  },
-  commentsHeading: {
+    marginTop: 10,
     fontSize: 18,
-    fontWeight: "700",
-    marginBottom: 10,
-  },
-  commentItem: {
-    backgroundColor: "#F2F2F2",
-    padding: 10,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  commentText: {
-    fontSize: 16,
-  },
-  commentAuthor: {
-    fontSize: 14,
-    color: "grey",
-  },
-  addCommentContainer: {
-    flexDirection: "row",
-    marginBottom: 20,
-  },
-  commentInput: {
-    flex: 1,
-    height: 40,
-    borderColor: "grey",
-    borderWidth: 1,
-    borderRadius: 20,
-    paddingHorizontal: 10,
-  },
-  commentButton: {
-    marginLeft: 10,
-    paddingHorizontal: 20,
-    height: 40,
-    backgroundColor: "#FFD700",
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  commentButtonText: {
-    color: "white",
     fontWeight: "600",
+    marginHorizontal: 15,
+  },
+  subtitle: {
+    color: "gray",
+    fontSize: 12,
+    fontWeight: "400",
   },
 });
 

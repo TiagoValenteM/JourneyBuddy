@@ -10,13 +10,13 @@ import {
   TextInput,
   Button,
 } from "react-native";
-import { Feather } from "@expo/vector-icons";
 import { Guide } from "../../models/guides";
 import GuideIdentifier from "../../components/identifiers/GuideIdentifier";
 import UserIdentifier from "../../components/identifiers/UserIdentifier";
 import UserProfile from "../../models/userProfiles";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../config/firebase";
+import { MapPin, User } from "react-native-feather";
 
 const TabScreen1 = () => <View style={styles.tabContent}></View>;
 const TabScreen2 = () => <View style={styles.tabContent}></View>;
@@ -132,7 +132,7 @@ function SearchView({ navigation }: SearchProps) {
           style={[styles.tabButton, searchForGuides && styles.activeTab]}
           onPress={() => setSearchForGuides(!searchForGuides)}
         >
-          <Feather name="map-pin" size={20} />
+          <MapPin width={20} height={20} />
           <Text style={styles.TitleChoice}>Guides</Text>
         </TouchableOpacity>
 
@@ -140,7 +140,7 @@ function SearchView({ navigation }: SearchProps) {
           style={[styles.tabButton, !searchForGuides && styles.activeTab]}
           onPress={() => setSearchForGuides(!searchForGuides)}
         >
-          <Feather name="user" size={20} />
+          <User width={20} height={20} />
           <Text style={styles.TitleChoice}>People</Text>
         </TouchableOpacity>
       </View>

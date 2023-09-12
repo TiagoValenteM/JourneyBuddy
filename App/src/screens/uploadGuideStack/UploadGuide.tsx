@@ -8,10 +8,10 @@ import {
   RefreshControl,
   Image,
 } from "react-native";
-import Feather from "react-native-vector-icons/Feather";
 import { Guide } from "../../models/guides";
 import { selectPictures } from "../../services/ImageUpload";
 import UserProfile from "../../models/userProfiles";
+import { MapPin, PlusCircle, Trash } from "react-native-feather";
 
 interface AddGuideScreenProps {
   navigation: any;
@@ -106,7 +106,7 @@ const UploadGuideView: React.FC<AddGuideScreenProps> = ({
             >
               <Text style={{ fontSize: 30, fontWeight: "600" }}>Pictures</Text>
               <TouchableOpacity onPress={handleSelectImages}>
-                <Feather name="plus-circle" size={30} color="black" />
+                <PlusCircle height={30} width={30} color="black" />
               </TouchableOpacity>
             </View>
             {currentGuide?.pictures?.length! > 0 ? (
@@ -154,7 +154,7 @@ const UploadGuideView: React.FC<AddGuideScreenProps> = ({
                         });
                       }}
                     >
-                      <Feather name="trash" size={24} color="black" />
+                      <Trash stroke={"black"} width={24} height={24} />
                     </TouchableOpacity>
                   </View>
                 ))}
@@ -189,7 +189,7 @@ const UploadGuideView: React.FC<AddGuideScreenProps> = ({
                   navigation.navigate("Add places");
                 }}
               >
-                <Feather name="plus-circle" size={30} color="black" />
+                <PlusCircle height={30} width={30} color="black" />
               </TouchableOpacity>
             </View>
             <View style={{ flexDirection: "column" }}>
@@ -223,7 +223,7 @@ const UploadGuideView: React.FC<AddGuideScreenProps> = ({
                           marginVertical: 5,
                         }}
                       >
-                        <Feather name={"map-pin"} size={15} color={"#007AFF"} />
+                        <MapPin height={15} width={15} color={"#007AFF"} />
                         <Text style={{ marginHorizontal: 5 }}>
                           ({place.coordinates?.latitude.toString().slice(0, 8)},{" "}
                           {place.coordinates?.longitude.toString().slice(0, 8)})
@@ -241,7 +241,7 @@ const UploadGuideView: React.FC<AddGuideScreenProps> = ({
                         });
                       }}
                     >
-                      <Feather name="trash" size={24} color="black" />
+                      <Trash stroke={"black"} width={24} height={24} />
                     </TouchableOpacity>
                   </View>
                 ))

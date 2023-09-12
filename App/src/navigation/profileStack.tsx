@@ -1,6 +1,5 @@
 import React from "react";
-import Feather from "react-native-vector-icons/Feather";
-import { Alert, Pressable, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Text, TouchableOpacity } from "react-native";
 import ProfileView from "../screens/common/Profile";
 import UpdateProfileView from "../screens/common/UpdateProfile";
 import { createStackNavigator } from "@react-navigation/stack";
@@ -20,6 +19,7 @@ import { useLoading } from "../hooks/useLoading";
 import Saved from "../screens/profileStack/Saved";
 import SavedGuides from "../screens/profileStack/SavedGuidesMap";
 import SavedGuidesGrid from "../screens/profileStack/SavedGuidesGrid";
+import { Menu } from "react-native-feather";
 
 const Stack = createStackNavigator();
 
@@ -30,14 +30,8 @@ interface ProfileStackProps {
 function ProfileStack({ navigation }: ProfileStackProps) {
   const { showError } = useError();
   const { startLoading, stopLoading } = useLoading();
-  const {
-    setPressedGuide,
-    pressedGuide,
-    tempGuide,
-    setTempGuide,
-    guides,
-    setGuides,
-  } = useGuide();
+  const { setPressedGuide, tempGuide, setTempGuide, guides, setGuides } =
+    useGuide();
   const [modalVisible, setModalVisible] = React.useState(false);
   const { authenticatedUser, setAuthenticatedUser } = useAuthenticatedUser();
   const { currentUser, pressedUser, setPressedUser } = useCurrentUser();
@@ -53,7 +47,7 @@ function ProfileStack({ navigation }: ProfileStackProps) {
         options={() => ({
           headerRight: () => (
             <TouchableOpacity onPress={() => setModalVisible(true)}>
-              <Feather name={"menu"} size={25} />
+              <Menu width={25} height={25} color={"black"} />
             </TouchableOpacity>
           ),
           headerTitle: "",
@@ -111,10 +105,9 @@ function ProfileStack({ navigation }: ProfileStackProps) {
         component={UpdateProfileView}
       />
       <Stack.Screen
-        name={"GuideInDetail"}
+        name={"OverviewGuide"}
         options={{
-          headerTitle: "Guide",
-          headerBackTitle: "Back",
+          headerShown: false,
         }}
         component={OverviewGuideView}
       />
@@ -157,7 +150,7 @@ function ProfileStack({ navigation }: ProfileStackProps) {
 
                       stopLoading();
                       Alert.alert("Guide updated successfully");
-                      navigation.navigate("GuideInDetail");
+                      navigation.navigate("OverviewGuide");
                     } catch (error) {
                       showError("Error updating guide.");
                       stopLoading();

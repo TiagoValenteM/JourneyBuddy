@@ -38,9 +38,9 @@ function HomepageStack() {
         component={OverviewMapView}
       />
       <Stack.Screen
-        name={"GuideInDetail"}
+        name={"OverviewGuide"}
         options={{
-          headerTitle: "Guide",
+          headerShown: false,
         }}
         component={OverviewGuideView}
       />

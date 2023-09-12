@@ -5,13 +5,13 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import Feather from "react-native-vector-icons/Feather";
 import React, { useRef } from "react";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import { checkSelectGuide, deleteGuide } from "../../services/ManageGuides";
 import { useAuthenticatedUser } from "../../context/authenticatedUserContext";
 import { Guide } from "../../models/guides";
 import { useError } from "../../hooks/useError";
+import { Bookmark, Edit, Trash } from "react-native-feather";
 
 interface GuideOptionsModalProps {
   navigation: any;
@@ -78,8 +78,7 @@ const GuideOptionsModal = ({
     iconName: string,
     iconColor: string,
     text: string,
-    onPress: any,
-    children?: React.ReactNode
+    onPress: any
   ) => {
     return (
       <BottomSheetView
@@ -97,7 +96,32 @@ const GuideOptionsModal = ({
             alignItems: "center",
           }}
         >
-          <Feather name={iconName} color={iconColor} size={25} />
+          {(() => {
+            switch (iconName) {
+              case "bookmark":
+                return (
+                  <Bookmark
+                    color={iconColor}
+                    width={25}
+                    height={25}
+                    fill={
+                      authenticatedUser?.savedGuides?.some(
+                        (guideUID) => guideUID === guideUid
+                      )
+                        ? "black"
+                        : "transparent"
+                    }
+                  />
+                );
+              case "trash":
+                return <Trash color={iconColor} width={25} height={25} />;
+              case "edit":
+                return <Edit color={iconColor} width={25} height={25} />;
+              default:
+                return null;
+            }
+          })()}
+
           <Text
             style={{
               color: iconColor,
@@ -109,7 +133,6 @@ const GuideOptionsModal = ({
             {text}
           </Text>
         </Pressable>
-        {children}
       </BottomSheetView>
     );
   };
@@ -166,22 +189,7 @@ const GuideOptionsModal = ({
               );
               setModalVisible(false);
               bottomSheetRef.current?.close();
-            },
-            authenticatedUser?.savedGuides?.some(
-              (guideUID) => guideUID === guideUid
-            ) ? (
-              <Feather
-                name={"x"}
-                size={13}
-                color="black"
-                style={{
-                  zIndex: 1,
-                  position: "absolute",
-                  top: 4,
-                  left: 6,
-                }}
-              />
-            ) : null
+            }
           )}
 
           {Option("edit", "black", "Edit", () =>

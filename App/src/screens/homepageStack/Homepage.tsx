@@ -12,8 +12,8 @@ import CarouselLocations from "../../components/carousels/CarouselLocations";
 import CarouselPictures from "../../components/carousels/CarouselPictures";
 import UserIdentifier from "../../components/identifiers/UserIdentifier";
 import GuideIdentifier from "../../components/identifiers/GuideIdentifier";
-import Feather from "react-native-vector-icons/Feather";
 import { getGuidesSorted } from "../../services/GuidesService";
+import { Map } from "react-native-feather";
 
 interface HomepageProps {
   navigation: any;
@@ -105,7 +105,7 @@ function HomepageView({ navigation }: HomepageProps) {
               });
             }}
           >
-            <Feather name={"map"} size={25} color={"#000"} />
+            <Map width={25} height={25} color={"black"} />
           </TouchableOpacity>
         </View>
         <CarouselLocations places={guide?.places} />

@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import { View, Text, FlatList, Dimensions, StyleSheet } from "react-native";
 import { Place } from "../../models/guides";
-import Feather from "react-native-vector-icons/Feather";
+import { MapPin } from "react-native-feather";
 
 interface CarouselLocationsProps {
   places: Place[];
@@ -64,7 +64,7 @@ const CarouselLocations: React.FC<CarouselLocationsProps> = ({ places }) => {
               </Text>
 
               <View style={carouselStyles.coordinatesContainer}>
-                <Feather name={"map-pin"} size={18} color={"#007AFF"} />
+                <MapPin width={18} height={18} color={"#007AFF"} />
                 <Text style={carouselStyles.coordinates}>
                   ({item.coordinates?.latitude.toString().slice(0, 8)},{" "}
                   {item.coordinates?.longitude.toString().slice(0, 8)})

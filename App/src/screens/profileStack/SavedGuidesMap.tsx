@@ -3,9 +3,9 @@ import { Pressable, View } from "react-native";
 import { Guide } from "../../models/guides";
 import SavedModal from "../../components/modals/SavedModal";
 import MapView, { Marker, Region } from "react-native-maps";
-import Feather from "react-native-vector-icons/Feather";
 import { useGuide } from "../../context/GuideContext";
 import CachedImage from "../../components/images/CachedImage";
+import { ArrowLeft, Grid } from "react-native-feather";
 
 interface SavedGuidesMapViewProps {
   navigation: any;
@@ -76,7 +76,7 @@ const SavedGuidesMapView = ({ navigation, route }: SavedGuidesMapViewProps) => {
             alignItems: "center",
           }}
         >
-          <Feather name={"arrow-left"} size={28} color={"black"} />
+          <ArrowLeft width={28} height={28} color={"black"} />
         </Pressable>
         <Pressable
           onPress={() => {
@@ -99,7 +99,7 @@ const SavedGuidesMapView = ({ navigation, route }: SavedGuidesMapViewProps) => {
             alignItems: "center",
           }}
         >
-          <Feather name={"grid"} size={25} color={"black"} />
+          <Grid width={25} height={25} color={"black"} />
         </Pressable>
       </View>
       <MapView
@@ -113,7 +113,7 @@ const SavedGuidesMapView = ({ navigation, route }: SavedGuidesMapViewProps) => {
             key={index}
             onPress={() => {
               setPressedGuide(guide);
-              navigation.navigate("GuideInDetail");
+              navigation.navigate("OverviewGuide");
             }}
           >
             <CachedImage

@@ -2,9 +2,9 @@ import MapView, { Marker } from "react-native-maps";
 import React from "react";
 import { Place } from "../../models/guides";
 import { Pressable, View, StyleSheet } from "react-native";
-import Feather from "react-native-vector-icons/Feather";
 import SavedModal from "../../components/modals/SavedModal";
 import { useGuide } from "../../context/GuideContext";
+import { ArrowLeft } from "react-native-feather";
 
 interface OverviewMapProps {
   navigation: any;
@@ -35,7 +35,7 @@ function OverviewMapView({ navigation, route }: OverviewMapProps) {
           }}
           style={styles.backButton}
         >
-          <Feather name={"arrow-left"} size={28} color={"black"} />
+          <ArrowLeft width={28} height={28} color={"black"} />
         </Pressable>
       </View>
     );

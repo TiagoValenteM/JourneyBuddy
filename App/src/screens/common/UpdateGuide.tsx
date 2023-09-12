@@ -9,8 +9,8 @@ import {
 } from "react-native";
 import { Guide } from "../../models/guides";
 import { selectPictures } from "../../services/ImageUpload";
-import Feather from "react-native-vector-icons/Feather";
 import { useGuide } from "../../context/GuideContext";
+import { MapPin, PlusCircle, Trash } from "react-native-feather";
 
 interface EditGuideScreenProps {
   navigation: any;
@@ -144,7 +144,7 @@ const UpdateGuideView = ({ navigation }: EditGuideScreenProps) => {
                 Pictures
               </Text>
               <TouchableOpacity onPress={handleSelectImages}>
-                <Feather name="plus-circle" size={30} color="black" />
+                <PlusCircle width={30} height={30} color="black" />
               </TouchableOpacity>
             </View>
             {tempGuide?.pictures?.length > 0 ? (
@@ -185,7 +185,7 @@ const UpdateGuideView = ({ navigation }: EditGuideScreenProps) => {
                       }}
                       onPress={() => handleDeleteImage(index)}
                     >
-                      <Feather name="trash" size={24} color="black" />
+                      <Trash width={24} height={24} color="black" />
                     </TouchableOpacity>
                   </View>
                 ))}
@@ -225,7 +225,7 @@ const UpdateGuideView = ({ navigation }: EditGuideScreenProps) => {
               <TouchableOpacity
                 onPress={() => navigation.navigate("EditPlaces")}
               >
-                <Feather name="plus-circle" size={30} color="black" />
+                <PlusCircle width={30} height={30} color="black" />
               </TouchableOpacity>
             </View>
             <View style={{ flexDirection: "column" }}>
@@ -261,7 +261,7 @@ const UpdateGuideView = ({ navigation }: EditGuideScreenProps) => {
                           marginVertical: 5,
                         }}
                       >
-                        <Feather name={"map-pin"} size={15} color={"#007AFF"} />
+                        <MapPin width={15} height={15} color={"#007AFF"} />
                         <Text style={{ marginHorizontal: 5 }}>
                           ({place.coordinates?.latitude.toString().slice(0, 8)},{" "}
                           {place.coordinates?.longitude.toString().slice(0, 8)})
@@ -274,7 +274,7 @@ const UpdateGuideView = ({ navigation }: EditGuideScreenProps) => {
                       }}
                       onPress={() => handleDeletePlace(index)}
                     >
-                      <Feather name="trash" size={24} color="black" />
+                      <Trash width={24} height={24} color="black" />
                     </TouchableOpacity>
                   </View>
                 ))

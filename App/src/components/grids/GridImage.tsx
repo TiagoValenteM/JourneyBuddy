@@ -9,11 +9,11 @@ import {
 import { Guide } from "../../models/guides";
 import { useGuide } from "../../context/GuideContext";
 import CachedImage from "../images/CachedImage";
-import Feather from "react-native-vector-icons/Feather";
 import UserProfile from "../../models/userProfiles";
 import React from "react";
 import { useAuthenticatedUser } from "../../context/authenticatedUserContext";
 import { checkSelectGuide } from "../../services/ManageGuides";
+import { AlertCircle, Bookmark } from "react-native-feather";
 
 const screenWidth = Dimensions.get("window").width;
 const columnWidth = screenWidth / 2 - 30;
@@ -50,7 +50,7 @@ const GridImage = ({
 
   const handleGuidePress = (item: Guide) => {
     setPressedGuide(item);
-    navigation.navigate("GuideInDetail");
+    navigation.navigate("OverviewGuide");
   };
 
   const handleBookmarkPress = (item: Guide) => {
@@ -61,7 +61,7 @@ const GridImage = ({
     if (item.status === "pending" && !allowSaveChange) {
       return (
         <View style={styles.alertIcon} key={item.uid}>
-          <Feather name={"alert-circle"} size={30} color="white" />
+          <AlertCircle width={30} height={30} color={"white"} />
         </View>
       );
     }
@@ -76,15 +76,16 @@ const GridImage = ({
           key={item.uid}
           style={styles.bookmarkIcon}
         >
-          <Feather name={"bookmark"} size={30} color="black" />
-          {authenticatedUser?.savedGuides.includes(item.uid) && (
-            <Feather
-              name={"x"}
-              size={16}
-              color="black"
-              style={styles.unsavedBookmarkIcon}
-            />
-          )}
+          <Bookmark
+            width={20}
+            height={20}
+            color={"black"}
+            fill={
+              authenticatedUser?.savedGuides?.includes(item.uid)
+                ? "black"
+                : "transparent"
+            }
+          />
         </TouchableOpacity>
       );
     }

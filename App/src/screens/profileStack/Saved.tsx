@@ -4,7 +4,6 @@ import {
   Text,
   Dimensions,
   TouchableOpacity,
-  Image,
   StyleSheet,
 } from "react-native";
 import { useAuthenticatedUser } from "../../context/authenticatedUserContext";
@@ -12,7 +11,7 @@ import MapView, { Marker } from "react-native-maps";
 import CachedImage from "../../components/images/CachedImage";
 import { Guide, Place } from "../../models/guides";
 import { getSavedGuides } from "../../services/ManageGuides";
-import { Feather } from "@expo/vector-icons";
+import { MapPin } from "react-native-feather";
 
 interface SavedViewProps {
   navigation: any;
@@ -84,7 +83,7 @@ const SavedView = ({ navigation }: SavedViewProps) => {
                 cacheEnabled={true}
               >
                 <Marker coordinate={savedPlaces[0]?.coordinates}>
-                  <Feather name={"map-pin"} size={25} color={"#007AFF"} />
+                  <MapPin width={25} height={25} color={"#007AFF"} />
                 </Marker>
               </MapView>
               <Text style={styles.title}>Places</Text>

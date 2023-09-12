@@ -8,10 +8,10 @@ import {
   Animated,
 } from "react-native";
 import { Place } from "../../models/guides";
-import { Feather } from "@expo/vector-icons";
 import { useAuthenticatedUser } from "../../context/authenticatedUserContext";
 import { checkSelectPlace } from "../../database/placesRepository";
 import { useGuide } from "../../context/GuideContext";
+import { Bookmark, Map } from "react-native-feather";
 
 interface LocationIdentifierProps {
   place: Place;
@@ -64,7 +64,7 @@ const LocationIdentifier: React.FC<LocationIdentifierProps> = ({ place }) => {
         </Text>
 
         <View style={identifierStyles.coordinatesContainer}>
-          <Feather name={"map-pin"} size={18} color={"#007AFF"} />
+          <Map width={18} height={18} color={"#007AFF"} />
           <Text style={identifierStyles.coordinates}>
             ({place.coordinates?.latitude.toString().slice(0, 8)},{" "}
             {place.coordinates?.longitude.toString().slice(0, 8)})
@@ -78,17 +78,18 @@ const LocationIdentifier: React.FC<LocationIdentifierProps> = ({ place }) => {
           }}
           style={identifierStyles.saveButton}
         >
-          <Feather name={"bookmark"} size={30} color="black" />
-          {authenticatedUser?.savedPlaces?.some(
-            (savedPlace) => savedPlace.name === place.name
-          ) ? (
-            <Feather
-              name={"x"}
-              size={16}
-              color="black"
-              style={identifierStyles.unsaved}
-            />
-          ) : null}
+          <Bookmark
+            width={30}
+            height={30}
+            color="black"
+            fill={
+              authenticatedUser?.savedPlaces?.some(
+                (savedPlace) => savedPlace.name === place.name
+              )
+                ? "black"
+                : "transparent"
+            }
+          />
         </TouchableOpacity>
       </View>
     </Animated.View>
@@ -123,11 +124,6 @@ const identifierStyles = StyleSheet.create({
   coordinates: {
     fontSize: 13,
     marginHorizontal: 5,
-  },
-  unsaved: {
-    zIndex: 1,
-    position: "absolute",
-    top: 5,
   },
   unsavedContainer: {
     paddingHorizontal: 8,

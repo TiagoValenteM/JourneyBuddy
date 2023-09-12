@@ -8,10 +8,10 @@ import {
 } from "react-native";
 import { Guide } from "../../models/guides";
 import { getMonthName } from "../../utils/getMonth";
-import { Feather } from "@expo/vector-icons";
 import { useAuthenticatedUser } from "../../context/authenticatedUserContext";
 import { checkSelectGuide } from "../../services/ManageGuides";
 import { useGuide } from "../../context/GuideContext";
+import { Bookmark } from "react-native-feather";
 
 interface GuideIdentifierProps {
   guide: Guide;
@@ -34,7 +34,7 @@ const GuideIdentifier: React.FC<GuideIdentifierProps> = ({
       onPress={() => {
         if (navigation) {
           setPressedGuide(guide);
-          navigation.navigate("GuideInDetail");
+          navigation.navigate("OverviewGuide");
         }
       }}
     >
@@ -74,21 +74,18 @@ const GuideIdentifier: React.FC<GuideIdentifierProps> = ({
             alignItems: "center",
           }}
         >
-          <Feather name={"bookmark"} size={30} color="black" />
-          {authenticatedUser?.savedGuides?.some(
-            (guideUID) => guideUID === guide.uid
-          ) ? (
-            <Feather
-              name={"x"}
-              size={16}
-              color="black"
-              style={{
-                zIndex: 1,
-                position: "absolute",
-                top: 5,
-              }}
-            />
-          ) : null}
+          <Bookmark
+            height={30}
+            width={30}
+            color={"black"}
+            fill={
+              authenticatedUser?.savedGuides?.some(
+                (guideUID) => guideUID === guide.uid
+              )
+                ? "black"
+                : "transparent"
+            }
+          />
         </TouchableOpacity>
       </View>
     </Pressable>

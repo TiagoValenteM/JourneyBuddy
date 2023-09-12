@@ -5,7 +5,6 @@ import GridImage from "../../components/grids/GridImage";
 import { useAuthenticatedUser } from "../../context/authenticatedUserContext";
 import { getSavedGuides } from "../../services/ManageGuides";
 import { useError } from "../../hooks/useError";
-import saved from "./Saved";
 
 interface SavedGuidesGridViewProps {
   navigation: any;

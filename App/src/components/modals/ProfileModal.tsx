@@ -5,9 +5,9 @@ import {
   View,
 } from "react-native";
 import { getAuth, signOut } from "firebase/auth";
-import Feather from "react-native-vector-icons/Feather";
 import React, { useRef } from "react";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
+import { Bookmark, LogOut } from "react-native-feather";
 
 const auth = getAuth();
 
@@ -77,7 +77,7 @@ const ProfileModal = ({ navigation, setModalVisible }: ProfileModalProps) => {
               onPress={() => signOut(auth)}
               style={{ flexDirection: "row", alignItems: "center" }}
             >
-              <Feather name="log-out" color="black" size={24} />
+              <LogOut width={24} height={24} color="black" />
               <Text
                 style={{
                   color: "black",
@@ -100,7 +100,7 @@ const ProfileModal = ({ navigation, setModalVisible }: ProfileModalProps) => {
               onPress={() => handleSavedPress()}
               style={{ flexDirection: "row", alignItems: "center" }}
             >
-              <Feather name="bookmark" color="black" size={24} />
+              <Bookmark width={24} height={24} color="black" />
               <Text
                 style={{
                   color: "black",

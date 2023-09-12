@@ -1,7 +1,6 @@
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import Feather from "react-native-vector-icons/Feather";
 import UploadGuideStack from "./uploadGuideStack";
 import ProfileStack from "./profileStack";
 import { getAuthUserProfile } from "../database/userRepository";
@@ -13,6 +12,7 @@ import { useLoading } from "../hooks/useLoading";
 import SearchStack from "./searchStack";
 import { useGuide } from "../context/GuideContext";
 import { getGuidesUser } from "../services/ManageGuides";
+import { Home, PlusSquare, Search, User } from "react-native-feather";
 
 const Tab = createBottomTabNavigator();
 
@@ -51,26 +51,18 @@ export default function UserStack() {
           tabBarShowLabel: false,
           headerShown: false,
           tabBarIcon: ({ color, size }) => {
-            let iconName;
-
             switch (route.name) {
               case "ProfileStack":
-                iconName = "user";
-                break;
+                return <User width={size} height={size} color={color} />;
               case "SearchStack":
-                iconName = "search";
-                break;
+                return <Search width={size} height={size} color={color} />;
               case "HomepageStack":
-                iconName = "home";
-                break;
+                return <Home width={size} height={size} color={color} />;
               case "GuidesStack":
-                iconName = "plus-square";
-                break;
+                return <PlusSquare width={size} height={size} color={color} />;
               default:
-                iconName = ""; // Default icon, nothing to show
-                break;
+                return null;
             }
-            return <Feather name={iconName} size={size} color={color} />;
           },
         })}
       >

@@ -1,7 +1,7 @@
 import { Text, View } from "react-native";
 import React, { useEffect } from "react";
-import Feather from "react-native-vector-icons/Feather";
 import { useError } from "../../hooks/useError";
+import { AlertCircle } from "react-native-feather";
 
 const ErrorIndicator = () => {
   const { modalErrorVisible, errorMessage, hideError } = useError();
@@ -36,7 +36,7 @@ const ErrorIndicator = () => {
           flexDirection: "row",
         }}
       >
-        <Feather name={"alert-circle"} size={22} color={"white"} />
+        <AlertCircle width={22} height={22} color={"white"} />
         <Text
           style={{
             color: "white",
