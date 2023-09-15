@@ -1,139 +1,106 @@
 import React, { useRef, useState } from "react";
-import {
-  View,
-  FlatList,
-  Dimensions,
-  StyleSheet,
-  Text,
-  Pressable,
-} from "react-native";
+import { View, FlatList, StyleSheet, Text } from "react-native";
 import CachedImage from "../images/CachedImage";
-import { ArrowLeft, Image, MoreVertical } from "react-native-feather";
+import { Animated } from "react-native";
 
 interface CarouselPicturesProps {
+  scrollY: Animated.ValueXY;
   images: string[];
-  navigation: any;
-  authUserId: string | undefined;
-  guideAuthId: string | undefined;
-  setModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  pictureSize: number;
 }
 
 const CarouselPicturesOverview: React.FC<CarouselPicturesProps> = ({
+  scrollY,
   images,
-  navigation,
-  authUserId,
-  guideAuthId,
-  setModalVisible,
+  pictureSize,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
-  const windowWidth = Dimensions.get("window").width;
   const pictureData = images.map((image) => ({ uri: image }));
 
   const handleScroll = (event: any) => {
     const { contentOffset } = event.nativeEvent;
-    const index = Math.floor(contentOffset.x / windowWidth);
+    const index = Math.floor(contentOffset.x / pictureSize);
     setCurrentIndex(index);
   };
 
   return (
     <View>
-      <View
+      <Animated.View
         style={{
-          position: "absolute",
-          top: 60,
-          flex: 1,
-          flexDirection: "row",
-          paddingHorizontal: 20,
-          width: "100%",
-          zIndex: 1,
-          justifyContent: "space-between",
+          transform: [
+            {
+              translateY: scrollY.y.interpolate({
+                inputRange: [-1000, 0],
+                outputRange: [-50, 0],
+                extrapolate: "clamp",
+              }),
+            },
+            {
+              scale: scrollY.y.interpolate({
+                inputRange: [-3000, 0],
+                outputRange: [20, 1],
+                extrapolate: "clamp",
+              }),
+            },
+          ],
         }}
       >
-        <Pressable
-          onPress={() => navigation.goBack()}
-          style={carouselStyles.button}
-        >
-          <ArrowLeft width={28} height={28} color={"white"} />
-        </Pressable>
-        {authUserId === guideAuthId && (
-          <Pressable
-            onPress={() => setModalVisible(true)}
-            style={carouselStyles.button}
-          >
-            <MoreVertical width={28} height={28} color={"white"} />
-          </Pressable>
-        )}
-      </View>
-
-      <FlatList
-        ref={flatListRef}
-        data={pictureData}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={true}
-        keyExtractor={(_, index) => index.toString()}
-        snapToInterval={windowWidth}
-        decelerationRate="fast"
-        onScroll={handleScroll}
-        indicatorStyle={"white"}
-        renderItem={({ item }) => (
-          <View
-            style={{
-              width: windowWidth,
-              height: windowWidth,
-            }}
-          >
+        <FlatList
+          ref={flatListRef}
+          data={pictureData}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={true}
+          keyExtractor={(_, index) => index.toString()}
+          snapToInterval={pictureSize}
+          decelerationRate="fast"
+          onScroll={handleScroll}
+          indicatorStyle={"white"}
+          renderItem={({ item }) => (
             <CachedImage
               source={{ uri: item.uri }}
-              style={carouselStyles.image}
+              style={{
+                width: pictureSize,
+                height: pictureSize,
+              }}
             />
-          </View>
-        )}
-      />
-      <View
+          )}
+        />
+      </Animated.View>
+      <Animated.View
         style={{
-          position: "absolute",
-          bottom: 20,
-          right: 20,
-          backgroundColor: "rgba(31,31,31,0.8)",
-          flexDirection: "row",
-          paddingHorizontal: 15,
-          paddingVertical: 3,
-          borderRadius: 10,
+          ...carouselStyles.indicator,
+          opacity: scrollY.y.interpolate({
+            inputRange: [-20, 0],
+            outputRange: [0, 1],
+            extrapolate: "clamp",
+          }),
         }}
       >
-        <Image width={15} height={15} color={"white"} />
-        <Text
-          style={{
-            marginLeft: 7,
-            fontSize: 12,
-            fontWeight: "700",
-            color: "white",
-          }}
-        >
+        <Text style={carouselStyles.indicatorText}>
           {currentIndex + 1} / {images.length}
         </Text>
-      </View>
+      </Animated.View>
     </View>
   );
 };
 
 const carouselStyles = StyleSheet.create({
-  itemContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+  indicator: {
+    position: "absolute",
+    bottom: 20,
+    right: 20,
+    backgroundColor: "rgba(31, 31, 31, 0.8)",
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 10,
   },
-  image: {
-    width: "100%",
-    height: "100%",
-  },
-  button: {
-    backgroundColor: "rgba(31,31,31,0.8)",
-    borderRadius: 50,
-    padding: 7,
-    elevation: 1,
+  indicatorText: {
+    marginLeft: 7,
+    fontSize: 12,
+    fontWeight: "600",
+    color: "white",
   },
 });
 

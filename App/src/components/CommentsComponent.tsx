@@ -6,23 +6,23 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
-import { Comment, Guide } from "../models/guides";
+import { Guide } from "../models/guides";
 import { updateGuideComments } from "../services/ManageGuides";
 import { useError } from "../hooks/useError";
 import { MessageCircle } from "react-native-feather";
 
 interface CommentsComponentProps {
-  guideComments: Comment[];
-  guideId: string;
+  guide: Guide;
   authUsername: string;
-  setPressedGuide: React.Dispatch<React.SetStateAction<Guide | undefined>>;
+  guides: Guide[];
+  setGuides: React.Dispatch<React.SetStateAction<Guide[]>>;
 }
 
 const CommentsComponent = ({
-  guideComments,
-  guideId,
+  guide,
+  guides,
+  setGuides,
   authUsername,
-  setPressedGuide,
 }: CommentsComponentProps) => {
   const [newComment, setNewComment] = useState("");
   const { showError } = useError();
@@ -32,11 +32,13 @@ const CommentsComponent = ({
       showError("Please enter a comment.");
       return;
     }
+
     updateGuideComments(
-      guideId,
+      guide,
+      guides,
+      setGuides,
       newComment,
       authUsername,
-      setPressedGuide,
       showError
     ).then(() => {
       setNewComment("");
@@ -45,8 +47,8 @@ const CommentsComponent = ({
 
   return (
     <View>
-      {guideComments && guideComments.length > 0 ? (
-        guideComments.slice(0, 3).map((comment, index) => (
+      {guide?.comments && guide?.comments?.length > 0 ? (
+        guide?.comments?.slice(0, 3).map((comment, index) => (
           <View style={styles.commentItem} key={index}>
             <Text style={styles.commentUsername}>{"@" + comment.username}</Text>
             <Text style={styles.commentText}>{comment.comment}</Text>

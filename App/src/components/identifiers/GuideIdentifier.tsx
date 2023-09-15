@@ -23,7 +23,7 @@ const GuideIdentifier: React.FC<GuideIdentifierProps> = ({
   navigation,
 }) => {
   const { authenticatedUser, setAuthenticatedUser } = useAuthenticatedUser();
-  const { setPressedGuide } = useGuide();
+  const { setPressedGuide, pressedGuide } = useGuide();
 
   return (
     <Pressable
@@ -34,7 +34,7 @@ const GuideIdentifier: React.FC<GuideIdentifierProps> = ({
       onPress={() => {
         if (navigation) {
           setPressedGuide(guide);
-          navigation.navigate("OverviewGuide");
+          navigation.navigate("OverviewGuide", { guide: pressedGuide });
         }
       }}
     >

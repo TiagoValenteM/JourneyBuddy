@@ -31,7 +31,7 @@ const GridImage = ({
   authUser,
   allowSaveChange,
 }: GridImageProps) => {
-  const { setPressedGuide } = useGuide();
+  const { setPressedGuide, pressedGuide } = useGuide();
   const { authenticatedUser, setAuthenticatedUser } = useAuthenticatedUser();
 
   const renderGuideItem = (item: Guide, index: number) => (
@@ -48,9 +48,11 @@ const GridImage = ({
     </Pressable>
   );
 
-  const handleGuidePress = (item: Guide) => {
-    setPressedGuide(item);
-    navigation.navigate("OverviewGuide");
+  const handleGuidePress = (guide: Guide) => {
+    setPressedGuide(guide);
+    navigation.navigate("OverviewGuide", {
+      guide: pressedGuide,
+    });
   };
 
   const handleBookmarkPress = (item: Guide) => {

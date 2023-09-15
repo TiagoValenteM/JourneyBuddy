@@ -12,7 +12,7 @@ import CarouselLocations from "../../components/carousels/CarouselLocations";
 import CarouselPictures from "../../components/carousels/CarouselPictures";
 import UserIdentifier from "../../components/identifiers/UserIdentifier";
 import GuideIdentifier from "../../components/identifiers/GuideIdentifier";
-import { getGuidesSorted } from "../../services/GuidesService";
+import { getGuidesSorted } from "../../database/guidesRepository";
 import { Map } from "react-native-feather";
 
 interface HomepageProps {

@@ -2,11 +2,10 @@ import {
   Text,
   View,
   StyleSheet,
-  RefreshControl,
   Platform,
   KeyboardAvoidingView,
+  Dimensions,
 } from "react-native";
-import React, { useEffect } from "react";
 import LoadingIndicator from "../../components/indicators/LoadingIndicator";
 import { useGuide } from "../../context/GuideContext";
 import UserIdentifier from "../../components/identifiers/UserIdentifier";
@@ -15,27 +14,31 @@ import { useAuthenticatedUser } from "../../context/authenticatedUserContext";
 import GuideOptionsModal from "../../components/modals/GuideOptionsModal";
 import CarouselPicturesOverview from "../../components/carousels/CarouselPicturesOverview";
 import DynamicHeader from "../../components/headers/DynamicHeader";
-import Animated, { Value } from "react-native-reanimated";
 import RatingsComponent from "../../components/RatingsComponent";
 import PlacePreview from "../../components/PlacePreview";
 import CommentsComponent from "../../components/CommentsComponent";
-import { getSavedGuides } from "../../services/ManageGuides";
+import { useRef, useState } from "react";
+import { Animated } from "react-native";
 interface OverviewGuideViewProps {
   navigation: any;
+  route: any;
 }
 
-function OverviewGuideView({ navigation }: OverviewGuideViewProps) {
-  const [modalVisible, setModalVisible] = React.useState(false);
-  const { pressedGuide, guides, setGuides, setPressedGuide } = useGuide();
+const screenWidth = Dimensions.get("window").width;
+
+function OverviewGuideView({ navigation, route }: OverviewGuideViewProps) {
+  const { guide } = route.params;
+  const [modalVisible, setModalVisible] = useState(false);
+  const { guides, setGuides } = useGuide();
   const { authenticatedUser } = useAuthenticatedUser();
-  const scrollY: Animated.Value<number> = new Value(0); // Initialize scrollY
+  const scrollY = useRef(new Animated.ValueXY()).current;
 
   const handleScroll = Animated.event(
-    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+    [{ nativeEvent: { contentOffset: { y: scrollY.y } } }],
     { useNativeDriver: false }
   );
 
-  if (pressedGuide === undefined) {
+  if (guide === undefined) {
     return <LoadingIndicator />;
   }
 
@@ -44,29 +47,47 @@ function OverviewGuideView({ navigation }: OverviewGuideViewProps) {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       style={{ flex: 1 }}
     >
-      <View style={{ flex: 1 }}>
-        <DynamicHeader scrollY={scrollY} />
-        <Animated.ScrollView
-          onScroll={handleScroll}
-          scrollEventThrottle={20}
-          style={{ flex: 1 }}
+      <DynamicHeader
+        screenWidth={screenWidth}
+        scrollY={scrollY}
+        authUserId={authenticatedUser!.uid}
+        guideAuthId={guide?.user_id}
+        setModalVisible={setModalVisible}
+        navigation={navigation}
+      />
+      <Animated.ScrollView
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+        style={{ flex: 1 }}
+        contentInsetAdjustmentBehavior="never"
+      >
+        <CarouselPicturesOverview
+          scrollY={scrollY}
+          images={guide?.pictures}
+          pictureSize={screenWidth}
+        />
+        <Animated.View
+          style={{
+            transform: [
+              {
+                translateY: scrollY.y.interpolate({
+                  inputRange: [-500, 0],
+                  outputRange: [720, 0],
+                  extrapolate: "clamp",
+                }),
+              },
+            ],
+          }}
         >
-          <CarouselPicturesOverview
-            images={pressedGuide?.pictures}
-            authUserId={authenticatedUser?.uid}
-            guideAuthId={pressedGuide?.user_id}
-            navigation={navigation}
-            setModalVisible={setModalVisible}
-          />
           <View style={overviewGuideStyles.container}>
-            <GuideIdentifier guide={pressedGuide} />
+            <GuideIdentifier guide={guide} />
           </View>
 
           <Text style={overviewGuideStyles.title}>Creator</Text>
           <View style={overviewGuideStyles.container}>
             <UserIdentifier
-              selectedUsername={pressedGuide?.author}
-              selectedUserUid={pressedGuide?.user_id}
+              selectedUsername={guide?.author}
+              selectedUserUid={guide?.user_id}
               homepage={false}
             />
           </View>
@@ -79,10 +100,10 @@ function OverviewGuideView({ navigation }: OverviewGuideViewProps) {
           </Text>
           <View style={[overviewGuideStyles.container, { padding: 0 }]}>
             <PlacePreview
-              place={pressedGuide.places[0]}
+              place={guide.places[0]}
               onPress={() => {
                 navigation.navigate("MapOverview", {
-                  places: pressedGuide?.places,
+                  places: guide?.places,
                   title: "Places",
                 });
               }}
@@ -92,9 +113,10 @@ function OverviewGuideView({ navigation }: OverviewGuideViewProps) {
           <Text style={overviewGuideStyles.title}>Ratings</Text>
           <View style={overviewGuideStyles.container}>
             <RatingsComponent
-              pressedGuide={pressedGuide}
-              authUserId={authenticatedUser!.uid}
-              setPressedGuide={setPressedGuide}
+              guide={guide}
+              authUserID={authenticatedUser!.uid}
+              guides={guides}
+              setGuides={setGuides}
             />
           </View>
 
@@ -106,23 +128,23 @@ function OverviewGuideView({ navigation }: OverviewGuideViewProps) {
           </Text>
           <View style={overviewGuideStyles.container}>
             <CommentsComponent
-              guideComments={pressedGuide?.comments}
-              guideId={pressedGuide?.uid}
+              guide={guide}
+              guides={guides}
+              setGuides={setGuides}
               authUsername={authenticatedUser!.username}
-              setPressedGuide={setPressedGuide}
             />
           </View>
-        </Animated.ScrollView>
-        {modalVisible && (
-          <GuideOptionsModal
-            setModalVisible={setModalVisible}
-            navigation={navigation}
-            guideUid={pressedGuide?.uid}
-            guides={guides}
-            setGuides={setGuides}
-          />
-        )}
-      </View>
+        </Animated.View>
+      </Animated.ScrollView>
+      {modalVisible && (
+        <GuideOptionsModal
+          setModalVisible={setModalVisible}
+          navigation={navigation}
+          guideUid={guide?.uid}
+          guides={guides}
+          setGuides={setGuides}
+        />
+      )}
     </KeyboardAvoidingView>
   );
 }

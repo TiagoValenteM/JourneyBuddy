@@ -1,8 +1,6 @@
 import { Place } from "../models/guides";
-import { Text, View } from "react-native";
+import { Text, View, StyleSheet } from "react-native";
 import MapView, { Marker } from "react-native-maps";
-import { Feather } from "@expo/vector-icons";
-import React from "react";
 import { MapPin } from "react-native-feather";
 
 interface PlacePreviewProps {
@@ -11,56 +9,28 @@ interface PlacePreviewProps {
 }
 
 const PlacePreview = ({ place, onPress }: PlacePreviewProps) => {
-  const initialRegion = {
-    latitude: place?.coordinates?.latitude || 38.7223,
-    longitude: place?.coordinates?.longitude || -9.1393,
-    latitudeDelta: 0.1,
-    longitudeDelta: 0.1,
-  };
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: "white",
-        borderRadius: 15,
-        overflow: "hidden",
-        zIndex: 1,
-      }}
-    >
-      <View
-        style={{
-          borderTopStartRadius: 15,
-          borderTopEndRadius: 15,
-          overflow: "hidden",
-        }}
-      >
+    <View style={placePreviewStyles.container}>
+      <View style={placePreviewStyles.mapContainer}>
         <MapView
-          initialRegion={initialRegion}
-          cacheEnabled={true}
-          style={{
-            flex: 1,
-            height: 150,
+          style={placePreviewStyles.map}
+          initialRegion={{
+            latitude: place?.coordinates?.latitude || 38.7223,
+            longitude: place?.coordinates?.longitude || -9.1393,
+            latitudeDelta: 0.1,
+            longitudeDelta: 0.1,
           }}
           onPress={onPress}
+          cacheEnabled={true}
         >
           <Marker coordinate={place?.coordinates}>
             <MapPin width={25} height={25} strokeWidth={3} stroke={"#fb4342"} />
           </Marker>
         </MapView>
       </View>
-      <View
-        style={{
-          paddingVertical: 15,
-          paddingHorizontal: 15,
-        }}
-      >
+      <View style={placePreviewStyles.infoContainer}>
         <Text
-          style={{
-            fontSize: 14,
-            fontWeight: "500",
-            overflow: "hidden",
-            width: "90%",
-          }}
+          style={placePreviewStyles.placeName}
           numberOfLines={2}
           ellipsizeMode="middle"
         >
@@ -72,3 +42,31 @@ const PlacePreview = ({ place, onPress }: PlacePreviewProps) => {
 };
 
 export default PlacePreview;
+
+const placePreviewStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "white",
+    borderRadius: 15,
+    overflow: "hidden",
+    zIndex: 1,
+  },
+  mapContainer: {
+    borderTopStartRadius: 15,
+    borderTopEndRadius: 15,
+    overflow: "hidden",
+    height: 150,
+  },
+  map: {
+    flex: 1,
+  },
+  infoContainer: {
+    paddingVertical: 15,
+    paddingHorizontal: 15,
+  },
+  placeName: {
+    fontSize: 14,
+    fontWeight: "500",
+    overflow: "hidden",
+  },
+});

@@ -27,6 +27,7 @@ class Guide {
   user_id: string = "";
   author: string = "";
   rating: Rating[] = [];
+  averageRating: number = 0;
   status: string = "pending";
   dateCreated: string = new Date().toISOString();
   places: Place[] = [];
@@ -41,6 +42,7 @@ class Guide {
       this.user_id = previousGuide.user_id;
       this.author = previousGuide.author;
       this.rating = previousGuide.rating;
+      this.averageRating = previousGuide.averageRating;
       this.status = previousGuide.status;
       this.dateCreated = previousGuide.dateCreated;
       this.places = previousGuide.places;
