@@ -1,85 +1,88 @@
 import { Text, TouchableOpacity, View, StyleSheet } from "react-native";
 import { Star } from "react-native-feather";
 import React, { useEffect } from "react";
-import { Guide } from "../models/guides";
+import { Guide, Rating } from "../models/guides";
 import { useError } from "../hooks/useError";
-import { getRatingByUser, updateRating } from "../database/guidesRepository";
+import Colors from "../../styles/colorScheme";
+import { updateRating } from "../database/guideRepository/ratings/ratingsRepository";
 
 interface RatingsComponentProps {
   guide: Guide;
-  guides: Guide[];
-  setGuides: React.Dispatch<React.SetStateAction<Guide[]>>;
   authUserID: string;
 }
 
-const RatingsComponent = ({
-  guide,
-  authUserID,
-  guides,
-  setGuides,
-}: RatingsComponentProps) => {
-  const { showError } = useError();
-  const [avgRating, setAvgRating] = React.useState(0);
-  const [ratingLength, setRatingLength] = React.useState(0);
-  const [rated, setRated] = React.useState(0);
-  const canNotRate = rated != 0 || authUserID === guide?.user_id;
+const RatingsComponent = ({ guide, authUserID }: RatingsComponentProps) => {
+  const [rated, setRated] = React.useState<number>(0);
+  const [canRate, setCanRate] = React.useState<boolean>(true);
   const starArray = Array.from({ length: 5 }, (_, index) => index + 1);
+  const { showError } = useError();
 
   const handleRating = (rate: number) => {
+    setCanRate(false);
+    setRated(rate);
+
     const newRating = {
       user_id: authUserID,
       rate: rate,
     };
 
-    updateRating(newRating, guide, guides, setGuides, showError).then(
-      (newAverageRating) => {
-        setRatingLength(ratingLength + 1);
-        setAvgRating(newAverageRating!);
+    updateRating(newRating, guide, showError).catch(() => {
+      showError("Error updating rating. Please try again.");
+    });
+  };
+
+  const getRating = (userID: string, ratings: Rating[]): void => {
+    const rating = ratings.find((rating) => rating.user_id === userID);
+    const rate = rating?.rate || 0;
+
+    if (authUserID !== guide.user_id) {
+      if (rate > 0) {
+        setCanRate(false);
+        setRated(rate);
+      } else {
+        setCanRate(true);
       }
-    );
+    } else {
+      setCanRate(false);
+    }
   };
 
   useEffect(() => {
-    getRatingByUser(authUserID, guide?.rating).then((rating) => {
-      setRated(rating);
-    });
-    setAvgRating(guide?.averageRating);
-    setRatingLength(guide?.rating?.length);
-  }, [guide?.averageRating]);
+    getRating(authUserID, guide.rating);
+  }, []);
 
   return (
     <View>
-      <View style={ratingStyles.container}>
-        <View style={ratingStyles.ratingSection}>
-          <Text style={ratingStyles.ratingText}>{avgRating || 0}</Text>
-          <Text style={ratingStyles.ratingDescription}>out of 5</Text>
+      <View style={styles.container}>
+        <View style={styles.ratingSection}>
+          <Text style={styles.ratingText}>{guide?.averageRating || 0}</Text>
+          <Text style={styles.ratingDescription}>out of 5</Text>
         </View>
 
-        <Text style={ratingStyles.ratingCount}>
-          {ratingLength === 1
-            ? ratingLength + " Rating"
-            : ratingLength + " Ratings"}
+        <Text style={styles.ratingCount}>
+          {guide?.rating?.length === 1
+            ? guide?.rating?.length + " Rating"
+            : guide?.rating?.length + " Ratings"}
         </Text>
       </View>
 
-      <View style={ratingStyles.ratingContainer}>
-        <Text style={ratingStyles.ratingTextTitle}>Tap to Rate:</Text>
-        <View style={ratingStyles.ratingContainer}>
+      <View style={styles.ratingContainer}>
+        <Text style={styles.ratingTextTitle}>Tap to Rate:</Text>
+        <View style={styles.ratingContainer}>
           {starArray.map((value) => (
             <TouchableOpacity
               key={value}
               style={{ marginHorizontal: 5 }}
               onPress={() => {
                 handleRating(value);
-                setRated(value);
               }}
-              disabled={canNotRate}
+              disabled={!canRate}
             >
               <Star
                 width={27}
                 height={27}
-                stroke={"#FFD700"}
-                fill={rated >= value ? "#FFD700" : "transparent"}
+                stroke={Colors.yellow}
+                fill={rated >= value ? Colors.yellow : "transparent"}
               />
             </TouchableOpacity>
           ))}
@@ -91,13 +94,13 @@ const RatingsComponent = ({
 
 export default RatingsComponent;
 
-const ratingStyles = StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: "row",
     justifyContent: "space-between",
     borderBottomWidth: 1,
-    borderBottomColor: "#dfe0e3",
+    borderBottomColor: Colors.white,
     marginBottom: 10,
     paddingBottom: 5,
   },
@@ -110,17 +113,18 @@ const ratingStyles = StyleSheet.create({
   },
   ratingText: {
     fontSize: 45,
-    fontWeight: "700",
+    fontWeight: "bold",
+    color: Colors.black,
   },
   ratingDescription: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "gray",
+    fontSize: 15,
+    fontWeight: "normal",
+    color: Colors.gray,
   },
   ratingCount: {
-    fontSize: 16,
-    fontWeight: "400",
-    color: "gray",
+    fontSize: 15,
+    fontWeight: "normal",
+    color: Colors.gray,
     textAlign: "right",
     alignSelf: "flex-start",
     marginTop: 10,
@@ -132,7 +136,8 @@ const ratingStyles = StyleSheet.create({
     alignItems: "center",
   },
   ratingTextTitle: {
-    fontSize: 16,
-    fontWeight: "500",
+    fontSize: 15,
+    fontWeight: "bold",
+    color: Colors.darkGray,
   },
 });

@@ -6,8 +6,6 @@ import {
   KeyboardAvoidingView,
   Dimensions,
 } from "react-native";
-import LoadingIndicator from "../../components/indicators/LoadingIndicator";
-import { useGuide } from "../../context/GuideContext";
 import UserIdentifier from "../../components/identifiers/UserIdentifier";
 import GuideIdentifier from "../../components/identifiers/GuideIdentifier";
 import { useAuthenticatedUser } from "../../context/authenticatedUserContext";
@@ -19,6 +17,8 @@ import PlacePreview from "../../components/PlacePreview";
 import CommentsComponent from "../../components/CommentsComponent";
 import { useRef, useState } from "react";
 import { Animated } from "react-native";
+import Colors from "../../../styles/colorScheme";
+
 interface OverviewGuideViewProps {
   navigation: any;
   route: any;
@@ -27,9 +27,8 @@ interface OverviewGuideViewProps {
 const screenWidth = Dimensions.get("window").width;
 
 function OverviewGuideView({ navigation, route }: OverviewGuideViewProps) {
-  const { guide } = route.params;
+  const { guide, guides, setGuides } = route.params;
   const [modalVisible, setModalVisible] = useState(false);
-  const { guides, setGuides } = useGuide();
   const { authenticatedUser } = useAuthenticatedUser();
   const scrollY = useRef(new Animated.ValueXY()).current;
 
@@ -37,10 +36,6 @@ function OverviewGuideView({ navigation, route }: OverviewGuideViewProps) {
     [{ nativeEvent: { contentOffset: { y: scrollY.y } } }],
     { useNativeDriver: false }
   );
-
-  if (guide === undefined) {
-    return <LoadingIndicator />;
-  }
 
   return (
     <KeyboardAvoidingView
@@ -79,26 +74,28 @@ function OverviewGuideView({ navigation, route }: OverviewGuideViewProps) {
             ],
           }}
         >
-          <View style={overviewGuideStyles.container}>
-            <GuideIdentifier guide={guide} />
-          </View>
-
-          <Text style={overviewGuideStyles.title}>Creator</Text>
-          <View style={overviewGuideStyles.container}>
-            <UserIdentifier
-              selectedUsername={guide?.author}
-              selectedUserUid={guide?.user_id}
-              homepage={false}
+          <View style={styles.container}>
+            <GuideIdentifier
+              guide={guide}
+              setGuides={setGuides}
+              guides={guides}
             />
           </View>
 
-          <Text style={overviewGuideStyles.title}>
+          <Text style={styles.title}>Creator</Text>
+          <View style={styles.container}>
+            <UserIdentifier
+              username={guide?.author}
+              userID={guide?.user_id}
+              navigation={navigation}
+            />
+          </View>
+
+          <Text style={styles.title}>
             Places{"  "}
-            <Text style={overviewGuideStyles.subtitle}>
-              (Tap the map for more)
-            </Text>
+            <Text style={styles.subtitle}>(Tap the map for more)</Text>
           </Text>
-          <View style={[overviewGuideStyles.container, { padding: 0 }]}>
+          <View style={[styles.container, { padding: 0 }]}>
             <PlacePreview
               place={guide.places[0]}
               onPress={() => {
@@ -110,27 +107,21 @@ function OverviewGuideView({ navigation, route }: OverviewGuideViewProps) {
             />
           </View>
 
-          <Text style={overviewGuideStyles.title}>Ratings</Text>
-          <View style={overviewGuideStyles.container}>
+          <Text style={styles.title}>Ratings</Text>
+          <View style={styles.container}>
             <RatingsComponent
               guide={guide}
               authUserID={authenticatedUser!.uid}
-              guides={guides}
-              setGuides={setGuides}
             />
           </View>
 
-          <Text style={overviewGuideStyles.title}>
+          <Text style={styles.title}>
             Comments{"  "}
-            <Text style={overviewGuideStyles.subtitle}>
-              (Tap a comment for more)
-            </Text>
+            <Text style={styles.subtitle}>(Tap a comment for more)</Text>
           </Text>
-          <View style={overviewGuideStyles.container}>
+          <View style={styles.container}>
             <CommentsComponent
               guide={guide}
-              guides={guides}
-              setGuides={setGuides}
               authUsername={authenticatedUser!.username}
             />
           </View>
@@ -149,23 +140,24 @@ function OverviewGuideView({ navigation, route }: OverviewGuideViewProps) {
   );
 }
 
-const overviewGuideStyles = StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
-    backgroundColor: "white",
-    borderRadius: 15,
+    backgroundColor: Colors.lightGray,
+    borderRadius: 10,
     padding: 15,
     margin: 15,
   },
   title: {
     marginTop: 10,
-    fontSize: 18,
-    fontWeight: "600",
+    fontSize: 17,
+    fontWeight: "bold",
     marginHorizontal: 15,
+    color: Colors.black,
   },
   subtitle: {
-    color: "gray",
+    color: Colors.gray,
     fontSize: 12,
-    fontWeight: "400",
+    fontWeight: "normal",
   },
 });
 

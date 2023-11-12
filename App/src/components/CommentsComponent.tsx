@@ -1,61 +1,84 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Text,
   TextInput,
   View,
   StyleSheet,
   TouchableOpacity,
+  Pressable,
 } from "react-native";
-import { Guide } from "../models/guides";
-import { updateGuideComments } from "../services/ManageGuides";
+import { Comment, Guide } from "../models/guides";
 import { useError } from "../hooks/useError";
-import { MessageCircle } from "react-native-feather";
+import { MessageCircle, Trash } from "react-native-feather";
+import Colors from "../../styles/colorScheme";
+import {
+  deleteComment,
+  updateComments,
+} from "../database/guideRepository/comments/commentsRepository";
 
 interface CommentsComponentProps {
   guide: Guide;
   authUsername: string;
-  guides: Guide[];
-  setGuides: React.Dispatch<React.SetStateAction<Guide[]>>;
 }
 
-const CommentsComponent = ({
-  guide,
-  guides,
-  setGuides,
-  authUsername,
-}: CommentsComponentProps) => {
-  const [newComment, setNewComment] = useState("");
+const CommentsComponent = ({ guide, authUsername }: CommentsComponentProps) => {
+  const [comment, setComment] = useState<string>("");
+  const [comments, setComments] = useState<Comment[]>([]);
   const { showError } = useError();
 
-  const handleAddComment = (newComment: string) => {
-    if (newComment.length === 0 || newComment === "") {
+  const handleAddComment = (comment: string, authUsername: string) => {
+    if (comment.length === 0 || comment === "") {
       showError("Please enter a comment.");
       return;
     }
 
-    updateGuideComments(
-      guide,
-      guides,
-      setGuides,
-      newComment,
-      authUsername,
-      showError
-    ).then(() => {
-      setNewComment("");
+    const newComment: Comment = {
+      username: authUsername,
+      comment: comment,
+    };
+
+    updateComments(guide, newComment, showError).then(() => {
+      setComments([...comments, newComment]);
+      setComment("");
     });
   };
 
+  const handleDeleteComment = (comment: Comment) => {
+    deleteComment(guide, comment, showError).then(() => {
+      setComments(
+        comments.filter((deletedComment) => deletedComment !== comment)
+      );
+    });
+  };
+
+  useEffect(() => {
+    setComments(guide?.comments || []);
+  }, [guide]);
+
   return (
     <View>
-      {guide?.comments && guide?.comments?.length > 0 ? (
-        guide?.comments?.slice(0, 3).map((comment, index) => (
-          <View style={styles.commentItem} key={index}>
-            <Text style={styles.commentUsername}>{"@" + comment.username}</Text>
-            <Text style={styles.commentText}>{comment.comment}</Text>
+      {comments && comments?.length > 0 ? (
+        comments?.slice(0, 3).map((comment, index) => (
+          <View key={index} style={styles.commentContainer}>
+            <View style={styles.commentItem}>
+              <Text style={styles.commentUsername}>
+                {"@" + comment.username}
+              </Text>
+              <Text style={styles.commentText}>{comment.comment}</Text>
+            </View>
+            {comment.username === authUsername && (
+              <Pressable
+                onPress={() => {
+                  handleDeleteComment(comment);
+                }}
+              >
+                <Trash width={18} height={18} color={Colors.red} />
+              </Pressable>
+            )}
           </View>
         ))
       ) : (
-        <Text style={styles.noCommentsText}>No comments</Text>
+        <Text style={styles.noCommentsText}>No comments yet.</Text>
       )}
 
       <View style={styles.inputContainer}>
@@ -63,16 +86,19 @@ const CommentsComponent = ({
           style={styles.input}
           multiline={true}
           placeholder="Add a comment..."
-          onChangeText={(text) => setNewComment(text)}
-          value={newComment}
+          placeholderTextColor={Colors.gray}
+          onChangeText={(text) => setComment(text)}
+          value={comment}
           maxLength={100}
         />
-        <TouchableOpacity onPress={() => handleAddComment(newComment)}>
+        <TouchableOpacity
+          onPress={() => handleAddComment(comment, authUsername)}
+        >
           <MessageCircle
             style={styles.sendIcon}
             width={25}
             height={25}
-            color={"#007AFF"}
+            color={Colors.blue}
           />
         </TouchableOpacity>
       </View>
@@ -81,23 +107,32 @@ const CommentsComponent = ({
 };
 
 const styles = StyleSheet.create({
-  commentItem: {
+  commentContainer: {
+    flexDirection: "row",
     marginVertical: 10,
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  commentItem: {
+    flexDirection: "column",
+    maxWidth: "80%",
   },
   commentUsername: {
-    fontSize: 12,
-    color: "gray",
-    fontWeight: "500",
+    fontSize: 13,
+    color: Colors.gray,
+    fontWeight: "bold",
     marginBottom: 5,
   },
   commentText: {
-    fontSize: 14,
-    fontWeight: "400",
+    fontSize: 15,
+    fontWeight: "normal",
+    color: Colors.black,
   },
   noCommentsText: {
     fontSize: 15,
-    fontWeight: "400",
+    fontWeight: "normal",
     marginTop: 10,
+    color: Colors.gray,
   },
   inputContainer: {
     flexDirection: "row",
@@ -106,13 +141,13 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: "#f7f7f7",
+    backgroundColor: Colors.white,
     borderRadius: 10,
     padding: 10,
     maxHeight: 70,
   },
   sendIcon: {
-    marginHorizontal: 10,
+    marginLeft: 20,
   },
 });
 

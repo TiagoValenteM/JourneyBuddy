@@ -2,6 +2,7 @@ import React from "react";
 import { Pressable, StyleSheet } from "react-native";
 import { Animated } from "react-native";
 import { ArrowLeft, Menu } from "react-native-feather";
+import Colors from "../../../styles/colorScheme";
 
 interface DynamicHeaderProps {
   scrollY: Animated.ValueXY;
@@ -25,7 +26,7 @@ const DynamicHeader = ({
         ...headerStyles.header,
         backgroundColor: scrollY.y.interpolate({
           inputRange: [100, screenWidth - 50],
-          outputRange: ["rgba(255, 255, 255,0)", "rgba(242,243,243,1)"],
+          outputRange: ["rgba(255, 255, 255,0)", Colors.white],
           extrapolate: "clamp",
         }),
       }}
@@ -49,14 +50,14 @@ const DynamicHeader = ({
           onPress={() => navigation.goBack()}
           style={headerStyles.button}
         >
-          <ArrowLeft width={22} height={22} color={"white"} />
+          <ArrowLeft width={22} height={22} color={Colors.white} />
         </Pressable>
         {authUserId === guideAuthId && (
           <Pressable
             onPress={() => setModalVisible(true)}
             style={headerStyles.button}
           >
-            <Menu width={22} height={22} color={"white"} />
+            <Menu width={22} height={22} color={Colors.white} />
           </Pressable>
         )}
       </Animated.View>

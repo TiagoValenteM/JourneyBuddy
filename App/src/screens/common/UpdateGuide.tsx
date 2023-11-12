@@ -11,6 +11,7 @@ import { Guide } from "../../models/guides";
 import { selectPictures } from "../../services/ImageUpload";
 import { useGuide } from "../../context/GuideContext";
 import { MapPin, PlusCircle, Trash } from "react-native-feather";
+import MissingWarning from "../../components/warnings/MissingWarning";
 
 interface EditGuideScreenProps {
   navigation: any;

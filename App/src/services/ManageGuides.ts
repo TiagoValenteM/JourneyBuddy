@@ -1,5 +1,6 @@
 import {
   arrayRemove,
+  arrayUnion,
   collection,
   deleteDoc,
   doc,
@@ -16,13 +17,8 @@ import { Guide } from "../models/guides";
 import { uploadPicture } from "./ImageUpload";
 import React from "react";
 import UserProfile from "../models/userProfiles";
-import {
-  handleSaveGuide,
-  handleUnsavedGuide,
-} from "../database/userRepository";
-import { updateGuideLocally } from "./guidesService";
 
-const checkGuide = (guide: Guide, showError: any) => {
+const checkGuideFields = (guide: Guide, showError: any) => {
   if (guide?.title === "") {
     showError("Please enter a title.");
     return false;
@@ -46,12 +42,12 @@ const checkGuide = (guide: Guide, showError: any) => {
   return true;
 };
 
-const getGuidesUser = async (user_id: string | undefined): Promise<Guide[]> => {
+const getGuidesUser = async (userID: string | undefined): Promise<Guide[]> => {
   try {
     const userGuidesCollectionRef = collection(db, "guides");
     const queryFindUserGuides = query(
       userGuidesCollectionRef,
-      where("user_id", "==", user_id),
+      where("user_id", "==", userID),
       orderBy("dateCreated", "desc")
     );
 
@@ -70,12 +66,13 @@ const getGuidesUser = async (user_id: string | undefined): Promise<Guide[]> => {
 };
 
 const getSavedGuides = async (
-  savedGuideUIDs: string[] | undefined
+  guideIDs: string[] | undefined
 ): Promise<Guide[]> => {
   try {
     const guidesQuery = query(
       collection(db, "guides"),
-      where("uid", "in", savedGuideUIDs)
+      where("uid", "in", guideIDs),
+      orderBy("dateCreated", "desc")
     );
 
     const querySnapshotGuides = await getDocs(guidesQuery);
@@ -89,57 +86,6 @@ const getSavedGuides = async (
   } catch (error) {
     console.log("Error retrieving user guides:", error);
     return [];
-  }
-};
-
-const updateGuideComments = async (
-  guide: Guide,
-  guides: Guide[],
-  setGuides: React.Dispatch<React.SetStateAction<Guide[]>>,
-  comment: string,
-  authUserUsername: string,
-  showError: any
-) => {
-  const newComment = [
-    {
-      username: authUserUsername,
-      comment: comment,
-    },
-  ];
-  const guidesCollectionRef = collection(db, "guides");
-  const queryFindCurrentGuide = query(
-    guidesCollectionRef,
-    where("uid", "==", guide.uid)
-  );
-
-  const querySnapshot = await getDocs(queryFindCurrentGuide);
-
-  if (!querySnapshot.empty) {
-    const guideRef = doc(db, "guides", querySnapshot.docs[0].id);
-
-    try {
-      const guideDoc = await getDoc(guideRef);
-      const existingComments = guideDoc.data()?.comments || [];
-
-      const updatedComments = [...existingComments, ...newComment];
-
-      await updateDoc(guideRef, {
-        comments: updatedComments,
-      });
-
-      const updatedGuide: Guide = {
-        ...guide,
-        comments: updatedComments,
-      };
-
-      await updateGuideLocally(updatedGuide, guides, setGuides);
-    } catch (error) {
-      console.log("Error updating comments:", error);
-      showError("Error updating comments. Please try again.");
-    }
-  } else {
-    console.log("No matching guide found");
-    showError("No matching guide to comment. Please try again.");
   }
 };
 
@@ -239,98 +185,10 @@ const handleUpdateGuide = async (
   }
 };
 
-const handleCreateGuide = async (
-  setAuthenticatedUser: any,
-  authenticatedUser: UserProfile | undefined,
-  guide: Guide,
-  guides: Guide[],
-  setGuides: any,
-  showError: any
-) => {
-  try {
-    // 1 - Upload images
-    if (guide?.pictures?.length > 0) {
-      console.log(guide?.pictures);
-      const imagesUrl = await Promise.all(
-        guide?.pictures?.map(async (picture: string) =>
-          uploadPicture(guide?.uid, picture)
-        )
-      ).catch((err) => {
-        console.error(err);
-        showError("Error uploading guide images. Please try again later.");
-      });
-
-      // Return early if imagesUrl is not available
-      if (imagesUrl?.length === 0) {
-        showError("Error uploading guide images. Please try again later.");
-        return;
-      }
-
-      // 2 - Upload guide
-      await setDoc(doc(db, "guides", guide?.uid), {
-        ...guide,
-        pictures: imagesUrl,
-      });
-
-      // 3 - Update user's guides
-      const userDocRef = doc(db, "user_profiles", authenticatedUser!.uid);
-      const userDocData = (await getDoc(userDocRef)).data();
-      const userGuides = userDocData?.guides || [];
-      const updatedGuides = [...userGuides, guide?.uid];
-
-      await updateDoc(userDocRef, {
-        guides: updatedGuides,
-      });
-
-      const updatedUser: UserProfile | any = {
-        ...(authenticatedUser || {}),
-        guides: updatedGuides,
-      };
-
-      setAuthenticatedUser(updatedUser);
-
-      const updatedGuidesOnDevice = [...guides, guide];
-      setGuides(updatedGuidesOnDevice);
-
-      console.log("Guides updated successfully!");
-    }
-  } catch (error) {
-    console.log("Error creating guide:", error);
-    showError("Error creating guide. Please try again later.");
-  }
-};
-
-const checkSelectGuide = (
-  selectedGuideUID: string,
-  authenticatedUser: UserProfile | undefined,
-  setAuthenticatedUser: any
-) => {
-  if (
-    authenticatedUser?.savedGuides?.some(
-      (guideUID) => guideUID === selectedGuideUID
-    )
-  ) {
-    handleUnsavedGuide(
-      selectedGuideUID,
-      authenticatedUser,
-      setAuthenticatedUser
-    ).then();
-  } else {
-    handleSaveGuide(
-      selectedGuideUID,
-      authenticatedUser,
-      setAuthenticatedUser
-    ).then();
-  }
-};
-
 export {
-  checkGuide,
+  checkGuideFields,
   getGuidesUser,
   getSavedGuides,
-  updateGuideComments,
   deleteGuide,
   handleUpdateGuide,
-  handleCreateGuide,
-  checkSelectGuide,
 };

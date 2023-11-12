@@ -11,11 +11,13 @@ import {
   TouchableWithoutFeedback,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../config/firebase";
 import { useError } from "../../hooks/useError";
+import Colors from "../../../styles/colorScheme";
 
 interface SignInViewProps {
   navigation: any;
@@ -49,168 +51,169 @@ function SignInView({ navigation }: SignInViewProps) {
     <TouchableWithoutFeedback onPress={handleScreenPress}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1, backgroundColor: "#dfe0e3" }}
+        style={{ flex: 1 }}
       >
-        <View style={{ flex: 1, backgroundColor: "#dfe0e3" }}>
-          <StatusBar barStyle="light-content" backgroundColor="#1c7ef3" />
-          <LinearGradient
-            colors={["#1c7ef3", "#1cbafa", "#dfe0e3"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 0, y: 1 }}
+        <StatusBar barStyle="light-content" backgroundColor={Colors.blue} />
+        <LinearGradient
+          colors={[Colors.blue, Colors.lightBlue, Colors.white]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 0.9 }}
+          style={{
+            flex: 1,
+            paddingHorizontal: 20,
+            justifyContent: "center",
+          }}
+        >
+          <View
             style={{
               flex: 1,
-              paddingHorizontal: 25,
-              justifyContent: "center",
+              flexDirection: "row",
               alignItems: "center",
+              justifyContent: "center",
             }}
           >
-            <View
+            <Image
+              source={{
+                uri: "https://i.imgur.com/j7qbzry.jpg",
+              }}
               style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginBottom: 30,
+                width: 50,
+                height: 50,
+                borderRadius: 10,
+                marginRight: 15,
+              }}
+            />
+            <Text
+              style={{
+                fontSize: 26,
+                color: Colors.white,
+                fontWeight: "bold",
               }}
             >
-              <Image
-                source={{
-                  uri: "https://i.imgur.com/j7qbzry.jpg",
-                }}
-                style={{
-                  width: 60,
-                  height: 60,
-                  borderRadius: 10,
-                  marginRight: 15,
-                }}
-              />
-              <Text style={{ fontSize: 26, color: "white", fontWeight: "700" }}>
-                JourneyBuddy
-              </Text>
-            </View>
-          </LinearGradient>
+              Journey Buddy
+            </Text>
+          </View>
 
           <SafeAreaView style={{ flex: 1 }}>
             <View
               style={{
-                justifyContent: "flex-start",
-                alignItems: "center",
-                marginTop: -30,
+                backgroundColor: Colors.white,
+                borderRadius: 10,
+                padding: 20,
+                shadowColor: Colors.black,
+                shadowOpacity: 0.1,
+                shadowOffset: {
+                  width: 3,
+                  height: 3,
+                },
+                elevation: 3,
               }}
             >
-              <View
-                style={{
-                  backgroundColor: "white",
-                  borderRadius: 15,
-                  padding: 20,
-                  width: "90%",
-                  shadowColor: "#000",
-                  shadowOpacity: 0.1,
-                  shadowOffset: {
-                    width: 1,
-                    height: 3,
-                  },
-                  elevation: 3,
-                }}
-              >
-                <View style={{ marginBottom: 20 }}>
-                  <Text style={{ fontSize: 16, fontWeight: "500" }}>Email</Text>
-                  <TextInput
-                    maxLength={25}
-                    placeholder="Email"
-                    style={{
-                      padding: 10,
-                      borderBottomWidth: 2,
-                      borderBottomColor: "#dfe0e3",
-                      marginTop: 10,
-                    }}
-                    value={value.email}
-                    onChangeText={(text) => setValue({ ...value, email: text })}
-                  />
-                </View>
-                <View style={{ marginBottom: 20 }}>
-                  <Text style={{ fontSize: 16, fontWeight: "500" }}>
-                    Password
-                  </Text>
-                  <TextInput
-                    maxLength={25}
-                    placeholder="Password"
-                    style={{
-                      padding: 10,
-                      borderBottomWidth: 2,
-                      borderBottomColor: "#dfe0e3",
-                      marginTop: 10,
-                    }}
-                    onChangeText={(text) =>
-                      setValue({ ...value, password: text })
-                    }
-                    secureTextEntry={true}
-                  />
-                </View>
+              <View style={{ marginVertical: 10 }}>
+                <Text
+                  style={{
+                    fontSize: 15,
+                    fontWeight: "bold",
+                    color: Colors.darkGray,
+                  }}
+                >
+                  Email
+                </Text>
+                <TextInput
+                  maxLength={25}
+                  placeholder="Email"
+                  style={{
+                    padding: 5,
+                    borderBottomWidth: 1,
+                    borderBottomColor: Colors.lightGray,
+                    marginTop: 10,
+                    color: Colors.gray,
+                  }}
+                  value={value.email}
+                  onChangeText={(text) => setValue({ ...value, email: text })}
+                />
               </View>
+              <View style={{ marginVertical: 10 }}>
+                <Text
+                  style={{
+                    fontSize: 15,
+                    fontWeight: "bold",
+                    color: Colors.darkGray,
+                  }}
+                >
+                  Password
+                </Text>
+                <TextInput
+                  maxLength={25}
+                  placeholder="Password"
+                  style={{
+                    padding: 5,
+                    borderBottomWidth: 1,
+                    borderBottomColor: Colors.lightGray,
+                    marginTop: 10,
+                    color: Colors.gray,
+                  }}
+                  onChangeText={(text) =>
+                    setValue({ ...value, password: text })
+                  }
+                  secureTextEntry={true}
+                />
+              </View>
+            </View>
 
-              <LinearGradient
-                colors={["#1c7ef3", "#1cbafa"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
+            <TouchableOpacity
+              onPress={signIn}
+              style={{
+                borderRadius: 10,
+                backgroundColor: Colors.blue,
+                marginVertical: 20,
+                paddingVertical: 10,
+              }}
+            >
+              <Text
                 style={{
-                  borderRadius: 13,
-                  marginVertical: 20,
-                  height: 40,
-                  justifyContent: "center",
-                  alignItems: "center",
-                  width: "90%",
+                  color: "white",
+                  fontSize: 16,
+                  fontWeight: "bold",
+                  textAlign: "center",
                 }}
               >
-                <TouchableOpacity onPress={signIn} style={{ width: "100%" }}>
-                  <Text
-                    style={{
-                      color: "white",
-                      fontSize: 16,
-                      fontWeight: "bold",
-                      textAlign: "center",
-                    }}
-                  >
-                    Sign In
-                  </Text>
-                </TouchableOpacity>
-              </LinearGradient>
+                Sign In
+              </Text>
+            </TouchableOpacity>
 
-              <TouchableOpacity
+            <View
+              style={{
+                flexDirection: "row",
+                gap: 5,
+                alignItems: "center",
+                marginVertical: 20,
+                alignSelf: "center",
+              }}
+            >
+              <Text
                 style={{
-                  backgroundColor: "transparent",
-                  borderRadius: 13,
-                  marginVertical: 15,
-                  height: 40,
-                  justifyContent: "center",
-                  alignItems: "center",
-                  width: "70%",
+                  fontSize: 14,
+                  fontWeight: "bold",
+                  color: Colors.gray,
                 }}
-                onPress={() => navigation.navigate("SignUp")}
               >
-                <View style={{ flexDirection: "row", gap: 5 }}>
-                  <Text
-                    style={{
-                      fontSize: 16,
-                      fontWeight: "600",
-                      textAlign: "center",
-                    }}
-                  >
-                    New here?
-                  </Text>
-                  <Text
-                    style={{
-                      color: "#1c7ef3",
-                      fontSize: 16,
-                      fontWeight: "600",
-                      textAlign: "center",
-                    }}
-                  >
-                    Create an account
-                  </Text>
-                </View>
-              </TouchableOpacity>
+                New here?
+              </Text>
+              <Pressable onPress={() => navigation.navigate("SignUp")}>
+                <Text
+                  style={{
+                    color: Colors.blue,
+                    fontSize: 16,
+                    fontWeight: "bold",
+                  }}
+                >
+                  Create an account
+                </Text>
+              </Pressable>
             </View>
           </SafeAreaView>
-        </View>
+        </LinearGradient>
       </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
   );

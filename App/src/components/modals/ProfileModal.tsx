@@ -21,13 +21,13 @@ const ProfileModal = ({ navigation, setModalVisible }: ProfileModalProps) => {
   const snapPoints = ["30%", "50%"];
 
   const handleBackdropPress = () => {
-    bottomSheetRef.current?.close();
     setModalVisible(false);
+    bottomSheetRef.current?.close();
   };
 
   const handleSavedPress = () => {
-    bottomSheetRef.current?.close();
     setModalVisible(false);
+    bottomSheetRef.current?.close();
     navigation.navigate("Saved");
   };
 

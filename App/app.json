@@ -38,11 +38,14 @@
           "photosPermission": "Allow JourneyBuddy to access your photos",
           "cameraPermission": "Allow JourneyBuddy to access your camera",
           "allowsEditing": true,
-          "aspect": [
-            4,
-            3
-          ],
-          "quality": 1
+          "quality": 0.8
+        }
+      ], [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow Journey Buddy to access your photos.",
+          "savePhotosPermission": "Allow Journey Buddy to save photos.",
+          "isAccessMediaLocationEnabled": true
         }
       ]
     ],

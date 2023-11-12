@@ -1,246 +1,134 @@
 import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { useCurrentUser } from "../../context/currentUserContext";
-import { useAuthenticatedUser } from "../../context/authenticatedUserContext";
-import { followUser, unfollowUser } from "../../database/userRepository";
+import { Pressable, Text, View } from "react-native";
 import CachedImage from "../images/CachedImage";
+import { LinearGradient } from "expo-linear-gradient";
+import Colors from "../../../styles/colorScheme";
+import UserProfile from "../../models/userProfiles";
 
 interface ProfileIdentifierProps {
-  navigation: any;
-  isAuthUser: boolean;
+  user: UserProfile;
+  setFollowBtmSheetVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  setDataIDs: React.Dispatch<React.SetStateAction<string[]>>;
+  setIsFollowers: React.Dispatch<React.SetStateAction<boolean>>;
 }
 const ProfileIdentifier: React.FC<ProfileIdentifierProps> = ({
-  navigation,
-  isAuthUser,
+  user,
+  setFollowBtmSheetVisible,
+  setDataIDs,
+  setIsFollowers,
 }) => {
-  const { currentUser, setCurrentUser } = useCurrentUser();
-  const { authenticatedUser, setAuthenticatedUser } = useAuthenticatedUser();
-
-  const handleFollow = async () => {
-    try {
-      await followUser(
-        currentUser?.uid,
-        authenticatedUser!,
-        currentUser!,
-        setAuthenticatedUser,
-        setCurrentUser
-      );
-    } catch (error) {
-      console.error("Error handling follow:", error);
-    }
-  };
-
-  const handleUnfollow = async () => {
-    try {
-      await unfollowUser(
-        currentUser?.uid,
-        authenticatedUser!,
-        currentUser!,
-        setAuthenticatedUser,
-        setCurrentUser
-      );
-    } catch (error) {
-      console.error("Error handling follow:", error);
-    }
-  };
-
-  return isAuthUser ? (
-    <View style={identifierStyles.container}>
-      <View style={identifierStyles.photoDetailsContainer}>
-        <CachedImage
-          source={{
-            uri: authenticatedUser!.profilePicturePath,
-          }}
-          style={identifierStyles.profilePicture}
-        ></CachedImage>
-        <View style={identifierStyles.indicatorContainer}>
-          <Text style={identifierStyles.indicatorNumber}>
-            {authenticatedUser?.guides?.length || "0"}
-          </Text>
-          <Text style={identifierStyles.indicatorCategory}>Guides</Text>
-        </View>
-        <Pressable
+  return (
+    <View
+      style={{
+        flex: 1,
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        marginVertical: 20,
+      }}
+    >
+      <View style={{ flexDirection: "column", alignItems: "center" }}>
+        <LinearGradient
+          colors={[Colors.blue, Colors.lightBlue, Colors.lightGray]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0.75, y: 1 }}
           style={{
-            flex: 1,
+            width: 105,
+            height: 105,
+            borderRadius: 55,
             justifyContent: "center",
             alignItems: "center",
           }}
-          onPress={() => {
-            setCurrentUser(authenticatedUser);
-            navigation.navigate("FollowInteraction", { screen: "Followers" });
-          }}
         >
-          <Text style={identifierStyles.indicatorNumber}>
-            {authenticatedUser?.followers?.length || "0"}
-          </Text>
-          <Text style={identifierStyles.indicatorCategory}>Followers</Text>
-        </Pressable>
-        <Pressable
+          <CachedImage
+            source={{
+              uri: user?.profilePicturePath,
+            }}
+            style={{
+              width: 100,
+              height: 100,
+              borderRadius: 50,
+              borderWidth: 2,
+              borderColor: Colors.white,
+            }}
+          ></CachedImage>
+        </LinearGradient>
+        <Text
           style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-          onPress={() => {
-            setCurrentUser(authenticatedUser);
-            navigation.navigate("FollowInteraction", { screen: "Following" });
+            fontWeight: "bold",
+            fontSize: 15,
+            color: Colors.darkGray,
+            marginVertical: 10,
           }}
         >
-          <Text style={identifierStyles.indicatorNumber}>
-            {authenticatedUser?.following?.length || "0"}{" "}
-          </Text>
-          <Text style={identifierStyles.indicatorCategory}>Following</Text>
-        </Pressable>
-      </View>
-      <View style={identifierStyles.nameActionContainer}>
-        <Text style={identifierStyles.username}>
-          {authenticatedUser?.fullName}
+          {user?.fullName}
         </Text>
-        <Pressable
-          style={[identifierStyles.button, { backgroundColor: "#dfe0e3" }]}
-          onPress={() => {
-            navigation.navigate("Edit Profile");
-          }}
-        >
-          <Text style={identifierStyles.buttonText}>Edit Profile</Text>
-        </Pressable>
-      </View>
-    </View>
-  ) : (
-    <View style={identifierStyles.container}>
-      <View style={identifierStyles.photoDetailsContainer}>
-        <CachedImage
-          source={{
-            uri: currentUser!.profilePicturePath,
-          }}
-          style={identifierStyles.profilePicture}
-        ></CachedImage>
-        <View style={identifierStyles.indicatorContainer}>
-          <Text style={identifierStyles.indicatorNumber}>
-            {currentUser?.guides?.length || "0"}
-          </Text>
-          <Text style={identifierStyles.indicatorCategory}>Guides</Text>
-        </View>
-        <Pressable
+        <View
           style={{
-            flex: 1,
-            justifyContent: "center",
+            flexDirection: "row",
+            justifyContent: "space-between",
             alignItems: "center",
-          }}
-          onPress={() => {
-            navigation.navigate("FollowInteraction", { screen: "Followers" });
+            marginVertical: 15,
           }}
         >
-          <Text style={identifierStyles.indicatorNumber}>
-            {currentUser?.followers?.length || "0"}
-          </Text>
-          <Text style={identifierStyles.indicatorCategory}>Followers</Text>
-        </Pressable>
-        <Pressable
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-          onPress={() => {
-            navigation.navigate("FollowInteraction", { screen: "Following" });
-          }}
-        >
-          <Text style={identifierStyles.indicatorNumber}>
-            {currentUser?.following?.length || "0"}{" "}
-          </Text>
-          <Text style={identifierStyles.indicatorCategory}>Following</Text>
-        </Pressable>
-      </View>
-      {currentUser?.uid === authenticatedUser?.uid ? (
-        <View style={identifierStyles.nameActionContainer}>
-          <Text style={identifierStyles.username}>{currentUser?.fullName}</Text>
+          <View
+            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+          >
+            <Text style={{ fontWeight: "bold", fontSize: 16 }}>
+              {user?.guides?.length || "0"}
+            </Text>
+            <Text
+              style={{ fontWeight: "normal", fontSize: 13, color: Colors.gray }}
+            >
+              Guides
+            </Text>
+          </View>
           <Pressable
-            style={[identifierStyles.button, { backgroundColor: "#dfe0e3" }]}
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
             onPress={() => {
-              navigation.navigate("Edit Profile");
+              setIsFollowers(true);
+              setDataIDs(user?.followers);
+              setFollowBtmSheetVisible(true);
             }}
           >
-            <Text style={identifierStyles.buttonText}>Edit Profile</Text>
+            <Text style={{ fontWeight: "bold", fontSize: 16 }}>
+              {user?.followers?.length || "0"}
+            </Text>
+            <Text
+              style={{ fontWeight: "normal", fontSize: 13, color: Colors.gray }}
+            >
+              Followers
+            </Text>
           </Pressable>
-        </View>
-      ) : Array.isArray(authenticatedUser?.following) &&
-        authenticatedUser?.following?.includes(currentUser!!.uid) ? (
-        <View style={identifierStyles.nameActionContainer}>
-          <Text style={identifierStyles.username}>{currentUser?.fullName}</Text>
           <Pressable
-            style={[identifierStyles.button, { backgroundColor: "#dfe0e3" }]}
-            onPress={handleUnfollow}
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+            onPress={() => {
+              setIsFollowers(false);
+              setDataIDs(user?.following);
+              setFollowBtmSheetVisible(true);
+            }}
           >
-            <Text style={identifierStyles.buttonText}>Unfollow</Text>
-          </Pressable>
-        </View>
-      ) : (
-        <View style={identifierStyles.nameActionContainer}>
-          <Text style={identifierStyles.username}>{currentUser?.fullName}</Text>
-          <Pressable
-            style={[identifierStyles.button, { backgroundColor: "#007AFF" }]}
-            onPress={handleFollow}
-          >
-            <Text style={[identifierStyles.buttonText, { color: "white" }]}>
-              Follow
+            <Text style={{ fontWeight: "bold", fontSize: 16 }}>
+              {user?.following?.length || "0"}{" "}
+            </Text>
+            <Text
+              style={{ fontWeight: "normal", fontSize: 13, color: Colors.gray }}
+            >
+              Following
             </Text>
           </Pressable>
         </View>
-      )}
+      </View>
     </View>
   );
 };
 
 export default ProfileIdentifier;
-
-const identifierStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    marginVertical: 20,
-  },
-  photoDetailsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  button: {
-    borderRadius: 10,
-    height: 35,
-    width: 100,
-    justifyContent: "center",
-  },
-  buttonText: {
-    fontSize: 14,
-    fontWeight: "600",
-    textAlign: "center",
-  },
-  username: {
-    fontSize: 16,
-    fontWeight: "700",
-    marginLeft: 15,
-  },
-  profilePicture: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: "#dfe0e3",
-  },
-  indicatorContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  indicatorNumber: { fontWeight: "700", fontSize: 16 },
-  indicatorCategory: { fontWeight: "400", fontSize: 14 },
-  nameActionContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    width: "100%",
-    marginVertical: 15,
-  },
-});

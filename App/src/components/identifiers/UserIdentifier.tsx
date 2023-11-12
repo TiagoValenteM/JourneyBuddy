@@ -1,136 +1,176 @@
 import { useAuthenticatedUser } from "../../context/authenticatedUserContext";
 import React, { useEffect } from "react";
-import { Image, View, Text, StyleSheet, Pressable } from "react-native";
-import { followUser, getUserByUID } from "../../database/userRepository";
-import { useCurrentUser } from "../../context/currentUserContext";
+import { View, Text, StyleSheet, Pressable } from "react-native";
+import { getUserData } from "../../database/userRepository/userRepository";
 import CachedImage from "../images/CachedImage";
+import Colors from "../../../styles/colorScheme";
+import { LinearGradient } from "expo-linear-gradient";
+import {
+  follow,
+  unfollow,
+} from "../../database/userRepository/follow/followRepository";
+import { useError } from "../../hooks/useError";
+import UserProfile from "../../models/userProfiles";
 
 interface UserIdentifierProps {
-  selectedUsername: string;
-  selectedUserUid: string;
-  homepage: boolean;
-  navigation?: any;
+  username: string;
+  userID: string;
+  bottomSheetTrigger?: {
+    showBottomSheet: () => void;
+    hideBottomSheet: () => void;
+  };
+  navigation: any;
 }
 
 const UserIdentifier: React.FC<UserIdentifierProps> = ({
-  selectedUsername,
-  selectedUserUid,
-  homepage,
+  username,
+  userID,
+  bottomSheetTrigger,
   navigation,
 }) => {
-  const { currentUser, setCurrentUser } = useCurrentUser();
-  const [username, setUsername] = React.useState("");
-  const [profilePicture, setProfilePicture] = React.useState("");
+  const [user, setUser] = React.useState<UserProfile>();
+  const [userPicture, setUserPicture] = React.useState<string | undefined>("");
   const { authenticatedUser, setAuthenticatedUser } = useAuthenticatedUser();
-  const [fetchingTrigger, setFetchingTrigger] = React.useState(false);
-  const isFollowing =
-    (Array.isArray(authenticatedUser?.following) &&
-      authenticatedUser?.following.includes(selectedUserUid)) ||
-    authenticatedUser?.uid === selectedUserUid;
+  const isFollowing = authenticatedUser?.following?.includes(userID);
+  const isNotFollowing = !isFollowing;
+  const { showError } = useError();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const selectedUser = await getUserByUID(selectedUserUid);
-
-        setUsername(selectedUser!!.username);
-        setProfilePicture(selectedUser!!.profilePicturePath);
-      } catch (error) {
-        console.error("Error fetching user profile picture:", error);
-      }
-    };
-
-    if (authenticatedUser?.username !== selectedUsername) {
-      fetchData();
-    } else {
-      setUsername(authenticatedUser.username);
-      setProfilePicture(authenticatedUser.profilePicturePath);
-    }
-  }, [authenticatedUser, selectedUsername, fetchingTrigger]);
-
-  const handleFollow = async () => {
-    try {
-      await followUser(
-        selectedUserUid,
-        authenticatedUser!!,
-        currentUser!,
-        setAuthenticatedUser,
-        setCurrentUser
-      );
-      setFetchingTrigger(true);
-    } catch (error) {
-      console.error("Error handling follow:", error);
+  const navigateToProfile = () => {
+    navigation.navigate("Profile", { user: user });
+    if (bottomSheetTrigger) {
+      bottomSheetTrigger.hideBottomSheet();
     }
   };
 
-  return profilePicture && username ? (
-    <View style={identifierStyles.container}>
-      <View style={identifierStyles.userPictureContainer}>
-        <CachedImage
-          style={identifierStyles.profilePicture}
-          source={{ uri: profilePicture }}
-        />
-        {homepage ? (
-          <Pressable
-            onPress={async () => {
-              try {
-                const selectedUser = await getUserByUID(selectedUserUid);
-                setCurrentUser(selectedUser);
-                navigation.navigate("ProfileHomepage");
-              } catch (error) {
-                console.error("Error fetching user data:", error);
-              }
+  const handleFollow = async () => {
+    if (authenticatedUser) {
+      follow(authenticatedUser, userID, setAuthenticatedUser, showError)
+        .then(() => {
+          const updatedUser: UserProfile = {
+            ...user,
+            followers: [...user!.followers, authenticatedUser?.uid],
+          } as UserProfile;
+          setUser(updatedUser);
+        })
+        .catch((error) => {
+          console.error("Error handling follow:", error);
+        });
+    }
+  };
+
+  const handleUnfollow = async () => {
+    if (authenticatedUser) {
+      unfollow(authenticatedUser, userID, setAuthenticatedUser, showError)
+        .then(() => {
+          const updatedUser: UserProfile = {
+            ...user,
+            followers: user?.followers.filter(
+              (followerID) => followerID !== authenticatedUser?.uid
+            ),
+          } as UserProfile;
+          setUser(updatedUser);
+        })
+        .catch((error) => {
+          console.error("Error handling follow:", error);
+        });
+    }
+  };
+
+  useEffect(() => {
+    if (authenticatedUser?.uid === userID) {
+      setUserPicture(authenticatedUser?.profilePicturePath);
+    }
+
+    getUserData(userID).then((user) => {
+      setUser(user);
+      setUserPicture(user?.profilePicturePath);
+    });
+  }, []);
+
+  return (
+    <View style={styles.container}>
+      <Pressable
+        style={styles.userPictureContainer}
+        onPress={navigateToProfile}
+      >
+        <LinearGradient
+          colors={[Colors.blue, Colors.lightBlue, Colors.lightGray]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0.75, y: 1 }}
+          style={styles.profilePictureBackground}
+        >
+          <CachedImage
+            source={{
+              uri: userPicture!,
             }}
-          >
-            <Text style={identifierStyles.username}>{username}</Text>
+            style={styles.profilePicture}
+          />
+        </LinearGradient>
+        <Text style={styles.username}>{username}</Text>
+      </Pressable>
+      <View style={styles.followContainer}>
+        {isNotFollowing && authenticatedUser?.uid !== userID && (
+          <Pressable style={styles.followButton} onPress={handleFollow}>
+            <Text style={styles.followButtonText}>Follow</Text>
           </Pressable>
-        ) : (
-          <Text style={identifierStyles.username}>{username}</Text>
+        )}
+
+        {isFollowing && authenticatedUser?.uid !== userID && (
+          <Pressable style={styles.followButton} onPress={handleUnfollow}>
+            <Text style={styles.followButtonText}>Unfollow</Text>
+          </Pressable>
         )}
       </View>
-      {!isFollowing && authenticatedUser?.uid !== selectedUserUid ? (
-        <Pressable style={identifierStyles.followButton} onPress={handleFollow}>
-          <Text style={identifierStyles.followButtonText}>Follow</Text>
-        </Pressable>
-      ) : null}
     </View>
-  ) : null;
+  );
 };
 
 export default UserIdentifier;
 
-const identifierStyles = StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 6,
   },
   userPictureContainer: {
     flexDirection: "row",
     alignItems: "center",
+    maxWidth: "70%",
   },
-  followButton: {
-    backgroundColor: "#dfe0e3",
-    borderRadius: 10,
-    height: 35,
-    width: 80,
+  followContainer: {
+    width: "30%",
+    flexDirection: "row",
     justifyContent: "center",
   },
+  followButton: {
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    justifyContent: "center",
+    backgroundColor: Colors.blue,
+    alignItems: "center",
+  },
   followButtonText: {
+    color: Colors.white,
     fontSize: 14,
-    fontWeight: "600",
-    textAlign: "center",
+    fontWeight: "bold",
   },
   username: {
     fontSize: 15,
     fontWeight: "600",
     marginLeft: 15,
   },
+  profilePictureBackground: {
+    width: 65,
+    height: 65,
+    borderRadius: 35,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   profilePicture: {
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: "#dfe0e3",
   },
 });

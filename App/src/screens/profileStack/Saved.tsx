@@ -1,26 +1,36 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   View,
   Text,
   Dimensions,
-  TouchableOpacity,
   StyleSheet,
+  SafeAreaView,
+  Pressable,
+  ScrollView,
+  RefreshControl,
+  TouchableOpacity,
 } from "react-native";
 import { useAuthenticatedUser } from "../../context/authenticatedUserContext";
 import MapView, { Marker } from "react-native-maps";
 import CachedImage from "../../components/images/CachedImage";
 import { Guide, Place } from "../../models/guides";
 import { getSavedGuides } from "../../services/ManageGuides";
-import { MapPin } from "react-native-feather";
+import { MapPin, PlusCircle } from "react-native-feather";
+import Header from "../../components/headers/Header";
+import Colors from "../../../styles/colorScheme";
+import { LinearGradient } from "expo-linear-gradient";
+import MissingWarning from "../../components/warnings/MissingWarning";
+
+const screenWidth = Dimensions.get("window").width;
+const itemWidth = screenWidth / 2 - 20;
 
 interface SavedViewProps {
   navigation: any;
 }
 
-const columnWidth = Dimensions.get("window").width / 2 - 30;
-
 const SavedView = ({ navigation }: SavedViewProps) => {
   const { authenticatedUser } = useAuthenticatedUser();
+  const [refreshing, setRefreshing] = React.useState(false);
   const [savedGuides, setSavedGuides] = React.useState([] as Guide[]);
   const [savedPlaces, setSavedPlaces] = React.useState([] as Place[]);
   const initialRegion = {
@@ -30,145 +40,182 @@ const SavedView = ({ navigation }: SavedViewProps) => {
     longitudeDelta: 0.1,
   };
 
-  React.useEffect(() => {
-    if (
-      authenticatedUser?.savedGuides &&
-      authenticatedUser?.savedGuides.length > 0
-    ) {
+  const onRefresh = () => {
+    setRefreshing(true);
+    if (authenticatedUser) {
       getSavedGuides(authenticatedUser.savedGuides).then((savedGuides) =>
         setSavedGuides(savedGuides)
       );
+      setSavedPlaces(authenticatedUser.savedPlaces);
     }
-    if (
-      authenticatedUser?.savedPlaces &&
-      authenticatedUser?.savedPlaces.length > 0
-    ) {
+
+    setRefreshing(false);
+  };
+
+  useEffect(() => {
+    if (authenticatedUser) {
+      getSavedGuides(authenticatedUser.savedGuides).then((savedGuides) =>
+        setSavedGuides(savedGuides)
+      );
       setSavedPlaces(authenticatedUser?.savedPlaces);
     }
   }, [authenticatedUser?.savedGuides, authenticatedUser?.savedPlaces]);
 
-  return (
-    <View style={styles.container}>
-      {savedGuides.length > 0 || savedPlaces.length > 0 ? (
-        <>
-          {savedGuides.length > 0 ? (
-            <TouchableOpacity
-              onPress={() =>
-                navigation.navigate("SavedGuidesMap", { guides: savedGuides })
-              }
-              style={styles.itemContainer}
-            >
-              <View style={styles.imageContainer}>
-                <CachedImage
-                  source={{ uri: savedGuides[0]?.pictures[0] }}
-                  style={styles.image}
-                />
-              </View>
-              <Text style={styles.title}>Guides</Text>
-            </TouchableOpacity>
-          ) : null}
-
-          {savedPlaces.length > 0 ? (
-            <TouchableOpacity
-              onPress={() =>
-                navigation.navigate("MapOverview", {
-                  places: savedPlaces,
-                })
-              }
-              style={styles.itemContainer}
-            >
-              <MapView
-                style={styles.map}
-                initialRegion={initialRegion}
-                cacheEnabled={true}
-              >
-                <Marker coordinate={savedPlaces[0]?.coordinates}>
-                  <MapPin width={25} height={25} color={"#007AFF"} />
-                </Marker>
-              </MapView>
-              <Text style={styles.title}>Places</Text>
-            </TouchableOpacity>
-          ) : null}
-        </>
-      ) : (
-        <View style={styles.noDataContainer}>
-          <View style={styles.noDataTextContainer}>
-            <Text style={styles.noDataText}>Try saving a place or a guide</Text>
-          </View>
+  const Guides = () => {
+    return (
+      <View style={styles.gridItem}>
+        <Pressable
+          onPress={() =>
+            navigation.navigate("SavedGuidesMap", {
+              guides: savedGuides,
+            })
+          }
+        >
+          <CachedImage
+            source={{ uri: savedGuides[0]?.pictures[0] }}
+            style={styles.image}
+          />
+        </Pressable>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title} ellipsizeMode={"tail"} numberOfLines={1}>
+            Guides
+          </Text>
         </View>
-      )}
-    </View>
+      </View>
+    );
+  };
+
+  const Places = () => {
+    return (
+      <View style={styles.gridItem}>
+        <MapView
+          style={styles.image}
+          initialRegion={initialRegion}
+          cacheEnabled={true}
+          onPress={() =>
+            navigation.navigate("MapOverview", {
+              places: savedPlaces,
+            })
+          }
+        >
+          <Marker coordinate={savedPlaces[0]?.coordinates}>
+            <MapPin
+              width={25}
+              height={25}
+              color={Colors.blue}
+              strokeWidth={3}
+            />
+          </Marker>
+        </MapView>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title} ellipsizeMode={"tail"} numberOfLines={1}>
+            Places
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <Header
+        title={"Saved"}
+        options={false}
+        backButton={true}
+        navigation={navigation}
+      />
+      <ScrollView
+        style={styles.scrollView}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <View style={styles.gridContainer}>
+          {savedGuides.length > 0 && <Guides />}
+          {savedPlaces.length > 0 && <Places />}
+          {savedGuides.length === 0 && savedPlaces.length === 0 && (
+            <MissingWarning text={"No saved items yet."} />
+          )}
+        </View>
+        <Text style={styles.collectionsText}>Collections</Text>
+        <TouchableOpacity style={styles.gridContainer}>
+          <LinearGradient
+            colors={[Colors.blue, Colors.lightBlue, Colors.lightGray]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0.75, y: 1 }}
+            style={[styles.gridItem, styles.gridItemCentered]}
+          >
+            <PlusCircle
+              width={28}
+              height={28}
+              color={Colors.lightGray}
+              style={{
+                marginBottom: 30,
+              }}
+            />
+            <View style={styles.titleContainer}>
+              <Text
+                style={styles.title}
+                ellipsizeMode={"tail"}
+                numberOfLines={1}
+              >
+                Add a collection...
+              </Text>
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  scrollView: { flex: 1, paddingHorizontal: 15 },
+  gridContainer: {
     flex: 1,
-    marginVertical: 20,
-    marginHorizontal: 20,
-    justifyContent: "space-between",
-    alignItems: "flex-start",
+    width: "100%",
     flexDirection: "row",
     flexWrap: "wrap",
+    justifyContent: "space-between",
   },
-  itemContainer: {
+  gridItem: {
+    marginVertical: 5,
+    width: itemWidth,
+    height: itemWidth * 1.25,
+    borderRadius: 10,
+    overflow: "hidden",
+  },
+  gridItemCentered: {
+    justifyContent: "center",
     alignItems: "center",
-  },
-  imageContainer: {
-    marginBottom: 10,
-    width: columnWidth,
-    height: columnWidth * 1.25,
-    backgroundColor: "#dfe0e3",
-    borderRadius: 20,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: {
-      width: 1,
-      height: 3,
-    },
-    elevation: 3,
   },
   image: {
     width: "100%",
     height: "100%",
-    borderRadius: 20,
   },
-  map: {
-    marginBottom: 10,
-    width: columnWidth,
-    height: columnWidth * 1.25,
-    backgroundColor: "#dfe0e3",
-    borderRadius: 20,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: {
-      width: 1,
-      height: 3,
-    },
-    elevation: 3,
-  },
-  marker: {
-    width: 32,
-    height: 32,
-    resizeMode: "contain",
+  titleContainer: {
+    position: "absolute",
+    borderBottomStartRadius: 10,
+    borderBottomEndRadius: 10,
+    bottom: 0,
+    right: 0,
+    left: 0,
+    height: 45,
+    justifyContent: "center",
+    paddingHorizontal: 10,
+    backgroundColor: Colors.lightGray,
   },
   title: {
-    fontWeight: "500",
-    fontSize: 20,
+    fontWeight: "bold",
+    color: Colors.darkGray,
+    fontSize: 16,
+    alignItems: "center",
   },
-  noDataContainer: {
-    flex: 1,
-    justifyContent: "center",
-  },
-  noDataTextContainer: {
-    flexDirection: "column",
-    backgroundColor: "#dfe0e3",
-    borderRadius: 10,
-    padding: 15,
-    marginVertical: 10,
-  },
-  noDataText: {
-    textAlign: "center",
+  collectionsText: {
+    fontWeight: "bold",
+    fontSize: 22,
+    color: Colors.black,
+    marginVertical: 20,
   },
 });
 

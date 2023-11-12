@@ -11,13 +11,8 @@ const updateGuideLocally = async (
   );
 
   if (index !== -1) {
-    // If the guide is found locally, update it in the local guides array
     const updatedGuides = [...guides];
     updatedGuides[index] = guide;
-
-    console.log(updatedGuides);
-
-    // Update the local state variable with the updated guides array
     setGuides(updatedGuides);
   }
 };

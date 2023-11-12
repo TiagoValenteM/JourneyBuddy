@@ -12,8 +12,9 @@ import CarouselLocations from "../../components/carousels/CarouselLocations";
 import CarouselPictures from "../../components/carousels/CarouselPictures";
 import UserIdentifier from "../../components/identifiers/UserIdentifier";
 import GuideIdentifier from "../../components/identifiers/GuideIdentifier";
-import { getGuidesSorted } from "../../database/guidesRepository";
 import { Map } from "react-native-feather";
+import { getGuidesSorted } from "../../database/guideRepository/guideRepository";
+import Colors from "../../../styles/colorScheme";
 
 interface HomepageProps {
   navigation: any;
@@ -25,16 +26,12 @@ function HomepageView({ navigation }: HomepageProps) {
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const pageSize = 7;
 
   const fetchGuides = async () => {
     try {
       if (hasMore) {
         setLoadingMore(true);
-        const guidesResponse = await getGuidesSorted(
-          pageSize,
-          lastVisibleGuide
-        );
+        const guidesResponse = await getGuidesSorted(lastVisibleGuide);
 
         if (guidesResponse?.guides?.length > 0) {
           // Append the fetched guides to the existing ones
@@ -67,18 +64,28 @@ function HomepageView({ navigation }: HomepageProps) {
     fetchGuides().then(() => setRefreshing(false));
   };
 
+  const onEndReached = () => {
+    if (hasMore && !loadingMore) {
+      fetchGuides();
+    }
+  };
+
   const renderGuideItem = ({ item: guide }: { item: Guide }) => (
     <View style={{ marginVertical: 10 }}>
       <View style={{ marginVertical: 10 }}>
         <UserIdentifier
-          selectedUsername={guide?.author}
-          selectedUserUid={guide?.user_id}
-          homepage={true}
+          username={guide?.author}
+          userID={guide?.user_id}
           navigation={navigation}
         />
       </View>
       <View style={{ marginVertical: 10 }}>
-        <GuideIdentifier guide={guide} navigation={navigation} />
+        <GuideIdentifier
+          guide={guide}
+          guides={guides}
+          setGuides={setGuides}
+          navigation={navigation}
+        />
       </View>
       <View style={{ marginVertical: 10 }}>
         <Text style={{ fontSize: 20, fontWeight: "700", marginBottom: 20 }}>
@@ -139,20 +146,21 @@ function HomepageView({ navigation }: HomepageProps) {
               }}
             >
               <Text
-                style={{ textAlign: "center", fontSize: 20, fontWeight: "600" }}
+                style={{
+                  textAlign: "center",
+                  fontSize: 14,
+                  fontWeight: "bold",
+                  color: Colors.darkGray,
+                }}
               >
-                No more guides to load
+                You've all caught up!
               </Text>
             </View>
           );
         }
       }}
-      onEndReached={() => {
-        if (hasMore && !loadingMore) {
-          fetchGuides();
-        }
-      }}
-      onEndReachedThreshold={0.1}
+      onEndReached={onEndReached}
+      onEndReachedThreshold={0.2}
     />
   );
 }

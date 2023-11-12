@@ -1,10 +1,11 @@
 import React from "react";
-import { RefreshControl, ScrollView } from "react-native";
+import { RefreshControl, SafeAreaView, ScrollView } from "react-native";
 import { Guide } from "../../models/guides";
 import GridImage from "../../components/grids/GridImage";
 import { useAuthenticatedUser } from "../../context/authenticatedUserContext";
 import { getSavedGuides } from "../../services/ManageGuides";
 import { useError } from "../../hooks/useError";
+import Header from "../../components/headers/Header";
 
 interface SavedGuidesGridViewProps {
   navigation: any;
@@ -44,22 +45,27 @@ const SavedGuidesGridView = ({
   }, [guides]);
 
   return (
-    <ScrollView
-      style={{
-        flex: 1,
-        marginHorizontal: 20,
-        paddingVertical: 20,
-      }}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      <GridImage
-        guides={savedGuides}
+    <SafeAreaView style={{ flex: 1 }}>
+      <Header
+        title={"Saved Guides"}
         navigation={navigation}
-        allowSaveChange={true}
+        backButton={true}
       />
-    </ScrollView>
+      <ScrollView
+        style={{
+          paddingHorizontal: 15,
+        }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <GridImage
+          guides={savedGuides}
+          navigation={navigation}
+          allowSaving={true}
+        />
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 

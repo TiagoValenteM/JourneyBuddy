@@ -4,16 +4,16 @@ import ProfileView from "../screens/common/Profile";
 import { useCurrentUser } from "../context/currentUserContext";
 import OverviewMapView from "../screens/common/OverviewMap";
 import OverviewGuideView from "../screens/common/OverviewGuide";
-import FollowingTabs from "./FollowingTabs";
 import SearchView from "../screens/searchStack/Search";
+import Colors from "../../styles/colorScheme";
 
 const Stack = createStackNavigator();
 
 function SearchStack() {
-  const { currentUser } = useCurrentUser();
-
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{ cardStyle: { backgroundColor: Colors.white } }}
+    >
       <Stack.Screen
         name="Search"
         component={SearchView}
@@ -22,14 +22,12 @@ function SearchStack() {
         }}
       />
       <Stack.Screen
-        name="ProfileSearch"
-        options={{
-          headerTitle: currentUser?.username,
-          headerBackTitle: "Back",
-        }}
-      >
-        {(props) => <ProfileView {...props} isAuthUser={false} />}
-      </Stack.Screen>
+        name="Profile"
+        options={() => ({
+          headerShown: false,
+        })}
+        component={ProfileView}
+      />
       <Stack.Screen
         name={"MapOverview"}
         options={() => ({
@@ -43,18 +41,6 @@ function SearchStack() {
           headerTitle: "Guide",
         }}
         component={OverviewGuideView}
-      />
-      <Stack.Screen
-        name={"FollowInteraction"}
-        component={FollowingTabs}
-        options={{
-          headerTitle: currentUser?.username,
-          headerBackTitle: "Back",
-          headerStyle: {
-            shadowColor: "transparent",
-            elevation: 0,
-          },
-        }}
       />
     </Stack.Navigator>
   );

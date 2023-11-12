@@ -2,6 +2,7 @@ import { Place } from "../models/guides";
 import { Text, View, StyleSheet } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import { MapPin } from "react-native-feather";
+import Colors from "../../styles/colorScheme";
 
 interface PlacePreviewProps {
   place: Place;
@@ -24,7 +25,12 @@ const PlacePreview = ({ place, onPress }: PlacePreviewProps) => {
           cacheEnabled={true}
         >
           <Marker coordinate={place?.coordinates}>
-            <MapPin width={25} height={25} strokeWidth={3} stroke={"#fb4342"} />
+            <MapPin
+              width={25}
+              height={25}
+              strokeWidth={3}
+              stroke={Colors.blue}
+            />
           </Marker>
         </MapView>
       </View>
@@ -46,14 +52,14 @@ export default PlacePreview;
 const placePreviewStyles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
-    borderRadius: 15,
+    backgroundColor: Colors.lightGray,
+    borderRadius: 10,
     overflow: "hidden",
     zIndex: 1,
   },
   mapContainer: {
-    borderTopStartRadius: 15,
-    borderTopEndRadius: 15,
+    borderTopStartRadius: 10,
+    borderTopEndRadius: 10,
     overflow: "hidden",
     height: 150,
   },
@@ -65,8 +71,9 @@ const placePreviewStyles = StyleSheet.create({
     paddingHorizontal: 15,
   },
   placeName: {
-    fontSize: 14,
-    fontWeight: "500",
+    fontSize: 13,
+    fontWeight: "normal",
+    color: Colors.darkGray,
     overflow: "hidden",
   },
 });

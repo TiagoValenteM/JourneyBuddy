@@ -7,19 +7,19 @@ import OverviewGuideView from "../screens/common/OverviewGuide";
 import { Coordinate, Guide } from "../models/guides";
 import OverviewMapView from "../screens/common/OverviewMap";
 import UpdateGuideView from "../screens/common/UpdateGuide";
-import LocationPickerView from "../screens/common/LocationPicker";
+import LocationPickerView from "../screens/common/PlacePickerMap";
 import { useGuide } from "../context/GuideContext";
 import { useAuthenticatedUser } from "../context/authenticatedUserContext";
 import { useCurrentUser } from "../context/currentUserContext";
-import { checkGuide, handleUpdateGuide } from "../services/ManageGuides";
-import FollowingTabs from "./FollowingTabs";
-import { handleUpdateProfile } from "../database/userRepository";
+import { checkGuideFields, handleUpdateGuide } from "../services/ManageGuides";
+import { handleUpdateProfile } from "../database/userRepository/userRepository";
 import { useError } from "../hooks/useError";
 import { useLoading } from "../hooks/useLoading";
 import Saved from "../screens/profileStack/Saved";
 import SavedGuides from "../screens/profileStack/SavedGuidesMap";
 import SavedGuidesGrid from "../screens/profileStack/SavedGuidesGrid";
-import { Menu } from "react-native-feather";
+import Colors from "../../styles/colorScheme";
+import UserProfile from "../models/userProfiles";
 
 const Stack = createStackNavigator();
 
@@ -32,7 +32,7 @@ function ProfileStack({ navigation }: ProfileStackProps) {
   const { startLoading, stopLoading } = useLoading();
   const { setPressedGuide, tempGuide, setTempGuide, guides, setGuides } =
     useGuide();
-  const [modalVisible, setModalVisible] = React.useState(false);
+  const [user, setUser] = React.useState<UserProfile>();
   const { authenticatedUser, setAuthenticatedUser } = useAuthenticatedUser();
   const { currentUser, pressedUser, setPressedUser } = useCurrentUser();
   const [markerCoordinate, setMarkerCoordinate] = React.useState<Coordinate>();
@@ -41,38 +41,17 @@ function ProfileStack({ navigation }: ProfileStackProps) {
   );
 
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{ cardStyle: { backgroundColor: Colors.white } }}
+    >
       <Stack.Screen
         name="Profile"
+        initialParams={{ user: authenticatedUser }}
         options={() => ({
-          headerRight: () => (
-            <TouchableOpacity onPress={() => setModalVisible(true)}>
-              <Menu width={25} height={25} color={"black"} />
-            </TouchableOpacity>
-          ),
-          headerTitle: "",
-          headerLeft: () => (
-            <Text style={{ fontSize: 20, fontWeight: "600" }}>
-              {authenticatedUser?.username}
-            </Text>
-          ),
-          headerLeftContainerStyle: {
-            paddingLeft: 20,
-          },
-          headerRightContainerStyle: {
-            paddingRight: 20,
-          },
+          headerShown: false,
         })}
-      >
-        {(props) => (
-          <ProfileView
-            {...props}
-            isAuthUser={true}
-            setModalVisible={setModalVisible}
-            modalVisible={modalVisible}
-          />
-        )}
-      </Stack.Screen>
+        component={ProfileView}
+      />
       <Stack.Screen
         name={"Edit Profile"}
         options={{
@@ -134,7 +113,7 @@ function ProfileStack({ navigation }: ProfileStackProps) {
                   paddingRight: 15,
                 }}
                 onPress={async () => {
-                  if (checkGuide(tempGuide!, showError)) {
+                  if (checkGuideFields(tempGuide!, showError)) {
                     try {
                       startLoading();
 
@@ -228,17 +207,12 @@ function ProfileStack({ navigation }: ProfileStackProps) {
         )}
       </Stack.Screen>
       <Stack.Screen
-        name={"FollowInteraction"}
-        component={FollowingTabs}
-        options={{
-          headerTitle: currentUser?.username,
-          headerStyle: {
-            shadowColor: "transparent",
-            elevation: 0,
-          },
-        }}
+        name={"Saved"}
+        component={Saved}
+        options={() => ({
+          headerShown: false,
+        })}
       />
-      <Stack.Screen name={"Saved"} component={Saved} />
       <Stack.Screen
         name={"SavedGuidesMap"}
         component={SavedGuides}
@@ -250,10 +224,9 @@ function ProfileStack({ navigation }: ProfileStackProps) {
       <Stack.Screen
         name={"SavedGuidesGrid"}
         component={SavedGuidesGrid}
-        options={{
-          headerBackTitle: "Back",
-          headerTitle: "Saved Guides",
-        }}
+        options={() => ({
+          headerShown: false,
+        })}
       />
     </Stack.Navigator>
   );

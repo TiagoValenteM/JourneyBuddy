@@ -2,6 +2,7 @@ import React, { useRef, useState } from "react";
 import { View, FlatList, StyleSheet, Text } from "react-native";
 import CachedImage from "../images/CachedImage";
 import { Animated } from "react-native";
+import Colors from "../../../styles/colorScheme";
 
 interface CarouselPicturesProps {
   scrollY: Animated.ValueXY;
@@ -98,9 +99,9 @@ const carouselStyles = StyleSheet.create({
   },
   indicatorText: {
     marginLeft: 7,
-    fontSize: 12,
-    fontWeight: "600",
-    color: "white",
+    fontSize: 13,
+    fontWeight: "bold",
+    color: Colors.white,
   },
 });
 

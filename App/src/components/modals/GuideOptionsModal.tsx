@@ -7,11 +7,12 @@ import {
 } from "react-native";
 import React, { useRef } from "react";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
-import { checkSelectGuide, deleteGuide } from "../../services/ManageGuides";
+import { deleteGuide } from "../../services/ManageGuides";
 import { useAuthenticatedUser } from "../../context/authenticatedUserContext";
 import { Guide } from "../../models/guides";
 import { useError } from "../../hooks/useError";
 import { Bookmark, Edit, Trash } from "react-native-feather";
+import { handleSaveActionGuide } from "../../database/userRepository/save/saveRepository";
 
 interface GuideOptionsModalProps {
   navigation: any;
@@ -182,7 +183,7 @@ const GuideOptionsModal = ({
               ? "Saved"
               : "Save",
             () => {
-              checkSelectGuide(
+              handleSaveActionGuide(
                 guideUid,
                 authenticatedUser,
                 setAuthenticatedUser

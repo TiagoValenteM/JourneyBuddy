@@ -1,37 +1,29 @@
-import {
-  StyleSheet,
-  View,
-  Dimensions,
-  Text,
-  Pressable,
-  TouchableOpacity,
-} from "react-native";
+import { StyleSheet, View, Dimensions, Text, Pressable } from "react-native";
 import { Guide } from "../../models/guides";
-import { useGuide } from "../../context/GuideContext";
 import CachedImage from "../images/CachedImage";
 import UserProfile from "../../models/userProfiles";
 import React from "react";
 import { useAuthenticatedUser } from "../../context/authenticatedUserContext";
-import { checkSelectGuide } from "../../services/ManageGuides";
 import { AlertCircle, Bookmark } from "react-native-feather";
+import Colors from "../../../styles/colorScheme";
+import { handleSaveActionGuide } from "../../database/userRepository/save/saveRepository";
 
 const screenWidth = Dimensions.get("window").width;
-const columnWidth = screenWidth / 2 - 30;
+const itemWidth = screenWidth / 2 - 20;
 
 interface GridImageProps {
   guides: Guide[];
   navigation: any;
   authUser?: UserProfile;
-  allowSaveChange?: boolean;
+  allowSaving?: boolean;
 }
 
 const GridImage = ({
   guides,
   navigation,
   authUser,
-  allowSaveChange,
+  allowSaving,
 }: GridImageProps) => {
-  const { setPressedGuide, pressedGuide } = useGuide();
   const { authenticatedUser, setAuthenticatedUser } = useAuthenticatedUser();
 
   const renderGuideItem = (item: Guide, index: number) => (
@@ -42,53 +34,58 @@ const GridImage = ({
     >
       <CachedImage style={styles.image} source={{ uri: item.pictures[0] }} />
       {renderAlertIcon(item)}
-      <Text style={styles.bioText} ellipsizeMode={"tail"} numberOfLines={1}>
-        {item.title}
-      </Text>
+      <View style={styles.titleContainer}>
+        <Text style={styles.bioText} ellipsizeMode={"tail"} numberOfLines={1}>
+          {item.title}
+        </Text>
+      </View>
     </Pressable>
   );
 
   const handleGuidePress = (guide: Guide) => {
-    setPressedGuide(guide);
     navigation.navigate("OverviewGuide", {
-      guide: pressedGuide,
+      guide: guide,
     });
   };
 
   const handleBookmarkPress = (item: Guide) => {
-    checkSelectGuide(item.uid, authenticatedUser, setAuthenticatedUser);
+    handleSaveActionGuide(item.uid, authenticatedUser, setAuthenticatedUser);
   };
 
   const renderAlertIcon = (item: Guide) => {
-    if (item.status === "pending" && !allowSaveChange) {
+    if (item.status === "pending" && !allowSaving) {
       return (
-        <View style={styles.alertIcon} key={item.uid}>
-          <AlertCircle width={30} height={30} color={"white"} />
-        </View>
+        <AlertCircle
+          width={28}
+          height={28}
+          color={Colors.yellow}
+          style={styles.alertIcon}
+          key={item.uid}
+        />
       );
     }
     return null;
   };
 
   const renderBookmarkIcon = (item: Guide) => {
-    if (allowSaveChange) {
+    if (allowSaving) {
       return (
-        <TouchableOpacity
+        <Pressable
           onPress={() => handleBookmarkPress(item)}
           key={item.uid}
           style={styles.bookmarkIcon}
         >
           <Bookmark
-            width={20}
-            height={20}
-            color={"black"}
+            width={25}
+            height={25}
+            color={Colors.lightGray}
             fill={
               authenticatedUser?.savedGuides?.includes(item.uid)
-                ? "black"
+                ? Colors.lightGray
                 : "transparent"
             }
           />
-        </TouchableOpacity>
+        </Pressable>
       );
     }
     return null;
@@ -100,7 +97,7 @@ const GridImage = ({
         const shouldRenderGuide =
           item.user_id === authUser?.uid ||
           item.status === "approved" ||
-          allowSaveChange;
+          allowSaving;
 
         if (shouldRenderGuide) {
           return (
@@ -118,68 +115,52 @@ const GridImage = ({
 
 const styles = StyleSheet.create({
   gridContainer: {
+    flex: 1,
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
   },
+  titleContainer: {
+    position: "absolute",
+    borderBottomStartRadius: 10,
+    borderBottomEndRadius: 10,
+    bottom: 0,
+    right: 0,
+    left: 0,
+    height: 45,
+    justifyContent: "center",
+    paddingHorizontal: 10,
+    backgroundColor: Colors.lightGray,
+  },
   gridItem: {
-    marginBottom: 20,
-    width: columnWidth,
-    height: columnWidth * 1.25,
-    backgroundColor: "#dfe0e3",
-    borderRadius: 20,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: {
-      width: 1,
-      height: 3,
-    },
-    elevation: 3,
+    marginVertical: 5,
+    width: itemWidth,
+    height: itemWidth * 1.25,
+    borderRadius: 10,
+    overflow: "hidden",
   },
   image: {
     width: "100%",
     height: "100%",
-    borderRadius: 20,
+    overflow: "hidden",
   },
   bioText: {
-    position: "absolute",
-    fontWeight: "600",
-    left: 10,
-    right: 1,
-    bottom: 10,
-    color: "white",
-    fontSize: 20,
+    fontWeight: "bold",
+    color: Colors.darkGray,
+    fontSize: 16,
+    alignItems: "center",
   },
   alertIcon: {
     position: "absolute",
-    right: 10,
-    top: 10,
+    right: 15,
+    top: 15,
     zIndex: 1,
-    backgroundColor: "#fdcb03",
-    padding: 5,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 20,
-    height: 40,
-    width: 40,
-  },
-  unsavedBookmarkIcon: {
-    zIndex: 1,
-    position: "absolute",
-    top: 10,
   },
   bookmarkIcon: {
     position: "absolute",
-    right: 10,
-    top: 10,
+    right: 15,
+    top: 15,
     zIndex: 1,
-    backgroundColor: "#dfe0e3",
-    padding: 5,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 20,
-    height: 40,
-    width: 40,
   },
 });
 

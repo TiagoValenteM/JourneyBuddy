@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { Place } from "../../models/guides";
 import { useAuthenticatedUser } from "../../context/authenticatedUserContext";
-import { checkSelectPlace } from "../../database/placesRepository";
+import { handleSaveActionPlace } from "../../database/placeRepository/placesRepository";
 import { useGuide } from "../../context/GuideContext";
 import { Bookmark, Map } from "react-native-feather";
 
@@ -74,7 +74,11 @@ const LocationIdentifier: React.FC<LocationIdentifierProps> = ({ place }) => {
       <View style={identifierStyles.unsavedContainer}>
         <TouchableOpacity
           onPress={() => {
-            checkSelectPlace(place, authenticatedUser, setAuthenticatedUser);
+            handleSaveActionPlace(
+              place,
+              authenticatedUser,
+              setAuthenticatedUser
+            );
           }}
           style={identifierStyles.saveButton}
         >

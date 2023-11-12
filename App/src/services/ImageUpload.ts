@@ -24,6 +24,7 @@ const handleProfilePictureUpdate = async (
 
   const result = await ImagePicker.launchImageLibraryAsync({
     mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    allowsEditing: true,
     quality: 0.3,
   });
 
@@ -71,25 +72,8 @@ const handleProfilePictureUpdate = async (
   }
 };
 
-const selectPictures = async (): Promise<string[]> => {
-  const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  if (status === "granted") {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.3,
-      allowsMultipleSelection: true,
-    });
-
-    if (!result?.canceled) {
-      return result?.assets?.map((asset) => asset.uri);
-    }
-  }
-
-  return [];
-};
-
 const uploadPicture = async (guide_uid: string, uri: string) => {
-  if (uri.includes("file://")) {
+  if (uri.includes("file://") || uri.includes("ph://")) {
     const resizedUri = await resizeImage(uri, 1080, 1350);
     const response = await fetch(resizedUri);
     const blob = await response.blob();
@@ -103,4 +87,4 @@ const uploadPicture = async (guide_uid: string, uri: string) => {
   return uri;
 };
 
-export { handleProfilePictureUpdate, selectPictures, uploadPicture };
+export { handleProfilePictureUpdate, uploadPicture };

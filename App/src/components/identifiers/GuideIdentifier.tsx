@@ -9,21 +9,24 @@ import {
 import { Guide } from "../../models/guides";
 import { getMonthName } from "../../utils/getMonth";
 import { useAuthenticatedUser } from "../../context/authenticatedUserContext";
-import { checkSelectGuide } from "../../services/ManageGuides";
-import { useGuide } from "../../context/GuideContext";
 import { Bookmark } from "react-native-feather";
+import Colors from "../../../styles/colorScheme";
+import { handleSaveActionGuide } from "../../database/userRepository/save/saveRepository";
 
 interface GuideIdentifierProps {
   guide: Guide;
+  guides: Guide[];
+  setGuides: React.Dispatch<React.SetStateAction<Guide[]>>;
   navigation?: any;
 }
 
 const GuideIdentifier: React.FC<GuideIdentifierProps> = ({
   guide,
+  guides,
+  setGuides,
   navigation,
 }) => {
   const { authenticatedUser, setAuthenticatedUser } = useAuthenticatedUser();
-  const { setPressedGuide, pressedGuide } = useGuide();
 
   return (
     <Pressable
@@ -33,8 +36,11 @@ const GuideIdentifier: React.FC<GuideIdentifierProps> = ({
       }}
       onPress={() => {
         if (navigation) {
-          setPressedGuide(guide);
-          navigation.navigate("OverviewGuide", { guide: pressedGuide });
+          navigation.navigate("OverviewGuide", {
+            guide: guide,
+            guides: guides,
+            setGuides: setGuides,
+          });
         }
       }}
     >
@@ -46,14 +52,7 @@ const GuideIdentifier: React.FC<GuideIdentifierProps> = ({
         >
           {guide?.title}
         </Text>
-        <Text
-          style={identifierStyles.description}
-          numberOfLines={5}
-          ellipsizeMode={"tail"}
-        >
-          {guide?.description}
-        </Text>
-
+        <Text style={identifierStyles.description}>{guide?.description}</Text>
         <Text style={identifierStyles.date}>
           {parseInt(guide?.dateCreated.slice(8, 10))}{" "}
           {getMonthName(parseInt(guide?.dateCreated.slice(5, 7)))}{" "}
@@ -63,7 +62,7 @@ const GuideIdentifier: React.FC<GuideIdentifierProps> = ({
       <View>
         <TouchableOpacity
           onPress={() => {
-            checkSelectGuide(
+            handleSaveActionGuide(
               guide.uid,
               authenticatedUser,
               setAuthenticatedUser
@@ -75,14 +74,14 @@ const GuideIdentifier: React.FC<GuideIdentifierProps> = ({
           }}
         >
           <Bookmark
-            height={30}
-            width={30}
-            color={"black"}
+            height={28}
+            width={28}
+            stroke={Colors.blue}
             fill={
               authenticatedUser?.savedGuides?.some(
                 (guideUID) => guideUID === guide.uid
               )
-                ? "black"
+                ? Colors.blue
                 : "transparent"
             }
           />
@@ -102,15 +101,19 @@ const identifierStyles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: "700",
+    fontWeight: "bold",
+    color: Colors.black,
     marginBottom: 10,
   },
   description: {
-    fontSize: 13,
+    fontWeight: "normal",
+    fontSize: 14,
+    color: Colors.darkGray,
     marginBottom: 10,
   },
   date: {
-    fontSize: 14,
-    color: "grey",
+    fontSize: 12,
+    fontWeight: "bold",
+    color: Colors.gray,
   },
 });
