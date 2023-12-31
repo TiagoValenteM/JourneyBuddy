@@ -1,10 +1,9 @@
 import React, { useEffect } from "react";
 import {
-  Alert,
+  ActivityIndicator,
   Pressable,
   SafeAreaView,
   StyleSheet,
-  Text,
   TextInput,
   View,
 } from "react-native";
@@ -13,12 +12,12 @@ import debounce from "../../utils/debounce";
 import { Coordinate, Place } from "../../models/guides";
 import { useError } from "../../hooks/useError";
 import Colors from "../../../styles/colorScheme";
-import { ArrowLeft, MapPin, Plus } from "react-native-feather";
+import { ArrowLeft, MapPin } from "react-native-feather";
 import {
   getLocationCoordinates,
   getLocationName,
 } from "../../database/placeRepository/placesRepository";
-import PlaceSearchBottomsheet from "../../components/bottomsheets/PlaceSearchBottomsheet";
+import PlaceSearchBottomSheet from "../../components/bottomsheets/PlaceSearchBottomSheet";
 
 interface NewPlaceProps {
   navigation: any;
@@ -27,25 +26,30 @@ interface NewPlaceProps {
 
 function PlacePickerMap({ navigation, setPlaces }: NewPlaceProps) {
   const [markerCoordinate, setMarkerCoordinate] = React.useState<Coordinate>();
-  const [locationName, setLocationName] = React.useState(
-    "Search for a place or tap the map"
+  const [selectedPlace, setSelectedPlace] = React.useState<string | undefined>(
+    undefined
   );
-  const [modalVisible, setModalVisible] = React.useState(false);
   const [locationList, setLocationList] = React.useState<Place[]>();
   const { showError } = useError();
+  const [loading, setLoading] = React.useState(false);
 
   const handlePlaceSearch = async (text: string) => {
-    setModalVisible(false);
-    getLocationCoordinates(text, showError).then((coordinates) => {
-      setLocationList(coordinates);
-      setModalVisible(true);
-    });
+    setLoading(true);
+    getLocationCoordinates(text, showError)
+      .then((coordinates) => {
+        setLocationList(coordinates);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   const updateLocationName = debounce((coordinates) => {
-    getLocationName(coordinates).then((place) => {
+    getLocationName(coordinates, showError).then((place) => {
       if (place) {
-        setLocationName(place.name);
+        setSelectedPlace(place.name);
+      } else {
+        setSelectedPlace(undefined);
       }
     });
   }, 1000);
@@ -67,51 +71,20 @@ function PlacePickerMap({ navigation, setPlaces }: NewPlaceProps) {
         >
           <ArrowLeft width={25} height={25} color={Colors.blue} />
         </Pressable>
-        <TextInput
-          placeholder="Search"
-          onChangeText={debounce(handlePlaceSearch, 1000)}
-          numberOfLines={1}
-          style={styles.textInput}
-        />
-      </View>
-    );
-  };
-
-  const Footer = () => {
-    return (
-      <View style={[styles.container, { bottom: 0 }]}>
-        <View style={styles.textContainer}>
-          <Text style={styles.text} numberOfLines={1} ellipsizeMode={"tail"}>
-            {locationName}
-          </Text>
+        <View style={styles.textInputContainer}>
+          <TextInput
+            placeholder="Search"
+            onChangeText={debounce(handlePlaceSearch, 1000)}
+            numberOfLines={1}
+            style={styles.textInput}
+          />
+          {loading && (
+            <ActivityIndicator
+              style={styles.activityIndicator}
+              color={Colors.gray}
+            />
+          )}
         </View>
-
-        <Pressable
-          onPress={() => {
-            if (markerCoordinate && locationName?.length > 0) {
-              const place = {
-                name: locationName,
-                coordinates: {
-                  latitude: markerCoordinate.latitude,
-                  longitude: markerCoordinate.longitude,
-                },
-              };
-
-              setPlaces((prevPlaces) =>
-                prevPlaces ? [...prevPlaces, place] : [place]
-              );
-
-              navigation.navigate("NewGuide");
-            } else {
-              Alert.alert("Please select a location");
-            }
-            setLocationName("");
-            setMarkerCoordinate(undefined);
-          }}
-          style={styles.backButton}
-        >
-          <Plus width={25} height={25} color={Colors.blue} />
-        </Pressable>
       </View>
     );
   };
@@ -137,22 +110,19 @@ function PlacePickerMap({ navigation, setPlaces }: NewPlaceProps) {
           <Marker coordinate={markerCoordinate}>
             <MapPin
               width={25}
-              height={25}
+              height={28}
               color={Colors.blue}
               strokeWidth={3}
             />
           </Marker>
         )}
       </MapView>
-      <SafeAreaView style={[styles.safeAreaView, { bottom: 0 }]}>
-        <Footer />
-      </SafeAreaView>
-      <PlaceSearchBottomsheet
-        modalVisible={modalVisible}
-        setModalVisible={setModalVisible}
+      <PlaceSearchBottomSheet
+        navigation={navigation}
+        setPlaces={setPlaces}
+        selectedPlace={selectedPlace}
         placesArray={locationList}
-        setLocationName={setLocationName}
-        setMarkerCoordinate={setMarkerCoordinate}
+        markerCoordinate={markerCoordinate}
       />
     </>
   );
@@ -183,14 +153,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   backButton: {
-    backgroundColor: Colors.lightGray,
+    backgroundColor: Colors.white,
     borderRadius: 50,
-    padding: 10,
+    padding: 11,
     shadowColor: Colors.black,
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.1,
     shadowOffset: {
       width: 1,
-      height: 3,
+      height: 2,
     },
     elevation: 3,
     justifyContent: "center",
@@ -198,38 +168,29 @@ const styles = StyleSheet.create({
   },
   textInput: {
     color: Colors.darkGray,
-    backgroundColor: Colors.lightGray,
-    borderRadius: 10,
-    padding: 12,
-    marginVertical: 5,
-    width: "80%",
-    fontWeight: "bold",
-    fontSize: 14,
-    shadowColor: Colors.black,
-    shadowOpacity: 0.2,
-    shadowOffset: {
-      width: 1,
-      height: 3,
-    },
-    elevation: 3,
-  },
-  text: {
-    color: Colors.darkGray,
     fontWeight: "bold",
     fontSize: 14,
   },
-  textContainer: {
-    backgroundColor: Colors.lightGray,
-    borderRadius: 10,
-    padding: 12,
+  textInputContainer: {
+    backgroundColor: Colors.white,
+    borderRadius: 13,
+    padding: 13,
     marginVertical: 5,
     width: "80%",
     shadowColor: Colors.black,
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.1,
     shadowOffset: {
       width: 1,
-      height: 3,
+      height: 2,
     },
     elevation: 3,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  activityIndicator: {
+    width: 8,
+    height: 8,
+    marginHorizontal: 5,
   },
 });

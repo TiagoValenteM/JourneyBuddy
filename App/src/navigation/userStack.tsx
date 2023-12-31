@@ -11,6 +11,7 @@ import { useLoading } from "../hooks/useLoading";
 import SearchStack from "./searchStack";
 import { Home, PlusCircle, Search, User } from "react-native-feather";
 import { auth } from "../config/firebase";
+import Colors from "../../styles/colorScheme";
 
 const Tab = createBottomTabNavigator();
 
@@ -42,6 +43,10 @@ export default function UserStack() {
         screenOptions={({ route }) => ({
           tabBarShowLabel: false,
           headerShown: false,
+          tabBarStyle: {
+            backgroundColor: Colors.white,
+            borderTopWidth: 0,
+          },
           tabBarIcon: ({ color, size }) => {
             switch (route.name) {
               case "ProfileStack":

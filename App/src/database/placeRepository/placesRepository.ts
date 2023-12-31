@@ -68,8 +68,9 @@ async function handleUnsavedPlace(
 }
 
 const getLocationName = async (
-  coordinate: Coordinate
-): Promise<Place | undefined> => {
+  coordinate: Coordinate,
+  showError: (message: string) => void
+): Promise<Place | void> => {
   try {
     const response = await fetch(
       `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${coordinate.latitude}&lon=${coordinate.longitude}`
@@ -83,13 +84,19 @@ const getLocationName = async (
       } as Place;
     }
 
-    return {
-      name: placeData?.display_name
-        .split(",", 3)
-        .toString()
-        .replaceAll("  ", ", "),
-      coordinates: coordinate,
-    } as Place;
+    const displayName = placeData?.display_name;
+
+    if (displayName) {
+      const splitDisplayName = displayName.split(",", 3);
+      if (splitDisplayName.length >= 3) {
+        return {
+          name: splitDisplayName.toString().replaceAll("  ", ", "),
+          coordinates: coordinate,
+        } as Place;
+      }
+    } else {
+      showError("Place not available yet. Please try again.");
+    }
   } catch (error) {
     console.error(error);
   }
